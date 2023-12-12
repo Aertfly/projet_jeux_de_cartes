@@ -2,17 +2,16 @@ import { io } from "../server.js";
 
 io.on("tchat_partie", (socket) => {
   socket.on('message', data => {
-    const IdPartie = socket.get("IdPartie");
-    const IdJoueur = socket.get("IdJoueur");
+    // data doit contenir IdJoueur, IdPartie, et le username
     let username = "Erreur : le pseudo n'est pas récupéré";
 
-    if (!message) {
+    if (data.message) {
       throw new Error("Le message est vide");
     }
-    if (!IdPartie) {
+    if (data.IdPartie) {
       throw new Error("L'identifiant de la partie est vide");
     }
-    if (!IdJoueur) {
+    if (data.IdJoueur) {
       throw new Error("L'identifiant du joueur est vide");
     }
 
@@ -23,7 +22,7 @@ io.on("tchat_partie", (socket) => {
       database: 'cp2253952p22_projetprogrammation'
     });
     
-    db.query("SELECT username FROM joueur WHERE id_joueur = ?", [IdJoueur], (err, results) => {
+    db.query("SELECT username FROM joueur WHERE id_joueur = ?", [data.IdJoueur], (err, results) => {
       if (err) {
         console.log(err);
         return;
