@@ -5,13 +5,13 @@ io.on("tchat_partie", (socket) => {
     // data doit contenir IdJoueur, IdPartie, et le username
     let username = "Erreur : le pseudo n'est pas récupéré";
 
-    if (data.message) {
+    if (!data.message) {
       throw new Error("Le message est vide");
     }
-    if (data.IdPartie) {
+    if (!data.IdPartie) {
       throw new Error("L'identifiant de la partie est vide");
     }
-    if (data.IdJoueur) {
+    if (!data.IdJoueur) {
       throw new Error("L'identifiant du joueur est vide");
     }
 
