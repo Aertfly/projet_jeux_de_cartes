@@ -4,7 +4,6 @@ const { Server } = require('socket.io');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql');
 const cors = require('cors');
-
 const app = express();
 const server = http.createServer(app);
 
@@ -132,3 +131,10 @@ server.listen(port, () => {
   console.log('Serveur écoutant sur le port ' + port);
 });
 
+function temp(){ // Fonction passée en paramètre à gestionTours et appelée à la fin de la partie
+    console.log("Appel à la fonction de fin de partie");
+}
+
+partie = {"idPartie": "ABC"}
+const gestionTours = require('./gestionTours.js');
+gestionTours(io, db, partie, temp); // Ceci devrait désormais fonctionner
