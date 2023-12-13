@@ -32,9 +32,10 @@ var gestionTours = function(io, db, partie, finPartie) {
                                 finPartie()
                                 db.query("DELETE FROM parties WHERE idPartie = ?", [partie.idPartie], async(err, result) =>{
                                     if(err || result.affectedRows != 1){
-                                        throw err;
+                                        console.log("La partie a déjà été supprimée");
+                                    } else {
+                                        console.log("Normalement la partie a bien été supprimée");
                                     }
-                                    console.log("Normalement la partie a bien été supprimée");
                                 });
                             }
                         });
