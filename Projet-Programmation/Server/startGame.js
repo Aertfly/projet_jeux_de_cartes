@@ -11,7 +11,7 @@ const startGame = function(io,socket,db){
             console.log(result.includes(data.idPlayer));
             if(!(result.includes(data.idPlayer)))console.log("Le joueur qui a essayé de lancé n'est pas dans la partie")
             else {
-                console.log(generateDraw(["Pique","Carreau","Trefle","Coeur"],13))
+                console.log(dealCardsWar(result));
             }
         });
     })
@@ -42,10 +42,16 @@ function generateDraw(familyList,nbCards){
 }
 
 function dealCardsWar(IdPlayerList){
-    draw = generateDraw();
-    return 0;
+    nbPlayers = IdPlayerList.length;
+    draw = generateDraw(["Pique","Carreau","Trefle","Coeur"],13,);
+    const playersHands = new Array(nbPlayers).fill([]);
+    len = draw.length;
+    for (i=0;i<len;i++){
+        const currentPlayerIndex = i % nbPlayers;
+        playersHands[currentPlayerIndex].push(draw[i]);
+    }
+    return playersHands;
 }
-
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 10 millions : {
   [3,4,5]: 16666418,
