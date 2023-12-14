@@ -14,7 +14,7 @@ const io = new Server(server, {
         origin: "http://localhost:3000",
         methods: ["GET", "POST"]
     }
-}); 
+});
 const port = 3001;
 
 const db = mysql.createConnection({
@@ -34,47 +34,47 @@ db.connect((err) => {
 const connectedUsers = {};
 
 io.on('connection', (socket) => {
-  console.log('Un utilisateur s\'est connecté ' + socket.id);
+    console.log('Un utilisateur s\'est connecté ' + socket.id);
 
-  socket.on('connexion', async (data) => {
-    const { pseudo, password } = data;
-    if (connectedUsers[socket.id]) {
-        socket.emit('resultatConnexion', "Déjà connecté");
-        console.log('Déjà connecté');
-        return; 
-    }
+    socket.on('connexion', async (data) => {
+        const { pseudo, password } = data;
+        if (connectedUsers[socket.id]) {
+            socket.emit('resultatConnexion', "Déjà connecté");
+            console.log('Déjà connecté');
+            return;
+        }
 
-    try {
-        const requestAll = 'SELECT * FROM joueurs WHERE pseudo = ?';
-        db.query(requestAll, [pseudo], async (err, result) => {
-            if (err) {
-                socket.emit('resultatConnexion', "Erreur lors de la connexion");
-                console.log('Erreur lors de la connexion');
-            } else {
-                if (result.length > 0) {
-                    const user = result[0];
-                    const match = await bcrypt.compare(password, user.motdepasse);
-
-                    if (match) {
-                        connectedUsers[socket.id] = true;
-                        socket.emit('resultatConnexion', "Connexion réussie");
-                        console.log('Connexion réussie');
-                        console.log(connectedUsers);
-                    } else {
-                        socket.emit('resultatConnexion', "Mot de passe incorrect");
-                        console.log('Mot de passe incorrect');
-                    }
+        try {
+            const requestAll = 'SELECT * FROM joueurs WHERE pseudo = ?';
+            db.query(requestAll, [pseudo], async (err, result) => {
+                if (err) {
+                    socket.emit('resultatConnexion', "Erreur lors de la connexion");
+                    console.log('Erreur lors de la connexion');
                 } else {
-                    socket.emit('resultatConnexion', "pseudo incorrect");
-                    console.log('pseudo incorrect');
+                    if (result.length > 0) {
+                        const user = result[0];
+                        const match = await bcrypt.compare(password, user.motdepasse);
+
+                        if (match) {
+                            connectedUsers[socket.id] = true;
+                            socket.emit('resultatConnexion', "Connexion réussie");
+                            console.log('Connexion réussie');
+                            console.log(connectedUsers);
+                        } else {
+                            socket.emit('resultatConnexion', "Mot de passe incorrect");
+                            console.log('Mot de passe incorrect');
+                        }
+                    } else {
+                        socket.emit('resultatConnexion', "pseudo incorrect");
+                        console.log('pseudo incorrect');
+                    }
                 }
-            }
-        });
-    } catch (error) {
-        console.error(error);
-        socket.emit('resultatConnexion', "Erreur lors de la connexion");
-    }
-});
+            });
+        } catch (error) {
+            console.error(error);
+            socket.emit('resultatConnexion', "Erreur lors de la connexion");
+        }
+    });
 
     socket.on('inscription', async (data) => {
         const { pseudo, password } = data;
@@ -105,7 +105,7 @@ io.on('connection', (socket) => {
                         });
                     }
                 }
-            }); 
+            });
         } catch (error) {
             console.error(error);
             socket.emit('resultatInscription', "Erreur lors de l\'inscription");
@@ -113,7 +113,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('deconnexion', () => {
-        if (socket.id in connectedUsers){
+        if (socket.id in connectedUsers) {
             delete connectedUsers[socket.id];
             socket.emit('deconnexion', "Déconnexion réussie !");
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
@@ -121,10 +121,10 @@ io.on('connection', (socket) => {
     });
 
 
-  socket.on('disconnect', (reason) => {
-    console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
-    delete connectedUsers[socket.id];
-  });
+    socket.on('disconnect', (reason) => {
+        console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
+        delete connectedUsers[socket.id];
+    });
 
   //socket importé des autres fichiers
   startGame(io,socket,db);
@@ -132,13 +132,9 @@ io.on('connection', (socket) => {
 });
 
 server.listen(port, () => {
-  console.log('Serveur écoutant sur le port ' + port);
+    console.log('Serveur écoutant sur le port ' + port);
 });
 
-function temp(){ // Fonction passée en paramètre à gestionTours et appelée à la fin de la partie
-    console.log("Appel à la fonction de fin de partie");
-}
-
-partie = {"idPartie": "ABC"}
+partie = { "idPartie": "ABC" }
 const gestionTours = require('./gestionTours.js');
-gestionTours(io, db, partie, temp); // Ceci devrait désormais fonctionner
+gestionTours(io, db, partie); // Ceci devrait désormais fonctionner
