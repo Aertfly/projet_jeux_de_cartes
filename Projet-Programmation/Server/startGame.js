@@ -16,7 +16,15 @@ const startGame = function(io,socket,db){
         });
     })
 }
-
+//algorithme Fisher-Yates, également appelé mélange de Knuth
+function FYK(list){
+    len = list.length;
+    for (j=len-1;j>0;j--){
+        const i = Math.floor(Math.random() * (len-1));
+        [list[j],list[i]]=[list[i],list[j]];
+    }
+    return list;
+}
 
 function generateDraw(familyList,nbCards){
     var len = familyList.length
@@ -30,13 +38,40 @@ function generateDraw(familyList,nbCards){
         })
         }
     }
-    return res;
+    return FYK(res,len);
 }
 
-function dealCardsWar(dbIdPlayerList){//liste des RowDataPacket de la BDD
+function dealCardsWar(IdPlayerList){
     draw = generateDraw();
     return 0;
 }
 
+/*Si vous voulez tester la distribution aléatoire de l'algorithme
+exemple sur 10 millions : {
+  [3,4,5]: 16666418,
+  [3,5,4]: 16665702,
+  [4,3,5]: 16667400,
+  [4,5,3]: 16671831,
+  [5,3,4]: 16665582,
+  [5,4,3]: 16663068
+}
+PS : 1 000 000 000 c'est un peu trop
+
+dico = {
+"[3,4,5]" : 0,
+"[3,5,4]" : 0,
+"[5,4,3]" : 0,
+"[5,3,4]" : 0,
+"[4,3,5]" : 0,
+"[4,5,3]" : 0
+};
+liste = [3,4,5];
+
+for (i=0;i<=1000000000;i++){
+var res = FYK(liste);
+var test =JSON.stringify(liste)
+dico[test] ++;
+}
+console.log(dico);*/ 
 
 module.exports = startGame;
