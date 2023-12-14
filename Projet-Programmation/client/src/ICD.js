@@ -75,12 +75,29 @@ function InscriptionForm () {
     )
   }
 
+
+  const Test = () =>{
+    function click() {
+        var idJ = 10;
+        var idParty = "#tra54d";
+        var data = {'idJ' : idJ , 'idParty' : idParty };
+        console.log("J'envoie mon idj",idJ);
+        socket.emit('start',data);
+    }
+    return(
+        <button onClick={click}>Start</button>
+    );
+}
+
+
+
   function Main () {
     return (
         <>
         <ConnectionForm />
         <InscriptionForm />
         <DeconnectionForm />
+        <Test />
         </>
     )
   };

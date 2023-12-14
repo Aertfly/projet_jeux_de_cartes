@@ -6,7 +6,7 @@ const mysql = require('mysql');
 const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
-
+const startGame = require('./startGame.js');//fichier qui traite du début de partie (JM)
 app.use(cors);
 
 const io = new Server(server, {
@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
     socket.on('inscription', async (data) => {
         const { pseudo, password } = data;
 
+
         try {
             const checkEmailQuery = 'SELECT idJ FROM joueurs WHERE pseudo = ?';
             db.query(checkEmailQuery, [pseudo], async (err, result) => {
@@ -124,6 +125,9 @@ io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
     delete connectedUsers[socket.id];
   });
+
+  //socket importé des autres fichiers
+  startGame(io,socket,db);
 
 });
 
