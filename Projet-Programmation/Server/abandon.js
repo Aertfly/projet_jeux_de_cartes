@@ -1,5 +1,3 @@
-const { isActiveConnection } = require('./activeConnections');
-
 var abandon = function(io, socket, db) {
     socket.on('playerLeaving', (data) => { // data prend en argument l'idJ et l'idPartie
         // Ce code sera à fusionner avec celui de Pierre pour éviter deux "socket.on" identiques
@@ -18,7 +16,7 @@ var abandon = function(io, socket, db) {
 
 function after30s(io, socket, db, data) {
     // Vérifier si le joueur s'est reconnecté
-    if (isActiveConnection(data.player)) {
+    if () {
         console.log("Le joueur", data.player, "est revenu à la partie", data.party);
     } else {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
