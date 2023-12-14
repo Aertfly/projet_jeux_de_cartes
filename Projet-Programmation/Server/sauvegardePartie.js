@@ -6,10 +6,8 @@ var sauvegardePartie = function(io, socket, db) {
                 console.log("erreur lors du changement de la variable sauvegarde : existe-t-elle ?");
                 throw err;
             }
-            if(results.affectedRows == 1){ // Si le changement à true a bien réussi
-                console.log("sauvegarde effectué");
-                io.in(data.partie).emit('savePartyResult', true); //renvoie à tous les joueurs côté client de la partie pour leur faire afficher un bouton, pour revenir au hub du site
-            }
+            console.log("sauvegarde effectué");
+            io.in(data.partie).emit('savePartyResult', results.affectedRows == 1); //renvoie à tous les joueurs côté client de la partie pour leur faire afficher un bouton, pour revenir au hub du site      
         })
     })
 }
