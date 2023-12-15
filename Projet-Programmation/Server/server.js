@@ -6,7 +6,13 @@ const mysql = require('mysql');
 const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
-const startGame = require('./startGame.js');//fichier qui traite du début de partie (JM)
+
+// tous les fichiers modulaires pour que ils puissent être utilisés
+const startGame = require('./startGame.js');
+const scores = require('./scores.js');
+const abandon = require('./abandon.js');
+const chat = require('./chat.js');
+
 app.use(cors);
 
 const io = new Server(server, {
@@ -133,13 +139,12 @@ io.on('connection', (socket) => {
 
   //socket importé des autres fichiers
   startGame(io,socket,db);
+  scores(io,socket,db);
+  abandon(io,socket,db);
+  chat(io,socket,db);
 
 });
 
 server.listen(port, () => {
     console.log('Serveur écoutant sur le port ' + port);
 });
-
-partie = { "idPartie": "ABC" }
-const gestionTours = require('./gestionTours.js');
-gestionTours(io, db, partie); // Ceci devrait désormais fonctionner
