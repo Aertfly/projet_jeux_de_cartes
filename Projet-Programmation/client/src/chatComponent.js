@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client'
 const socket = io('http://localhost:3001');
+// Pour l'importer, faire "import Chat from './chatComponent.js';" en en-tête de fichier
 
 function Chat({ data }) {
     const [texte, setTexte] = useState('');
