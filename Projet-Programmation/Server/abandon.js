@@ -10,6 +10,7 @@ var abandon = function(io, socket, db) {
         }
         // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
         delete disconnectedPlayers[data.player];
+        console.log("cest bon");
     });
 
     socket.on("playerDisconnect", (data) => {
