@@ -15,7 +15,7 @@ function Save({ data }) {
 
   return (
     <div>
-      <button onClick={handleSave}>Sauvegarder la partie</button>
+      <button onClick={handleSave}>Mettre en pause et sauvegarder la partie</button>
     </div>
   );
 };
