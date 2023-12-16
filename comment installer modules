@@ -1,0 +1,8 @@
+client :(npm install normalement suffit)
+npm install crypto-js
+npm install react-router-dom
+npm install react
+
+server :
+npm install crypto-js
+npm install nodemon
