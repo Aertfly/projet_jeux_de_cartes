@@ -2,7 +2,7 @@ import IC from './IC.js'
 import CreateParty from './createParty.js';
 import { SocketProvider } from './socket.js';
 
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import reportWebVitals from './reportWebVitals' ;
 
 import React, { createContext, useState, useContext } from 'react';
