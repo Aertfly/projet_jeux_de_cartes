@@ -4,7 +4,6 @@ const { Server } = require('socket.io');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql');
 const cors = require('cors');
-const CryptoJS = require('crypto-js')
 const app = express();
 const server = http.createServer(app);
 
@@ -28,7 +27,7 @@ const port = 3001;
 const db = mysql.createConnection({
     host: 'rateapp.fr',
     user: 'cp2253952p22_projetprogrammation',
-    password: 'azertyu123!',   
+    password: 'azertyu123!',
     database: 'cp2253952p22_projetprogrammation'
 });
 
@@ -41,18 +40,9 @@ db.connect((err) => {
 
 const connectedUsers = {};
 
-function generatePartyId(){
-    db.query('SELECT COUNT(idPartie) FROM parties', async (err, result) => {
-        console.log(result);
-        currentDate = Date.now().toString();
-        const partyId = CryptoJS.SHA256(currentDate).toString();
-        return partyId;
-    })
-}
-
 io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est connecté ' + socket.id);
-
+    
     socket.on('connexion', async (data) => {
         const { pseudo, password } = data;
         if (connectedUsers[socket.id]) {
@@ -73,10 +63,9 @@ io.on('connection', (socket) => {
                         const match = await bcrypt.compare(password, user.motdepasse);
 
                         if (match) {
-                            socket.emit('idJ', result[0].idJ);
+                            connectedUsers[socket.id] = true;
                             socket.emit('resultatConnexion', "Connexion réussie");
                             console.log('Connexion réussie');
-                            connectedUsers[socket.id] = true;
                             console.log(connectedUsers);
                         } else {
                             socket.emit('resultatConnexion', "Mot de passe incorrect");
@@ -96,12 +85,7 @@ io.on('connection', (socket) => {
 
     socket.on('inscription', async (data) => {
         const { pseudo, password } = data;
-        if (!pseudo || pseudo.length < 3 || pseudo.length > 30) {
-            return socket.emit('resultatInscription', 'Pseudo invalide');
-          }
-          if (!password || password.length !== 64) { // La longueur d'un SHA256 en hexadécimal est 64
-            return socket.emit('resultatInscription', 'Mot de passe invalide');
-          }
+
 
         try {
             const checkEmailQuery = 'SELECT idJ FROM joueurs WHERE pseudo = ?';
@@ -130,35 +114,10 @@ io.on('connection', (socket) => {
                 }
             });
         } catch (error) {
-            console.error(error);
+            console.error(erabandonror);
             socket.emit('resultatInscription', "Erreur lors de l\'inscription");
         }
     });
-
-    socket.on('createParty',data => {
-        const { minValue,maxValue,estPublic,selectedGame } = data;
-        partyId = generatePartyId();
-        var sens = ""
-        switch(selectedGame){
-            case "Bataille":
-                var sens = "all";
-        }
-
-        if(minValue && maxValue && estPublic && selectedGame){
-            const request = 'INSERT INTO parties (idPartie,joueursMin,joueursMax,sens,tour,type,sauvegarde,centre,archive,pioche,public) VALUES (?,?,?,?,-1,?,0,"{}","{}","[]",?)'
-            db.query(request, partyId, minValue, maxValue, sens,selectedGame,estPublic, async (err, result) => {
-                if (err) {
-                    socket.emit('resultatCreation',"Creation de partie échouée, mauvaises informations");
-                    console.log("Creation de partie échouée, mauvaises informations");
-                } else {
-                    socket.emit('resultatCreation',"Creation de partie effectuée");
-                    console.log("Creation de partie effectuée");
-                }
-
-            });
-        }});
-
-
 
     socket.on('deconnexion', () => {
         if (socket.id in connectedUsers) {
@@ -167,6 +126,7 @@ io.on('connection', (socket) => {
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
         }
     });
+    
 
     socket.on('disconnect', (reason) => { // changement pour l'abandon involontaire (Killian)
         if (reason === 'ping timeout') {
@@ -177,6 +137,8 @@ io.on('connection', (socket) => {
             delete connectedUsers[socket.id];
         }
     });
+    
+
   //fonctions importé des autres fichiers
   startGame(io,socket,db);
   scores(io,socket,db);
