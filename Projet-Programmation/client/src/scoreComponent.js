@@ -7,15 +7,24 @@ const Score = () => {
   const [scores, setScores] = useState({});
 
   useEffect(() => {
-    socket.on('updateScores', (data) => {
+    socket.on('updateScores', (data) => { //Quand on reçoit une demande de modification du score
       setScores(prevScores => ({
         ...prevScores,
         [data.player]: data.score // Mise à jour du score du joueur dans l'objet scores
       }));
     });
 
+    socket.on('otherPlayerLeft', (data) => { // Quand un joueur a quitté la partie
+        setScores(prevScores => {
+          const updatedScores = { ...prevScores };
+          delete updatedScores[data.player]; // Suppression du joueur de la liste des scores
+          return updatedScores;
+        });
+      });
+
     return () => {
       socket.off('updateScores');
+      socket.off('otherPlayerLeft');
     };
   }, []);
 
