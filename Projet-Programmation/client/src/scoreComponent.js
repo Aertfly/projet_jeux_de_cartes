@@ -14,10 +14,10 @@ const Score = () => {
       }));
     });
 
-    socket.on('otherPlayerLeft', (data) => { // Quand un joueur a quitté la partie
+    socket.on('otherPlayerLeft', (player) => { // Quand un joueur a quitté la partie
         setScores(prevScores => {
           const updatedScores = { ...prevScores };
-          delete updatedScores[data.player]; // Suppression du joueur de la liste des scores
+          delete updatedScores[player]; // Suppression du joueur de la liste des scores
           return updatedScores;
         });
       });
