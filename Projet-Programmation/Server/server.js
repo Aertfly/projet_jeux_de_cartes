@@ -12,7 +12,7 @@ const startGame = require('./startGame.js');
 const scores = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
-const sauvegardePartie = require('./sauvegadreParite.js');
+const sauvegardePartie = require('./sauvegardePartie.js');
 
 app.use(cors);
 
