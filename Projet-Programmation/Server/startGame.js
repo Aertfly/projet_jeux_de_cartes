@@ -2,52 +2,47 @@
 
 const startGame = function(io,socket,db){
     socket.on('start', data => {
-        console.log("Partie ",data.idParty,"lancée par : ",data.idPlayer,);
-        db.query("SELECT GROUP_CONCAT(idJ) AS idJ, type, sauvegarde, tour,proprietaire FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ? GROUP BY type; ",data.idParty, async(err,rawResult)=>{ 
-            // Pour chercher uniquement les idJ "SELECT idJ FROM joue j where idPartie = ? and Main = '[]';"
-            if (err)throw(err);
-            if (rawResult.length===0)console.log("Aucun joueur dans la partie");
+        console.log("Partie ", data.idParty, " lancée par : ", data.idPlayer);
+        db.query("SELECT idJ, type, sauvegarde, tour, proprietaire FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
+            if (err) throw (err);
+            let msg = test(rawResult,data.idPlayer);
+            if (msg)io.to(data.idParty).emit('gameStart',{'result':false,'message':msg});
             else {
-                IdPlayerList = rawResult[0].idJ.split(',').map(Number);//rawResult[0].idJ == "idJ1,idJ2,...,idJk" string contenant tous les idJ associés à cette partie, rawResult est une liste d'un élement car l'idPartie est unique
-                if(!(IdPlayerList.includes(data.idPlayer)))console.log("Le joueur qui a essayé de lancé n'est pas dans la partie");
-                else{
-                    if(rawResult[0].tour>=0)console.log("Partie déja en cour");
-                    else {
-                        if (rawResult[0].sauvegarde){
-                            //Si la partie est sauvegardé
-                            db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie =?;",data.idParty, async(err,result)=>{ 
-                                if(err)throw(err);
-                                (result.changedRows ==1)?io.to(data.idParty).emit('gameStart',true):io.to(data.idParty).emit('gameStart',false);
-                                });
-                            }
-                            else{
-                                //Si partie non sauvegardé
-                                const nbPlayers = IdPlayerList.length;
-                                var playerHands = null;
-                                switch (rawResult[0].type){//à réfléchir, il faudra certainement à un moment revisiter le systéme
-                                    case "bataille_ouverte" :
-                                        playerHands = dealCardsWar(nbPlayers);
-                                        break;
-                                    /*Exemple ajout autre jeu :
-                                    case "poker":
-                                        const handPlayers = dealCardsPoker(nbPlayers);
-                                        giveCardsDbAndPlayer(io,socket,db,playerHands,IdPlayerList,nbPlayers,idParty)
-                                        break;*/
-                                    default:
-                                        console.log("type inconnu");
-                                        break;
-                                }
-                                if (!(giveCardsDb(io,db,playerHands,IdPlayerList,nbPlayers,data.idParty)))io.to(data.idParty).emit('gameStart',false);
-                                db.query("UPDATE parties SET tour=0 WHERE idPartie =?;",data.idParty, async(err,result)=>{ 
-                                    if(err)throw(err);
-                                    (result.changedRows ==1)?io.to(data.idParty).emit('gameStart',true):io.to(data.idParty).emit('gameStart',false);
-                                });
-                            }
-                        }
+                const IdPlayerList = rawResult.map(object => object.idJ);
+                if (rawResult[0].sauvegarde) {
+                    // Si la partie est sauvegardée
+                    db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
+                        if (err) throw (err);
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':""});
+                    });
+                } else {
+                    // Si la partie n'est pas sauvegardée
+                    const nbPlayers = IdPlayerList.length;
+                    var playerHands = null;
+                    switch (rawResult[0].type) {
+                        case "bataille_ouverte":
+                            playerHands = dealCardsWar(nbPlayers);
+                            break;
+                        /* Exemple ajout autre jeu :
+                        case "poker":
+                            const handPlayers = dealCardsPoker(nbPlayers);
+                            break;*/
+                        default:
+                            console.log("type inconnu"); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
+                            break;
                     }
+                    if (!(giveCardsDb(io, db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
+                        io.to(data.idParty).emit('gameStart', {'result':false,'message':"Problémes lors de la distributions des cartes"});
+                    }
+                    db.query("UPDATE parties SET tour=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
+                        if (err) throw (err);
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':"La partie n'a pas put être lancée"});
+                    });
                 }
-            });
+            }
+        });
     });
+
     socket.on('requestCards',data =>{
         db.query("SELECT main from joue where idPartie = ? and idJ = ?; ",[data.idParty,data.idJ],async(err,result)=>{
             await result;
@@ -58,6 +53,22 @@ const startGame = function(io,socket,db){
         });
     });
 }
+
+
+function test(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
+    if (rawResult.length===0)return "Aucun joueur dans la partie";
+    if(rawResult[0].tour>=0)return "Partie déja en cours";
+    let isNotInParty = true;
+    for(i=0;i<rawResult.length;i++){
+        if(rawResult[i]['idJ']==id){
+            isNotInParty = false;
+            if(!(rawResult[i]['proprietaire']))return "Le joueur qui a essayé de lancer n'est pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
+        }
+    }
+    if (isNotInParty)return  "le joueur qui a essayé de lancer n'est pas dans la partie"
+    return null;
+}
+
 function giveCardsDb(io,db,playerHands,IdPlayerList,nbPlayers,idParty){
     for (i=0;i<nbPlayers;i++){
         var hand = JSON.stringify(playerHands[i]);
