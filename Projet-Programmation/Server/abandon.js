@@ -1,7 +1,7 @@
 var abandon = function(io, socket, db) {
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
 
-    socket.on('playerLeaving', (data) => { // Quand c'est volontaire
+    socket.on('playerLeaving', (data) => { // Quand c'est volontaire. data demande l'idJ, le pseudo, et l'idPartie
         if (removePlayer(db, data.player, data.party)) {
             io.to(data.party).emit("otherPlayerLeft", data.username);
             console.log("L'information du départ du joueur", data.player, "a été envoyée à tous les joueurs de la partie", data.party);
@@ -13,7 +13,7 @@ var abandon = function(io, socket, db) {
         console.log("cest bon");
     });
 
-    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire
+    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire. data demande l'idJ et l'idPartie
         disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
         setTimeout(function() { after30s(io, socket, db, data) }, 30000);  
     });
@@ -32,9 +32,9 @@ function after30s(io, socket, db, data) {
     if (disconnectedPlayers[data.player]) {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
         io.to(data.party).emit("otherPlayerLeft", data.player);
-        io.emit('disconnect', "client namespace disconnect");
-        delete disconnectedPlayers[data.player]; // On supprime de noter liste des déco potentiels
+        delete disconnectedPlayers[data.player]; // On supprime de notre liste le joueur déco
         removePlayer(db, data.player, data.party);
+        console.log("le joueur a été supprimé des données de la partie")
     } else {
         console.log("Le joueur", data.player, "est revenu à la partie", data.party);
     }
