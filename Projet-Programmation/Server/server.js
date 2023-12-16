@@ -12,6 +12,7 @@ const startGame = require('./startGame.js');
 const scores = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
+const sauvegardePartie = require('./sauvegardePartie.js');
 
 app.use(cors);
 
@@ -137,11 +138,12 @@ io.on('connection', (socket) => {
         }
     });
 
-  //socket importé des autres fichiers
+  //fonctions importé des autres fichiers
   startGame(io,socket,db);
   scores(io,socket,db);
   abandon(io,socket,db);
   chat(io,socket,db);
+  sauvegardePartie(io,socket,db);
 
 });
 
