@@ -13,12 +13,12 @@ var abandon = function(io, socket, db) {
         console.log("cest bon");
     });
 
-    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire. data demande l'idJ et l'idPartie
+    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
         disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
         setTimeout(function() { after30s(io, socket, db, data) }, 30000);  
     });
 
-    socket.on("playerReconnect", (data) => {
+    socket.on("playerReconnect", (data) => { 
         // Mettre à jour l'état du joueur lorsqu'il se reconnecte
         if (disconnectedPlayers[data.player]) {
             disconnectedPlayers[data.player] = false; // Le joueur est de retour
@@ -31,7 +31,7 @@ function after30s(io, socket, db, data) {
     // Vérifier si le joueur est toujours déconnecté après 30 secondes
     if (disconnectedPlayers[data.player]) {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
-        io.to(data.party).emit("otherPlayerLeft", data.player);
+        io.to(data.party).emit("otherPlayerLeft", data.username);
         delete disconnectedPlayers[data.player]; // On supprime de notre liste le joueur déco
         removePlayer(db, data.player, data.party);
         console.log("le joueur a été supprimé des données de la partie")
