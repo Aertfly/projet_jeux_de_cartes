@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client'
 const socket = io('http://localhost:3001');
-// Pour l'importer, faire "import Chat from './chatComponent.js';" en en-tête de fichier
 
 function Chat({ data }) {
     const [texte, setTexte] = useState('');
     const [messages, setMessages] = useState([]);
 
+    const [player, setPlayer] = useState('');
+    const [party, setParty] = useState('');
+    setPlayer(data.player);
+    setParty(data.party);
+
     useEffect(() => {
         socket.on('newMessage', (data) => { // Quand un message est reçu dans le chat
             console.log("message bien envoyé")
-            const { player, message } = data;
-            setMessages(prevMessages => [...prevMessages, { player, message }]);
+            const { username, message } = data;
+            setMessages(prevMessages => [...prevMessages, { username, message }]);
         });
 
         return () => {
@@ -26,7 +30,7 @@ function Chat({ data }) {
 
   const handleKeyPress = (e) => { // Pour voir si le joueur presse Entrée, pour valider l'envoie du message
     if (e.key === 'Enter') {
-      envoyerMessage(texte, data.player, data.party);
+      envoyerMessage(texte, player, party);
       setTexte('');
     }
   };
