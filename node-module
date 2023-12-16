@@ -1,0 +1,5 @@
+client :
+npm install crypto-js
+
+server :
+npm install crypto-js

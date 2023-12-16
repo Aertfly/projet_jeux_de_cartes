@@ -1,9 +1,9 @@
 var abandon = function(io, socket, db) {
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
 
-    socket.on('playerLeaving', (data) => {
+    socket.on('playerLeaving', (data) => { // Quand c'est volontaire
         if (removePlayer(db, data.player, data.party)) {
-            io.to(data.party).emit("otherPlayerLeft", data.player);
+            io.to(data.party).emit("otherPlayerLeft", data.username);
             console.log("L'information du départ du joueur", data.player, "a été envoyée à tous les joueurs de la partie", data.party);
         } else {
             console.log("Annulation du départ du joueur", data.player, "de la partie", data.party);
@@ -13,7 +13,7 @@ var abandon = function(io, socket, db) {
         console.log("cest bon");
     });
 
-    socket.on("playerDisconnect", (data) => {
+    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire
         disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
         setTimeout(function() { after30s(io, socket, db, data) }, 30000);  
     });

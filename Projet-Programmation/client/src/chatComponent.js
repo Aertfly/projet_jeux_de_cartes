@@ -7,6 +7,7 @@ function Chat({ data }) {
     const [texte, setTexte] = useState('');
     const [messages, setMessages] = useState([]);
 
+    // Enregistrement des valeurs de la data
     const [player, setPlayer] = useState('');
     const [party, setParty] = useState('');
     setPlayer(data.player);
@@ -19,6 +20,10 @@ function Chat({ data }) {
             setMessages(prevMessages => [...prevMessages, { username, message }]);
         });
 
+        socket.on('otherPlayerLeft', (username) => {
+          const leftPlayerMessage = `Le joueur ${username} a quitté.`;
+          setMessages(prevMessages => [...prevMessages, { username: 'Server', message: leftPlayerMessage }]);
+        })
         return () => {
             socket.off('newMessage'); // Nettoie l'écouteur d'événements lorsque le composant est démonté
         };

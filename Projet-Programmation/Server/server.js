@@ -12,7 +12,7 @@ const startGame = require('./startGame.js');
 const scores = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
-const sauvegardePartie = require('./sauvegardePartie.js');
+const sauvegardePartie = require('./sauvegadreParite.js');
 
 app.use(cors);
 
@@ -42,7 +42,7 @@ const connectedUsers = {};
 
 io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est connecté ' + socket.id);
-
+    
     socket.on('connexion', async (data) => {
         const { pseudo, password } = data;
         if (connectedUsers[socket.id]) {
@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
                 }
             });
         } catch (error) {
-            console.error(error);
+            console.error(erabandonror);
             socket.emit('resultatInscription', "Erreur lors de l\'inscription");
         }
     });
@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
         }
     });
-
+    
 
     socket.on('disconnect', (reason) => { // changement pour l'abandon involontaire (Killian)
         if (reason === 'ping timeout') {
@@ -137,6 +137,7 @@ io.on('connection', (socket) => {
             delete connectedUsers[socket.id];
         }
     });
+    
 
   //fonctions importé des autres fichiers
   startGame(io,socket,db);
@@ -144,7 +145,6 @@ io.on('connection', (socket) => {
   abandon(io,socket,db);
   chat(io,socket,db);
   sauvegardePartie(io,socket,db);
-
 });
 
 server.listen(port, () => {
