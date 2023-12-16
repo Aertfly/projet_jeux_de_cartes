@@ -128,16 +128,11 @@ io.on('connection', (socket) => {
     });
     
 
-    socket.on('disconnect', (reason) => { // changement pour l'abandon involontaire (Killian)
-        if (reason === 'ping timeout') {
-            // Si le joueur se reconnecte après une déconnexion par manque de co
-            socket.emit('playerReconnect', {player : socket.id, party : socket.idPartie});
-        } else {
-            console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
-            delete connectedUsers[socket.id];
-        }
+    socket.on('disconnect', (reason) => {
+        socket.emit('deconnexion', "Déconnexion réussie !");
+        console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
+        delete connectedUsers[socket.id];
     });
-    
 
   //fonctions importé des autres fichiers
   startGame(io,socket,db);
