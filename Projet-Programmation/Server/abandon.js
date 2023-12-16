@@ -10,7 +10,7 @@ var abandon = function(io, socket, db) {
         }
         // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
         delete disconnectedPlayers[data.player];
-        console.log("cest bon");
+        console.log("c'est bon");
     });
 
     socket.on("playerDisconnect", (data) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
