@@ -6,7 +6,7 @@ const startGame = function(io,socket,db){
         db.query("SELECT idJ, type, sauvegarde, tour, proprietaire FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
             let msg = test(rawResult,data.idPlayer);
-            if (msg)io.to(data.idParty).emit('gameStart',{'message':msg});
+            if (msg)socket.emit('gameStart',{'message':msg});
             else {
                 const IdPlayerList = rawResult.map(object => object.idJ);
                 if (rawResult[0].sauvegarde) {
