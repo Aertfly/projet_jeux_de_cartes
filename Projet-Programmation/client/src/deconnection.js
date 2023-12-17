@@ -2,16 +2,14 @@ import React, { useContext } from 'react';
 import { SocketContext } from './socket.js';
 import { ConnexionContext, ConnexionProvider } from './IC.js'; 
 import { useNavigate } from 'react-router-dom';
-import { useIdJ } from './index.js';
+import { usePlayer } from './index.js';
 
 function Deco(props) {
   const { socket } = useContext(SocketContext);
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
-  const idJContextValue = useIdJ();
-  console.log(idJContextValue);
-  const { idJ, setIdJ, pseudo, setPseudo } = useIdJ();
-  console.log(idJ, setIdJ, pseudo, setPseudo );
+  const {idJ, setIdJ, pseudo } = usePlayer();
+
   const handleDeconnection = () => {
     socket.emit('deconnexion');
     setIdJ(null); 
@@ -40,7 +38,12 @@ function Deco(props) {
     <div>
       {estConnecte === "Déconnecté" ? (
         null
-      ) : <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>Se déconnecter</button>}
+      ) : <>
+      <p>Vous êtes connecté sous le compte : {pseudo} d'id : {idJ}</p>
+      <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>Se déconnecter</button>
+      </>
+      }
+          
     </div>
   );
 }

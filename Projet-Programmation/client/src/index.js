@@ -17,17 +17,17 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const IdJContext = createContext();
+const PlayerContext = createContext();
 
-export const useIdJ = () => useContext(IdJContext);
+export const usePlayer = () => useContext(PlayerContext);
 
-export const IdJProvider = ({ children }) => {
+export const PlayerProvider = ({ children }) => {
   const [idJ, setIdJ] = useState(null);
   const [pseudo, setPseudo] = useState(null);
   return (
-    <IdJContext.Provider value={{ idJ, setIdJ, pseudo, setPseudo }}>
+    <PlayerContext.Provider value={{ idJ, setIdJ, pseudo, setPseudo }}>
       {children}
-    </IdJContext.Provider>
+    </PlayerContext.Provider>
   );
 };
 
@@ -46,7 +46,7 @@ export const PlayerListProvider = ({ children }) => {
 
 root.render(
   <React.StrictMode>
-    <IdJProvider>
+    <PlayerProvider>
       <SocketProvider>
         <Router>
           <Routes>
@@ -61,7 +61,7 @@ root.render(
           </Routes>
         </Router>
       </SocketProvider>
-    </IdJProvider>
+    </PlayerProvider>
   </React.StrictMode>
 );
 

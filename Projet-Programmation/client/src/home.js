@@ -2,7 +2,7 @@ import React, { useState, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Deconnection from "./deconnection.js";
 import { SocketContext } from './socket.js';
-import { useIdJ } from './index.js';
+import { usePlayer } from './index.js';
 import { Outlet } from "react-router-dom";
 
 function CreateButton(props){
@@ -30,7 +30,7 @@ function PrintButton(props){
 function Home(){
     const [idPartyRequested,setIdPartyRequested] = useState("");
     const {socket } = useContext(SocketContext);
-    const {idJ, setIdJ } = useIdJ();
+    const {idJ, setIdJ } = usePlayer();
     const [isSubmit,setIsSubmit] = useState(false);
     const navigate = useNavigate();
     function submit(event){

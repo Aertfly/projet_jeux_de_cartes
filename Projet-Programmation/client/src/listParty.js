@@ -2,11 +2,11 @@ import React, { useState, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useIdJ } from './index.js';
+import { usePlayer } from './index.js';
 
 function Party(props) {
   const { socket } = useContext(SocketContext);
-  const { idJ } = useIdJ();
+  const { idJ } = usePlayer();
   const navigate = useNavigate();
 
   const joinGame = () => {

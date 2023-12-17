@@ -4,7 +4,7 @@ import React, { useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
 
 import { useNavigate } from 'react-router-dom';
-import { useIdJ } from './index.js';
+import { usePlayer } from './index.js';
 
 const InscriptionContext = createContext();
 export const ConnexionContext = createContext();
@@ -95,7 +95,7 @@ function ConnectionForm() {
   const [motDePasse, setMotDePasse] = useState('');
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
-  const { setIdJ,setPseudo } = useIdJ();
+  const { setIdJ,setPseudo } = usePlayer();
 
   const handleConnection = () => {
     const hashedPassword = CryptoJS.SHA256(motDePasse).toString();
@@ -106,10 +106,10 @@ function ConnectionForm() {
     setEstConnecte(dataMessage);
   });
 
-  socket.on('infoPlayer', (idJ) => {
+  socket.on('infoPlayer', (data) => {
     setTimeout(() => navigate('/Home'), 500);
-    setIdJ(idJ);
-    setPseudo(pseudoInput);  
+    setIdJ(data.idJ);
+    setPseudo(data.pseudo);  
   });
 
   return (
