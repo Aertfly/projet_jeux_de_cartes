@@ -204,7 +204,7 @@ io.on('connection', (socket) => {
                             db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                                 if (err) throw err;
                                 const playerList = result.map(object => object.pseudo);
-                                socket.emit('joinGame2', playerList);
+                                socket.emit('joinGame2', {"playerList": playerList, "idParty": idParty});
                                 socket.join(idParty);
                                 if (!rooms.includes(idParty)) {
                                     rooms.push(idParty);

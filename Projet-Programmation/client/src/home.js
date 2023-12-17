@@ -36,11 +36,12 @@ function Home(){
         event.preventDefault();
         if(idPartyRequested){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
-            setIsSubmit(true)
-            socket.on('joinGame2',(idParty)=>{
-                console.log(idParty);
-                if(idParty){
-                    setTimeout(() => navigate('/Home/waitingRoom/'+idParty), 250);
+            setIsSubmit(true);
+            console.log("party requested");
+            socket.on('joinGame2',(data)=>{
+                console.log(data.idParty);
+                if(data.idParty){
+                    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
                 }else{
                     setTimeout(() =>{
                         setError(true);
