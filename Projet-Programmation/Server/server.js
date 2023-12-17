@@ -82,7 +82,7 @@ io.on('connection', (socket) => {
                         const match = await bcrypt.compare(password, user.motdepasse);
 
                         if (match) {
-                            socket.emit('idJ', result[0].idJ);
+                            socket.emit('infoPlayer', {'idJ':result[0].idJ,'pseudo':result[0].pseudo});
                             socket.emit('resultatConnexion', "Connexion réussie");
                             console.log('Connexion réussie');
                             connectedUsers[socket.id] = true;

@@ -38,7 +38,7 @@ function Home(){
         if(idPartyRequested){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
             setIsSubmit(true)
-            socket.on('joinGame',data=>{
+            socket.on('joinGame',()=>{
                 setTimeout(() => navigate('/Home/waitingRoom/'+idPartyRequested), 250);
             })
         }

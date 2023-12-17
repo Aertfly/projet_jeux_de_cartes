@@ -40,13 +40,13 @@ function InscriptionState() {
 
 function InscriptionForm() {
   const { socket } = useContext(SocketContext);
-  const [pseudo, setPseudo] = useState('');
+  const [pseudoInput, setPseudoInput] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const { estInscrit, setEstInscrit } = useContext(InscriptionContext);
 
   const handleInscription = () => {
     const hashedPassword = CryptoJS.SHA256(motDePasse).toString();
-    socket.emit('inscription', { pseudo: pseudo, password: hashedPassword });
+    socket.emit('inscription', { pseudo: pseudoInput, password: hashedPassword });
   };
 
   socket.on('resultatInscription', (dataMessage) => {
@@ -58,8 +58,8 @@ function InscriptionForm() {
       <h2>Si vous n'avez pas de compte, inscrivez vous :</h2>
       <input 
         type="text" 
-        value={pseudo}
-        onChange={(setValue) => setPseudo(setValue.target.value)}
+        value={pseudoInput}
+        onChange={(setValue) => setPseudoInput(setValue.target.value)}
         placeholder="pseudo" 
         required 
       />
@@ -91,24 +91,25 @@ function ConnectionState() {
 
 function ConnectionForm() {
   const { socket } = useContext(SocketContext);
-  const [pseudo, setPseudo] = useState('');
+  const [pseudoInput, setPseudoInput] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
-  const { setIdJ } = useIdJ();
+  const { setIdJ,setPseudo } = useIdJ();
 
   const handleConnection = () => {
     const hashedPassword = CryptoJS.SHA256(motDePasse).toString();
-    socket.emit('connexion', { pseudo: pseudo, password: hashedPassword });
+    socket.emit('connexion', { pseudo: pseudoInput, password: hashedPassword });
   };
 
   socket.on('resultatConnexion', (dataMessage) => {
     setEstConnecte(dataMessage);
   });
 
-  socket.on('idJ', (idJ) => {
+  socket.on('infoPlayer', (idJ) => {
     setTimeout(() => navigate('/Home'), 500);
-    setIdJ(idJ); 
+    setIdJ(idJ);
+    setPseudo(pseudoInput);  
   });
 
   return (
@@ -116,8 +117,8 @@ function ConnectionForm() {
       <h2>Si vous avez un compte, connectez vous :</h2>
       <input 
         type="text" 
-        value={pseudo}
-        onChange={(setValue) => setPseudo(setValue.target.value)}
+        value={pseudoInput}
+        onChange={(setValue) => setPseudoInput(setValue.target.value)}
         placeholder="pseudo" 
         required 
       />

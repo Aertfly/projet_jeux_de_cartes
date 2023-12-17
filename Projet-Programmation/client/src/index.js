@@ -23,8 +23,9 @@ export const useIdJ = () => useContext(IdJContext);
 
 export const IdJProvider = ({ children }) => {
   const [idJ, setIdJ] = useState(null);
+  const [pseudo, setPseudo] = useState(null);
   return (
-    <IdJContext.Provider value={{ idJ, setIdJ }}>
+    <IdJContext.Provider value={{ idJ, setIdJ, pseudo, setPseudo }}>
       {children}
     </IdJContext.Provider>
   );
@@ -40,6 +41,7 @@ export const PlayerListProvider = ({ children }) => {
     </PlayerListContext.Provider>
   );
 };
+
 
 
 root.render(

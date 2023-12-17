@@ -8,8 +8,10 @@ function Deco(props) {
   const { socket } = useContext(SocketContext);
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
-  const { idJ, setIdJ } = useIdJ();
-
+  const idJContextValue = useIdJ();
+  console.log(idJContextValue);
+  const { idJ, setIdJ, pseudo, setPseudo } = useIdJ();
+  console.log(idJ, setIdJ, pseudo, setPseudo );
   const handleDeconnection = () => {
     socket.emit('deconnexion');
     setIdJ(null); 
@@ -39,7 +41,6 @@ function Deco(props) {
       {estConnecte === "Déconnecté" ? (
         null
       ) : <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>Se déconnecter</button>}
-      Votre Idj : { idJ }
     </div>
   );
 }
