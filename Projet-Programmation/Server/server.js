@@ -231,7 +231,7 @@ io.on('connection', (socket) => {
         if(reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
             socket.emit('playerDisconnect', reason, socket.id);
         } else {
-            socket.emit('playerLeaving');
+            socket.emit('playerLeaving', socket.id);
         }
     });
     
