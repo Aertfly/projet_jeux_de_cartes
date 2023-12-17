@@ -11,8 +11,6 @@ function Quitter(props){
     function clicked(){
         props.socket.emit('playerLeaving',{
             'player' : props.idJ,
-            'party'  : props.idParty,
-            'pseudo' : props.pseudo   
         });
         props.navigate('/home');
     }
@@ -29,7 +27,8 @@ function Player(props){
 
 function Start(props){
     function clicked(){
-        props.socket.emit('start',{'idParty':props.idParty,'idJ':props.idJ})
+        console.log(props.idJ);
+        props.socket.emit('start',{'idParty':props.idParty,'idPlayer':props.idJ})
     }
     return(
         <button hidden={props.hidden} onClick={clicked}>Start ?</button>
@@ -39,11 +38,12 @@ function Start(props){
 const WaitingRoom = ()=>{
     const {socket} = useContext(SocketContext);
     const {idJ,pseudo} = usePlayer();
-    const {idParty } = useParams();
+    const {idParty} = useParams();
     const [players, setPlayers] = useState([]);
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
-
+    console.log(idParty)
+    console.log(idJ)
     useEffect(() => {
         socket.on('playerList', players => {
             console.log(players);
@@ -52,11 +52,12 @@ const WaitingRoom = ()=>{
 
         socket.on('gameStart',data =>{
             if(data.message){
-                setTimeout(() => navigate('/Home/Party/'+data.partyId), 250);
-            }
-            else{
                 setMsg(data.message);
                 console.log(data.message);
+            }
+            else{
+                console.log(data);
+                setTimeout(() => navigate('/Home/Party/'+data.partyId), 250);
             }
         });
 
