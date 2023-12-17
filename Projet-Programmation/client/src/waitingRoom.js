@@ -9,9 +9,7 @@ import Deconnection from './deconnection.js';
 
 function Quitter(props){
     function clicked(){
-        props.socket.emit('playerLeaving',{
-            'player' : props.idJ,
-        });
+        props.socket.emit('playerLeaving',props.idJ);
         props.navigate('/home');
     }
     return(
@@ -21,7 +19,7 @@ function Quitter(props){
 
 function Player(props){
     return(
-        <li>props.pseudo</li>
+        <li>{props.pseudo}</li>
     );
 }
 
@@ -53,13 +51,29 @@ const WaitingRoom = ()=>{
                 setTimeout(() => navigate('/Home/Party/'+data.idParty), 250);
             }
         });
-    }, [socket]);
+        socket.on('playerList', (newPlayersList) => {
+            console.log("Players List Received:", newPlayersList);
+            setPlayers(newPlayersList); 
+            <div>{players}</div>
+            
     
+        });
+    }, [socket]);
+
+    useEffect(() => {
+        console.log("playersList");console.log(players);
+    },[players])
+
     return (
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <p style={{color:'red'}}>{msg}</p>
-            <ul>Liste des joueurs :</ul>
+            <ul>
+                Liste des joueurs :
+                {players.map(player => (
+                    <Player key={player.id} pseudo={player.pseudo} />
+                ))}
+            </ul>
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
@@ -68,4 +82,3 @@ const WaitingRoom = ()=>{
 };
 
 export default WaitingRoom;
-

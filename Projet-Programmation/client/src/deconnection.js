@@ -25,9 +25,7 @@ function Deco(props) {
 
   socket.on('deconnexion', () => {
     setEstConnecte("Déconnecté");
-    socket.emit('playerLeaving',{
-      'player' : idJ,
-  });
+    socket.emit('playerLeaving',idJ);
     navigate('/');
   })
 

@@ -166,7 +166,7 @@ io.on('connection', (socket) => {
                     } else {
                         socket.emit('resultatCreation', "Création de partie effectuée");
                         console.log("Création de partie effectuée");
-                        socket.join(partyId); rooms.push(partyId);
+                        socket.join(partyId); rooms.push(partyId);console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
                         socket.emit('joinGame', partyId);
                     }
@@ -202,6 +202,7 @@ io.on('connection', (socket) => {
                                 const playerList = result.map(object => object.pseudo);
                                 socket.emit('joinGame2');
                                 socket.emit('playerList', playerList);
+                                socket.join(idParty); rooms.push(idParty);console.log(rooms);
                             });
                         } else {
                             console.log('La partie est pleine');
