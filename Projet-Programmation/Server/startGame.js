@@ -6,14 +6,14 @@ const startGame = function(io,socket,db){
         db.query("SELECT idJ, type, sauvegarde, tour, proprietaire FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
             let msg = test(rawResult,data.idPlayer);
-            if (msg)io.to(data.idParty).emit('gameStart',{'result':false,'message':msg});
+            if (msg)io.to(data.idParty).emit('gameStart',{'message':msg});
             else {
                 const IdPlayerList = rawResult.map(object => object.idJ);
                 if (rawResult[0].sauvegarde) {
                     // Si la partie est sauvegardée
                     db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', data.idParty): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
                     });
                 } else {
                     // Si la partie n'est pas sauvegardée
@@ -32,11 +32,11 @@ const startGame = function(io,socket,db){
                             break;
                     }
                     if (!(giveCardsDb(io, db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
-                        io.to(data.idParty).emit('gameStart', {'result':false,'message':"Problémes lors de la distributions des cartes"});
+                        io.to(data.idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});
                     }
                     db.query("UPDATE parties SET tour=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':"La partie n'a pas put être lancée"});
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', data.idParty): io.to(data.idParty).emit('gameStart', {'message':"La partie n'a pas put être lancée"});
                     });
                 }
             }

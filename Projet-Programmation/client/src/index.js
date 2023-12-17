@@ -42,8 +42,9 @@ root.render(
               <Route path="listParty" element={<ListParty/>}/>
               <Route path="listPartySaved" element={<ListPartySaved />}/>
             </Route>
-            <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
             <Route path="/Home/createParty" element={<CreateParty />} />
+            <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
+            <Route path="/Home/Party/:idParty" element={<Party />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

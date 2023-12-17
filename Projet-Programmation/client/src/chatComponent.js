@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client'
-const socket = io('http://localhost:3001');
+import React, { useState, useContext } from 'react';
+import { SocketContext } from './socket.js';
+import { useEffect } from 'react';
+import { usePlayer } from './index.js';
 // pour accéder à ce composant, mettre "import Chat from './chatComponent.js';"
 
 function Chat({ data }) {
+  const {socket } = useContext(SocketContext);
     const [texte, setTexte] = useState('');
     const [messages, setMessages] = useState([]);
 
     // Enregistrement des valeurs de la data
-    const [player, setPlayer] = useState('');
+    const {idJ,pseudo} = usePlayer();
     const [party, setParty] = useState('');
     setPlayer(data.player);
     setParty(data.party);
