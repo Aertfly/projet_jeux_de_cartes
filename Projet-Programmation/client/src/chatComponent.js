@@ -53,7 +53,7 @@ function Chat({ data }) {
       <div>
         {messages.map((msg, index) => ( // Le chat avec les messages de tous les joueurs
           <div key={index}>
-            <strong>{msg.player}: </strong>{msg.message}
+            <strong>{msg.username}: </strong>{msg.message}
           </div>
         ))}
       </div>
