@@ -2,6 +2,7 @@ import { React, useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import Deconnection from './deconnection.js';
 import { useIdJ } from './index.js';
+import { useNavigate } from 'react-router-dom';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {
   const games = ["Bataille", "Uno", "Kems", "Président"];
@@ -33,6 +34,7 @@ function CreatePartyForm() {
   const [estSoumis, setEstSoumis] = useState(false);
   const [selectedGame, setSelectedGame] = useState("");
   const { idJ } = useIdJ();
+  const navigate = useNavigate();
   
   const handleMinChange = (e) => {
     setMinValue(e.target.value);
@@ -48,6 +50,10 @@ function CreatePartyForm() {
   const handleSoumisClick = () => {
     setEstSoumis(!estSoumis);
   };
+
+  socket.on('joinGame',data=>{
+    setTimeout(() => navigate('/Home/waitingRoom/'+data), 250);
+  })
 
   const handleSubmit = (e) => {
     e.preventDefault();
