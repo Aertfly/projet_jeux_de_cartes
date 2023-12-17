@@ -4,7 +4,7 @@ import { ConnexionContext, ConnexionProvider } from './IC.js';
 import { useNavigate } from 'react-router-dom';
 import { useIdJ } from './index.js';
 
-function Deco() {
+function Deco(props) {
   const { socket } = useContext(SocketContext);
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ function Deco() {
     <div>
       {estConnecte === "Déconnecté" ? (
         null
-      ) : <button onClick={handleDeconnection} className='deconnection-button'>Se déconnecter</button>}
+      ) : <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>Se déconnecter</button>}
       Votre Idj : { idJ }
     </div>
   );
@@ -61,9 +61,9 @@ export default function Deconnection(props) {
   return (
     <>
     <ConnexionProvider>
-      <Deco />
+      <Deco disabled={props.disabled}/>
     </ConnexionProvider>
-    <BackButton disabled={!props.goBack} path={props.path}/>
+    <BackButton disabled={!props.goBack} path={props.path} />
     </>
   );
 }
