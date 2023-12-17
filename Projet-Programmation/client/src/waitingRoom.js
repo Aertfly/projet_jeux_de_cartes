@@ -9,9 +9,7 @@ import Deconnection from './deconnection.js';
 
 function Quitter(props){
     function clicked(){
-        props.socket.emit('playerLeaving',{
-            'player' : props.idJ,
-        });
+        props.socket.emit('playerLeaving',props.idJ);
         props.navigate('/home');
     }
     return(
