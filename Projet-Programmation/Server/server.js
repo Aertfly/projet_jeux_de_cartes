@@ -177,24 +177,32 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('joinRequest',async data=>{
-        if (await isCodeInDatabase(data.idParty)){
-            db.query('SELECT pseudo from joueurs,joue where joueurs.idJ = joue.idJ and joue.idPartie = ?', (data.idParty).toString(), async (err,result) => {
-                if (err){
-                    throw(err);
+    socket.on('joinRequest', data => {
+        const { idParty, idPlayer } = data;
+        db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
+            if (err) throw err;
+
+            db.query('SELECT joueursMax FROM parties WHERE idPartie = ?', [idParty], (err, maxResult) => {
+                if (err) throw err;
+    
+                if (countResult[0].playerCount < maxResult[0].joueursMax) {
+                    db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
+                    socket.join(idParty);rooms.push(idParty);
+                    db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                        if (err) throw err;
+                        const playerList = result.map(object => object.pseudo);
+                        socket.emit('joinGame');
+                        socket.emit('playerList', playerList);
+                    });
+                } else {
+                    console.log('La partie est pleine');
                 }
-                const playerList = result.map(object => object.pseudo);
-                socket.emit('joinGame',data.idParty);
-                db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",0)', [data.idPlayer,data.idParty]);
-                console.log(playerList);
-                socket.emit('playerList',playerList);
             });
-            console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
-        }else{
-            socket.emit('joinGame',null);
-            console.log("Partie non existante")
-        }
+        });
+    
+        console.log("Ce joueur ", idPlayer, "a demandé à rejoindre", idParty);
     });
+    
 
     socket.on('joinableList',()=>{
         db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1',[],async (err, result) =>{
