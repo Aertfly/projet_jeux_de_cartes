@@ -93,7 +93,7 @@ var gestionTours = function (io, socket, db, partie) {
                                     let joueursPossibles2 = Object.keys(JSON.parse(result4[0]["centre"]));
 
                                     // On fait l'union des deux listes, pour avoir l'ensemble des joueurs qui peuvent jouer (main non vide et/ou carte au centre)
-                                    let unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);    
+                                    let unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);
                                     //console.log(joueursPossibles);
                                     //console.log(joueursPossibles2);
                                     //console.log(unionJoueursPossibles);
@@ -101,8 +101,12 @@ var gestionTours = function (io, socket, db, partie) {
                                     //console.log(unionJoueursPossibles);
                                     //console.log(unionJoueursPossibles);
 
-                                    suite(io, socket, db, partie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
-
+                                    if (unionJoueursPossibles.length == 1) {
+                                        finDePartie(io, socket, db, unionJoueursPossibles[0], partie.idPartie, cartesJoueurs);
+                                    } else {
+                                        annoncerScores(io, socket, db, cartesJoueurs);
+                                        suite(io, socket, db, partie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
+                                    }
                                 });
                             });
                         } else { // Si archive n'est pas vide : on est dans une bataille
@@ -113,7 +117,11 @@ var gestionTours = function (io, socket, db, partie) {
                             //console.log(centre);
                             //console.log("En jeu :");
                             //console.log(archive);
-                            suite(io, socket, db, partie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
+                            if (joueursPossibles.length == 1) {
+                                finDePartie(io, socket, db, unionJoueursPossibles[0], partie.idPartie, cartesJoueurs);
+                            } else {
+                                suite(io, socket, db, partie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
+                            }
                         }
 
                         // la suite de la logique est effectuée dans la fonction suite appelée plus haut et située plus bas
@@ -121,6 +129,28 @@ var gestionTours = function (io, socket, db, partie) {
                 });
             });
         });
+    });
+}
+
+function annoncerScores(io, socket, db, cartesJoueurs) {
+    // Prend en entrée le dictionnaire des cartes et retourne le score de chaque joueur sous la forme d'un dictionnaire idJoueur:score
+    console.log("Envoi des scores :");
+
+    pseudos_id = new Map();
+    db.query("SELECT idJ, pseudo FROM joueurs", [], async (err, result) => {
+        if (err) throw err;
+        
+        for (let i = 0; i < result.length; i++) {
+            pseudos_id.set(result[i].idJ, result[i].pseudo);
+        }
+
+        scores = {}
+        cartesJoueurs.forEach((valeur, clé) => {
+            scores[pseudos_id.get(clé)] = valeur.get('main').length + valeur.get('gagnees').length;
+        });
+
+        console.log(scores);
+        io.emit('updateScores', scores);
     });
 }
 
@@ -196,7 +226,7 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
                     if (err3) throw err3;
 
                     // On annonce un nouveau tour
-                    annoncerJoueurs(io, socket, joueurs, result3[0]["tour"], partie.idPartie);
+                    annoncerJoueurs(io, socket, joueurs, result3[0]["tour"], partie.idPartie, cartesJoueurs);
                 });
             });
 
@@ -253,6 +283,18 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
         db.query("UPDATE joue SET gagnees=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("gagnees")), data.playerId, partie.idPartie], async (err, result) => { if (err) throw err; });
         db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, partie.idPartie], async (err0, result0) => { if (err0) throw err0; });
     }
+}
+
+
+function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs) {
+    // Envoie sur la route 'winner' le pseudo du gagnant
+    // socket.to
+    io.emit('winner', vainqueur);
+
+    annoncerScores(io, socket, db, cartesJoueurs);
+
+    // Passe le tour à -2
+    db.query("UPDATE parties SET tour=? WHERE idPartie=?", [-2, idPartie], async (err, result) => { if (err) throw err; });
 }
 
 // CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE (à partir d'un dictionnaire dont les valeurs sont des cartes)
