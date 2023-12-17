@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Deconnection from "./deconnection.js";
 import { SocketContext } from './socket.js';
 import { useIdJ } from './index.js';
+import { Outlet } from "react-router-dom";
 
-function PlayButton(props){
+function CreateButton(props){
     const navigate = useNavigate();
     function clicked(){
         setTimeout(() => navigate('/Home/'+props.path), 250);
@@ -13,6 +14,18 @@ function PlayButton(props){
         <button type="button" onClick={clicked} disabled={props.disabled}>{props.text}</button>
     );
 }
+
+function PrintButton(props){
+    const navigate = useNavigate();
+    function clicked(){
+        setTimeout(() => navigate('/Home/'+props.path), 250);
+    }    
+    return(
+        <button type="button" onClick={clicked} disabled={props.disabled}>{props.text}</button>
+    );
+}
+
+
 
 function Home(){
     const [idPartyRequested,setIdPartyRequested] = useState("");
@@ -26,7 +39,7 @@ function Home(){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
             setIsSubmit(true)
             socket.on('joinGame',data=>{
-                setTimeout(() => navigate('/Home/waitingRoom'), 250);
+                setTimeout(() => navigate('/Home/waitingRoom/'+idPartyRequested), 250);
             })
         }
         else{
@@ -35,10 +48,11 @@ function Home(){
     }
     return(
         <form onSubmit={submit}>
-        <p>Souhaitez-vous créer ou rejoindre une partie en ligne?</p>
-        <PlayButton path='createParty' text="Créer partie" disabled={isSubmit}/>
-        <PlayButton path='listParty' text="Afficher parties disponibles" disabled={isSubmit}/>
-        <p>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</p>
+        <h2>Souhaitez-vous créer ou rejoindre une partie en ligne?</h2>
+        <CreateButton path='createParty' text="Créer partie" disabled={isSubmit}/>
+        <PrintButton path='listParty' text="Afficher parties disponibles" disabled={isSubmit}/>
+        <Outlet/>
+        <h2>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</h2>
         <input
             type="text"
             onChange={(event)=>setIdPartyRequested(event.target.value)}

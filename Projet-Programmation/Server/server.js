@@ -173,9 +173,14 @@ io.on('connection', (socket) => {
 
     socket.on('joinRequest',data=>{
         console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
-        socket.emit('joinGame',{
-            'listPlayer': ["Roger","Batman","Bernard24"],
-            'idParty': "TEST"
+        socket.emit('joinGame',["Roger","Batman","Bernard24"])
+    });
+
+    socket.on('joinableList',()=>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties',[],async (err, result) =>{
+            if(err)throw(err);
+            console.log(result);
+            socket.emit('joinableListOut',result);
         })
     });
 

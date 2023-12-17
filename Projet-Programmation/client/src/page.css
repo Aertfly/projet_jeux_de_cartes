@@ -9,7 +9,7 @@ form {
     padding: 50px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
+    max-width: 600px;
     margin: 20px auto;
     display: flex;
     flex-direction: column;
@@ -60,9 +60,9 @@ border: 1px solid #ddd;
 }
 
 button {
-background-color: #ff0000;
+background-color: #d30000;
 color: white;
-border: none;
+border: black;
 padding: 10px 20px;
 border-radius: 5px;
 cursor: pointer;
@@ -87,8 +87,11 @@ background-color: #630000;
     background-color: #363636;
 }
 
+table td,
+table th {
+    border: none;
+}
 
-
-
-
-
+table{
+    margin:  auto;
+}
