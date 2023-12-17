@@ -199,7 +199,7 @@ io.on('connection', (socket) => {
                             db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                                 if (err) throw err;
                                 const playerList = result.map(object => object.pseudo);
-                                socket.emit('joinGame', null);
+                                socket.emit('joinGame2');
                                 socket.emit('playerList', playerList);
                             });
                         } else {
