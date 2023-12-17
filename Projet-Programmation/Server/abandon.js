@@ -7,10 +7,11 @@ var abandon = function(db,socket, motif, player) {
             if(err) {
                 throw err;
             }
-            console.log(results);
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
-                if (await removePlayer(db, player, party)) {
+                console.log(results[0].idPartie);
+                const resultatSuppression = await removePlayer(db, player, party)
+                if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
                             throw err;
@@ -67,7 +68,7 @@ function after30s(io, socket, db, data) {
     }
 }
 
-function removePlayer(db, player, party) {
+async function removePlayer(db, player, party) {
     return new Promise((resolve, reject) => {
         db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
             if (err) {
