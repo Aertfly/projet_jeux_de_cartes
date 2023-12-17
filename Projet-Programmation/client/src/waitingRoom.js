@@ -14,7 +14,7 @@ function Quitter(props){
     function clicked(){
         socket.emit('playerLeaving',{
             'player' : idJ,
-            'party'    : props.idParty,
+            'party'  : props.idParty,
             'pseudo' : pseudo
         });
         navigate('/home');
@@ -34,8 +34,9 @@ const WaitingRoom = ()=>{
     const { socket } = useContext(SocketContext);
     const { idParty } = useParams();
     const [players, setPlayers] = useState([]);
-
+    console.log(socket);
     useEffect(() => {
+        console.log("effect");
         socket.on('playerList', players => {
             console.log(players);
             setPlayers(players);
@@ -47,7 +48,6 @@ const WaitingRoom = ()=>{
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <ul>Liste des joueurs :</ul>
-
             {players?players.map((pseudo) => (
             <Player pseudo={pseudo} />
             )):<li>Attente</li>}

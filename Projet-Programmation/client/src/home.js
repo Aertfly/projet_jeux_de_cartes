@@ -25,21 +25,28 @@ function PrintButton(props){
     );
 }
 
-
-
 function Home(){
     const [idPartyRequested,setIdPartyRequested] = useState("");
     const {socket } = useContext(SocketContext);
     const {idJ, setIdJ } = usePlayer();
     const [isSubmit,setIsSubmit] = useState(false);
+    const [error,setError] = useState(false)
     const navigate = useNavigate();
     function submit(event){
         event.preventDefault();
         if(idPartyRequested){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
             setIsSubmit(true)
-            socket.on('joinGame',()=>{
-                setTimeout(() => navigate('/Home/waitingRoom/'+idPartyRequested), 250);
+            socket.on('joinGame',(idParty)=>{
+                console.log(idParty);
+                if(idParty){
+                    setTimeout(() => navigate('/Home/waitingRoom/'+idParty), 250);
+                }else{
+                    setTimeout(() =>{
+                        setError(true);
+                        setIsSubmit(false);
+                    }, 500);
+                }
             })
         }
         else{
@@ -49,6 +56,7 @@ function Home(){
     return(
         <form onSubmit={submit}>
         <h2>Souhaitez-vous créer ou rejoindre une partie en ligne?</h2>
+        <p style={{color:"red"}}>{error?"Impossible de se rejoindre cette partie : code invalide":""}</p>
         <p>Créer :</p>
         <CreateButton path='createParty' text="Créer partie" disabled={isSubmit}/>
         <p>Rejoindre une partie en ligne :</p>
