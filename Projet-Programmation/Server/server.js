@@ -166,7 +166,7 @@ io.on('connection', (socket) => {
                     } else {
                         socket.emit('resultatCreation', "Création de partie effectuée");
                         console.log("Création de partie effectuée");
-                        socket.join(partyId); rooms.push(partyId);console.log(rooms);
+                        socket.join(partyId); rooms.push(partyId); console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
                         socket.emit('joinGame', partyId);
                     }
@@ -202,7 +202,10 @@ io.on('connection', (socket) => {
                                 const playerList = result.map(object => object.pseudo);
                                 socket.emit('joinGame2');
                                 socket.emit('playerList', playerList);
-                                socket.join(idParty); rooms.push(idParty);console.log(rooms);
+                                socket.join(idParty);
+                                if (!rooms.includes(idParty)) {
+                                    rooms.push(idParty);
+                                };console.log(rooms);
                             });
                         } else {
                             console.log('La partie est pleine');
@@ -222,16 +225,16 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinableList', () => {
-        const request= "SELECT COUNT(j.idJ) AS nbJoueur, p.idPartie, joueursMin, joueursMax, type,pseudo FROM parties p,joue j,joueurs jo WHERE jo.idJ = j.idJ AND p.idPartie = j.idPartie AND p.sauvegarde = 0 AND p.publique = 1 AND j.idJ = (SELECT jo2.idJ from joueurs jo2,joue j2 where jo2.idJ = j2.idJ AND j.idPartie = j2.idPartie AND proprietaire=1) GROUP BY p.idPartie, joueursMin, joueursMax, type;"
+        const request = "SELECT COUNT(j.idJ) AS nbJoueur, p.idPartie, joueursMin, joueursMax, type,pseudo FROM parties p,joue j,joueurs jo WHERE jo.idJ = j.idJ AND p.idPartie = j.idPartie AND p.sauvegarde = 0 AND p.publique = 1 AND j.idJ = (SELECT jo2.idJ from joueurs jo2,joue j2 where jo2.idJ = j2.idJ AND j.idPartie = j2.idPartie AND proprietaire=1) GROUP BY p.idPartie, joueursMin, joueursMax, type;"
         db.query(request, [], async (err, result) => {
             if (err) throw (err);
             socket.emit('joinableListOut', result);
-            });
+        });
     });
     socket.on('savedList', (idPlayer) => {
         db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;', [idPlayer], async (err, result) => {
             if (err) throw (err);
-            socket.emit('savedListOut', result);    
+            socket.emit('savedListOut', result);
         })
     });
 
@@ -244,12 +247,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        if(reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
+        if (reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
             abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
-            delete connectedUsers[socket.id]; 
+            delete connectedUsers[socket.id];
         } else {
             abandon(db, socket, 'playerLeaving', asso.get(socket.id));
-            delete connectedUsers[socket.id]; 
+            delete connectedUsers[socket.id];
         }
     });
 
