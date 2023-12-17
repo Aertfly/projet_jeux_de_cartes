@@ -74,30 +74,60 @@ function ChoisirCarteForm(props) {
 }
 
 
-function Main2() {
+
+
+const GameBoard = ({ numberOfPlayers }) => {
+    const [playerPositions, setPlayerPositions] = useState([]);
+  
+    useEffect(() => {
+      const calculatePlayerPositions = () => {
+        const radius = 500; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
+        const angleIncrement = (2 * Math.PI) / numberOfPlayers;
+        const positions = [];
+  
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+  
+        for (let i = 0; i < numberOfPlayers; i++) {
+          const angle = i * angleIncrement;
+          const x = centerX + Math.cos(angle) * radius;
+          const y = centerY + Math.sin(angle) * radius;
+          positions.push({ x, y });
+        }
+  
+        setPlayerPositions(positions);
+      };
+  
+      calculatePlayerPositions();
+    }, [numberOfPlayers]);
+  
     return (
-        <>
-        <Deconnection/>
-            <ChoisirCarteForm cartes={
-                [{"enseigne":"Pique","valeur":2},{"enseigne":"Carreau","valeur":4}]
-            } playerId={4} /> 
-            
-            
-            
-            {/* 
-            <ChoisirCarteForm cartes={
-                [{"enseigne":"Pique","valeur":2},{"enseigne":"Carreau","valeur":4}]
-            } playerId={4} /> 
-            */}
-
-            {/* 
-            <ChoisirCarteForm cartes={
-                [{"enseigne":"Trèfle","valeur":3},{"enseigne":"Coeur","valeur":5}]
-            } playerId={5} />
-            */}
-            {/*<chat />*/}
-        </>
+      <div className="game-board">
+        {playerPositions.map((position, index) => (
+          <Player key={index} x={position.x} y={position.y} />
+        ))}
+      </div>
     );
-}
-
-export default Main2;
+  };
+  
+  const Player = ({ x, y }) => {
+    const playerStyle = {
+      position: 'absolute',
+      left: `${x}px`,
+      top: `${y}px`,
+    };
+  
+    return <div className="player" style={playerStyle}>
+        Roger
+        </div>;
+  };
+  
+  const App = () => {
+    return(
+    <body>
+        <GameBoard numberOfPlayers={10} />;
+    </body>
+    );
+  };
+  
+  export default App;
