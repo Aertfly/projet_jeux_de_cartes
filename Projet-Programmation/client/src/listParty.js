@@ -28,7 +28,7 @@ function Party(props) {
         <td>{props.idParty}</td>
         <td>{props.type}</td>
         <td>{props.min}</td>
-        <td>{props.max}</td>
+        <td>{props.nbPlayer +"/"+ props.max}</td>
         <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
       </tr>
     </tbody>
@@ -79,7 +79,7 @@ function ListParty() {
             <th>ID Partie</th>
             <th>Type</th>
             <th>Min</th>
-            <th>Max</th>
+            <th>Joueurs Actuels</th>
             <th>Cliquer ici</th>
           </tr>
         </thead>
