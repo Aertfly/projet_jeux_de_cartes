@@ -4,7 +4,7 @@ import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from './index.js'
 import Deconnection from './deconnection.js';
-
+import Chat from './chatComponent.js';
 
 
 function Quitter(props){
@@ -77,6 +77,7 @@ const WaitingRoom = ()=>{
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
+            <Chat data={{party : idParty}} />
         </div>
     );
 };
