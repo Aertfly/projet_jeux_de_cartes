@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+/*import React, { useState, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import { useEffect } from 'react';
 import { usePlayer } from './index.js';
@@ -70,3 +70,4 @@ function Chat({ data }) {
 }
 
 export default Chat;
+*/

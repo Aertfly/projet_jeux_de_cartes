@@ -29,7 +29,6 @@ function Party(props) {
         <td>{props.type}</td>
         <td>{props.min}</td>
         <td>{props.nbPlayer +"/"+ props.max}</td>
-        <td>{props.owner}</td>
         <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
       </tr>
     </tbody>
@@ -81,7 +80,6 @@ function ListParty() {
             <th>Type</th>
             <th>Min</th>
             <th>Joueurs Actuels</th>
-            <th>Proprietaire</th>
             <th>Cliquer ici</th>
           </tr>
         </thead>
@@ -93,7 +91,6 @@ function ListParty() {
             max={party.joueursMax}
             type={party.type}
             nbPlayer={party.nbJoueur}
-            owner={party.pseudo}
             disabled={allButtonsDisabled}
             onJoinClick={handleJoinClick}
           />
