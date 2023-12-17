@@ -13,6 +13,7 @@ function Deco(props) {
   const handleDeconnection = () => {
     setIdJ(null); 
     setEstConnecte("Déconnecté");
+    socket.emit('deconnexion');
     navigate('/');
   };
 
