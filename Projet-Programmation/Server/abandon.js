@@ -41,7 +41,7 @@ function after30s(io, socket, db, data) {
 }
 
 function removePlayer(db, player, party) { // supprime dans la db un joueur d'un partie
-    db.query("DELETE * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => {
+    db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => {
         if(err){
             console.log(player, "a essayé de quitter la partie", party, ", sans succès");
             return false;

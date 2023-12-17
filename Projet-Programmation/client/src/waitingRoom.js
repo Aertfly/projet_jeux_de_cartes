@@ -9,15 +9,15 @@ import Deconnection from './deconnection.js';
 
 function Quitter(props){
     const {socket} = useContext(SocketContext);
-    const {idJ} = usePlayer();
+    const {idJ,pseudo} = usePlayer();
     const navigate = useNavigate();
     function clicked(){
         socket.emit('playerLeaving',{
             'player' : idJ,
             'party'    : props.idParty,
-            'Pseudo' : "Roger"
+            'pseudo' : pseudo
         });
-        navigate('/');
+        navigate('/home');
     }
     return(
         <button type='button' onClick={clicked}>Quitter ?</button>
