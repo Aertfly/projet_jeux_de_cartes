@@ -24,6 +24,12 @@ function Quitter(props){
     );
 }
 
+function Player(props){
+    return(
+        <li>props.pseudo</li>
+    );
+}
+
 const WaitingRoom = ()=>{
     const { socket } = useContext(SocketContext);
     const { idParty } = useParams();
@@ -33,7 +39,12 @@ const WaitingRoom = ()=>{
     })
     return(
         <div>
-            <h1>Bienvenue dans la Partie : {idParty} <br/> Liste des joueurs : {players}</h1>
+            <h1>Bienvenue dans la Partie : {idParty}</h1>
+            <ul>Liste des joueurs :</ul>
+
+            {players?players.map((pseudo) => (
+            <Player pseudo={pseudo} />
+            )):<li>Attente</li>}
             <Quitter idParty={idParty}/>
             <Deconnection />
         </div>
