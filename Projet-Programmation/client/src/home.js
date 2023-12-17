@@ -56,7 +56,7 @@ function Home(){
         <p>Rejoindre une partie que vous avez sauvegardée :</p>
         <PrintButton path='listPartySaved' text="Afficher parties sauvegardée ?" disabled={isSubmit}/>
         <Outlet/>
-        <h2>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</h2>
+        <h3>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</h3>
         <input
             type="text"
             onChange={(event)=>setIdPartyRequested(event.target.value)}
