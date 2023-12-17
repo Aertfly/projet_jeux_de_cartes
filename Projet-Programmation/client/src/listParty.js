@@ -32,6 +32,16 @@ function Party(props) {
   );
 }
 
+function Hide(){
+    const navigate = useNavigate();
+    function clicked(){
+        setTimeout(() => navigate('/Home'), 250);
+    };
+    return (
+        <button type='button' onClick={clicked}>Cacher ?</button>
+    );
+}
+
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
@@ -82,6 +92,7 @@ function ListParty() {
           />
         ))}
       </table>
+      <Hide />
     </div>
   );
 }

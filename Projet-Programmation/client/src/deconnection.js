@@ -44,24 +44,26 @@ function Deco() {
   );
 }
 //juste pour faciliter navigation pendant test
-function BackButton(){
+function BackButton(props){
   const navigate = useNavigate();
   function handle(){
-    navigate(-1);
+    navigate(props.path);
     console.log("return");
   }
   return(
-    <button type='button' onClick={handle} className='deconnection-button'>Go back</button>
+    <div>
+    <button type='button' onClick={handle} className='deconnection-button'  disabled={props.disabled} hidden={props.disabled}>Retour</button>
+    </div>
   );
 }
 
-export default function Deconnection() {
+export default function Deconnection(props) {
   return (
     <>
     <ConnexionProvider>
       <Deco />
     </ConnexionProvider>
-    <BackButton />
+    <BackButton disabled={!props.goBack} path={props.path}/>
     </>
   );
 }

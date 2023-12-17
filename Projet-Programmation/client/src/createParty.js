@@ -94,7 +94,7 @@ function CreatePartyForm() {
         <br />
         <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Soumis' : 'Soumettre'}</button>
         <button type="button" onClick={handlePublicClick}>{estPublic ? 'Public' : 'Privé'}</button>
-        <Deconnection />
+        <Deconnection goBack={true} path={"/Home"}/>
       </form>
     </div>
   );

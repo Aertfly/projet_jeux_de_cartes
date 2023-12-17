@@ -62,7 +62,7 @@ function Home(){
             onChange={(event)=>setIdPartyRequested(event.target.value)}
         />
          <button type="submit">{isSubmit?"Veuiller Patienter":"Rejoindre la partie !"}</button>
-        <Deconnection disabled={isSubmit}/>
+        <Deconnection disgobled={isSubmit} goBack={true} path={"/Home"}/>
         </form>
     );
 }
