@@ -10,7 +10,6 @@ var abandon = function(db,socket, motif, player) {
             console.log(results);
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
-                console.log('ça marche', party)
                 if (await removePlayer(db, player, party)) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
