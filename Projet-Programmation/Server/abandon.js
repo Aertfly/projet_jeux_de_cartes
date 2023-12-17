@@ -18,7 +18,7 @@ var abandon = function(io, socket, db) {
             disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
             setTimeout(function() { after30s(io, socket, db, data) }, 30000);
         } else {
-            socket.emit('disconnectComplete', reason);
+            socket.emit('disconnectComplete');
         }
     });
 
