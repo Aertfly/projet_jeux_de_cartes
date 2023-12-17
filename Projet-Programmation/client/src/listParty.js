@@ -14,8 +14,9 @@ function Party(props) {
     props.onJoinClick();
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
-    socket.on('joinGame', idParty => {
-      setTimeout(() => navigate('/Home/waitingRoom/' + idParty), 500);
+
+    socket.on('joinGame2', () => {
+        setTimeout(() => navigate('/Home/waitingRoom/' + props.idParty), 500);
     });
     
     
