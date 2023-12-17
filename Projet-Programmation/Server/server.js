@@ -199,16 +199,19 @@ io.on('connection', (socket) => {
                             db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                                 if (err) throw err;
                                 const playerList = result.map(object => object.pseudo);
-                                socket.emit('joinGame', null);
+                                console.log("Good")
+                                socket.emit('joinGame', idParty);
                                 socket.emit('playerList', playerList);
                             });
                         } else {
                             console.log('La partie est pleine');
+                            socket.emit('joinGame', null);
                         }
                     });
                 });
             } else {
                 console.log('Partie non présente dans la base');
+                socket.emit('joinGame', null);
             }
         });
 
@@ -218,14 +221,14 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinableList', () => {
-        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1', [], async (err, result) => {
+        db.query('SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1;', [], async (err, result) => {
             if (err) throw (err);
             console.log(result);
             socket.emit('joinableListOut', result);
         })
     });
     socket.on('savedList',()=>{
-        db.query('SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1;',[],async (err, result) =>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1;',[],async (err, result) =>{
             if(err)throw(err);
             console.log(result);
             socket.emit('savedListOut', result);

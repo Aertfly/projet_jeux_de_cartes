@@ -15,12 +15,7 @@ function Party(props) {
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
     socket.on('joinGame', idParty => {
-      if(idParty){
-        setTimeout(() => navigate('/Home/waitingRoom/' + idParty), 500);
-      }
-      else{
-        
-      }
+      setTimeout(() => navigate('/Home/waitingRoom/' + idParty), 500);
     });
     
     
@@ -30,9 +25,9 @@ function Party(props) {
     <tbody>
       <tr>
         <td>{props.idParty}</td>
-        <td>{props.min}</td>
-        <td>{props.max}</td>
         <td>{props.type}</td>
+        <td>{props.min}</td>
+        <td>{props.nbPlayer +"/"+ props.max}</td>
         <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
       </tr>
     </tbody>
@@ -81,9 +76,9 @@ function ListParty() {
         <thead>
           <tr>
             <th>ID Partie</th>
-            <th>Min</th>
-            <th>Max</th>
             <th>Type</th>
+            <th>Min</th>
+            <th>joueurs Actuels</th>
             <th>Cliquer ici</th>
           </tr>
         </thead>
@@ -94,6 +89,7 @@ function ListParty() {
             min={party.joueursMin}
             max={party.joueursMax}
             type={party.type}
+            nbPlayer={party.nbJoueur}
             disabled={allButtonsDisabled}
             onJoinClick={handleJoinClick}
           />

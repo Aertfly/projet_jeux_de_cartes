@@ -47,7 +47,6 @@ function Home(){
                         setIsSubmit(false);
                     }, 500);
                 }
-                socket.off('joinGame');
             })
         }
         else{
