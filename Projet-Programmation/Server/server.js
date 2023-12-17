@@ -253,6 +253,10 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('playerLeaving', (idJ) => {
+        abandon(db, socket, 'playerLeaving', idJ)
+    })
+
     startGame(io, socket, db);
     scores(io, socket, db);
     abandon(io, socket, db);
