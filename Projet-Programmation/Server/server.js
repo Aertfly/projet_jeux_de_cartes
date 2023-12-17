@@ -38,7 +38,7 @@ db.connect((err) => {
 });
 
 const connectedUsers = {};
-const asso = {};
+const asso = new Map();
 const rooms = [];
 
 async function generatePartyId() {
@@ -231,19 +231,14 @@ io.on('connection', (socket) => {
 
     socket.on("disconnect", (reason) => {
         if(reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
-            abandon(db, 'playerDisconnect', socket.id);
-            delete connectedUsers[socket.id];
+            abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
+            delete connectedUsers[socket.id]; 
         } else {
-            abandon(db, 'playerLeaving', asso[socket.id]);
-            delete connectedUsers[socket.id];
+            abandon(db, socket, 'playerLeaving', asso.get(socket.id));
+            delete connectedUsers[socket.id]; 
         }
         
     });
-
-    socket.on('test', (data) => {
-        asso[socket.id] = data.idJ;
-        console.log(data.idJ, "voilà");
-    })
     
     startGame(io,socket,db);
     scores(io,socket,db);
