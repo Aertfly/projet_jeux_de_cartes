@@ -219,7 +219,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("disconnect", (reason) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
+    socket.on("disconnect", (reason) => {
         if(reason == "ping timeout" || reason == "transport close") {
             disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
             setTimeout(function() { after30s(io, socket, db, data) }, 30000);
