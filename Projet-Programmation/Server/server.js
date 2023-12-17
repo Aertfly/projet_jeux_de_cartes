@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
                             socket.emit('resultatConnexion', "Mot de passe incorrect");
                             console.log('Mot de passe incorrect');
                         }
-                    } else {
+                    }else {
                         socket.emit('resultatConnexion', "pseudo incorrect");
                         console.log('pseudo incorrect');
                     }
@@ -170,6 +170,14 @@ io.on('connection', (socket) => {
 
             });
         }});
+
+    socket.on('joinRequest',data=>{
+        console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
+        socket.emit('joinGame',{
+            'listPlayer': ["Roger","Batman","Bernard24"],
+            'idParty': "TEST"
+        })
+    });
 
 
 

@@ -1,6 +1,11 @@
+import "./page.css";
 import IC from './IC.js'
 import CreateParty from './createParty.js';
+import Home from './home.js';
+import WaitingRoom from './waitingRoom.js';
+import NotFound from "./notFound.js";
 import { SocketProvider } from './socket.js';
+
 
 import ReactDOM from 'react-dom';
 import reportWebVitals from './reportWebVitals' ;
@@ -32,7 +37,10 @@ root.render(
       <Router>
         <Routes>
           <Route exact path="/" element={<IC />} />
-          <Route path="/home" element={<CreateParty />} />
+          <Route path="/Home" element={<Home />}/>
+          <Route path="/Home/createParty" element={<CreateParty />} />
+          <Route path="/Home/waitingRoom" element={<WaitingRoom />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
 

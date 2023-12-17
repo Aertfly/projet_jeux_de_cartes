@@ -1,4 +1,4 @@
-import "./IC.css";
+
 import CryptoJS from 'crypto-js';
 import React, { useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
@@ -107,7 +107,7 @@ function ConnectionForm() {
   });
 
   socket.on('idJ', (idJ) => {
-    setTimeout(() => navigate('/home'), 500);
+    setTimeout(() => navigate('/Home'), 500);
     setIdJ(idJ); 
   });
 

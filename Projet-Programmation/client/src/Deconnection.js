@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import './Deconnection.css';
 import { SocketContext } from './socket.js';
 import { ConnexionContext, ConnexionProvider } from './IC.js'; 
 import { useNavigate } from 'react-router-dom';

@@ -50,7 +50,6 @@ button:hover {
     background-color: #cc0000;
 }
 
-  
 input {
 display: block;
 width: 100%;
@@ -71,6 +70,25 @@ transition: background-color 0.3s;
 }
 
 button:hover {
-background-color: #ff0000;
+background-color: #630000;
 }
+
+.deconnection-button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1; 
+}
+.deconnection-button:hover{
+    background-color: #363636;
+}
+
+
+
+
+
 

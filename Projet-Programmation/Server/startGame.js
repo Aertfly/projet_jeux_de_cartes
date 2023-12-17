@@ -13,7 +13,7 @@ const startGame = function(io,socket,db){
                     // Si la partie est sauvegardée
                     db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':""});
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', true): io.to(data.idParty).emit('gameStart', {'result':false,'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
                     });
                 } else {
                     // Si la partie n'est pas sauvegardée
@@ -52,11 +52,11 @@ const startGame = function(io,socket,db){
             io.to(data.idParty).emit("dealingCards",{'Cards':result[0].main});
         });
     });
-}
+}   
 
 
 function test(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
-    if (rawResult.length===0)return "Aucun joueur dans la partie";
+    if (rawResult.length===0)return "Erreur 404 : Partie non trouvé";
     if(rawResult[0].tour>=0)return "Partie déja en cours";
     let isNotInParty = true;
     for(i=0;i<rawResult.length;i++){

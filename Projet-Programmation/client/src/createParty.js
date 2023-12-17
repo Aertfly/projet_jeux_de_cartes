@@ -1,6 +1,6 @@
 import { React, useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
-import Deconnection from './Deconnection';
+import Deconnection from './deconnection.js';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {
   const games = ["Bataille", "Uno", "Kems", "Président"];
