@@ -221,8 +221,7 @@ io.on('connection', (socket) => {
 
     socket.on("disconnect", (reason) => {
         if(reason == "ping timeout" || reason == "transport close") {
-            disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
-            setTimeout(function() { after30s(io, socket, db, data) }, 30000);
+            socket.on('playerDisconnect', reason, socket.id);
         } else {
             socket.emit('disconnectComplete');
         }
