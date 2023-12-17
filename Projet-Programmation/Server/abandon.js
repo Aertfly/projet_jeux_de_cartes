@@ -19,10 +19,9 @@ var abandon = function(io, socket, db) {
             } else {
                 console.log("Annulation du départ du joueur", data.player, "de la partie", data.party);
             }
-            // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
-            delete disconnectedPlayers[player];
-            console.log("cest bon");
         });
+        // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
+        delete disconnectedPlayers[player];
     });
 
     socket.on("playerDisconnect", ( player) => { // Quand c'est involontaire. data demande l'idJ    
