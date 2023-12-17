@@ -1,4 +1,5 @@
-var abandon = function(db, motif, player) {
+var abandon = function(db,socket, motif, player) {
+    var data = {player : player};
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
     if(motif == 'playerLeaving') { // Quand c'est volontaire. data demande l'idJ
         console.log("le joueur", player, "quitte volontairement");
@@ -11,12 +12,12 @@ var abandon = function(db, motif, player) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log('ça marche', party)
                 if (await removePlayer(db, player, party)) {
-                    db.query("SELECT pseudo FROM joueur WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
+                    db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
                             throw err;
                         }
-                        io.to(party).emit("otherPlayerLeft", results[0]); 
-                        console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", data.party);
+                        socket.to(party).emit("otherPlayerLeft", results[0]); 
+                        console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", party);
                     });
                 } else {
                     console.log("Annulation du départ du joueur", player, "de la partie", party);
@@ -33,7 +34,7 @@ var abandon = function(db, motif, player) {
                 throw err;
             }
             data[party] = results; // On rajoute l'info de quel partie il venait
-            b.query("SELECT pseudo FROM joueur WHERE idJ = ?", [player], async(err, results) => {
+            b.query("SELECT pseudo FROM joueurs WHERE idJ = ?", [player], async(err, results) => {
                 if(err) {
                     throw err;
                 }
