@@ -220,7 +220,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        if(reason == "ping timeout" || reason == "transport close") {
+        if(reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
             socket.emit('playerDisconnect', reason, socket.id);
         } else {
             socket.emit('disconnectComplete');
