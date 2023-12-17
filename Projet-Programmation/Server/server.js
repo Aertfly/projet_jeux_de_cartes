@@ -219,10 +219,13 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('disconnect', (reason) => {
-        socket.emit('deconnexion', "Déconnexion réussie !");
-        console.log('Un utilisateur s\'est déconnecté ' + reason + " " + socket.id);
-        delete connectedUsers[socket.id];
+    socket.on("disconnect", (reason) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
+        if(reason == "ping timeout" || reason == "transport close") {
+            disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
+            setTimeout(function() { after30s(io, socket, db, data) }, 30000);
+        } else {
+            socket.emit('disconnectComplete');
+        }
     });
     
     startGame(io,socket,db);

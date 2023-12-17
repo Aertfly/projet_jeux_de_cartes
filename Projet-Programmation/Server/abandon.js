@@ -13,9 +13,13 @@ var abandon = function(io, socket, db) {
         console.log("c'est bon");
     });
 
-    socket.on("playerDisconnect", (data) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
-        disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
-        setTimeout(function() { after30s(io, socket, db, data) }, 30000);  
+    socket.on("playerDisconnect", (reason) => { // Quand c'est involontaire. data demande l'idJ, le pseudo, et l'idPartie
+        if(reason == "ping timeout" || reason == "transport close") {
+            disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
+            setTimeout(function() { after30s(io, socket, db, data) }, 30000);
+        } else {
+            socket.emit('disconnectComplete');
+        }
     });
 
     socket.on("playerReconnect", (data) => { 
