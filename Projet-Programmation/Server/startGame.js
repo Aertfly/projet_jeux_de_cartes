@@ -20,7 +20,7 @@ const startGame = function(io,socket,db){
                     const nbPlayers = IdPlayerList.length;
                     var playerHands = null;
                     switch (rawResult[0].type) {
-                        case "bataille_ouverte":
+                        case "Bataille":
                             playerHands = dealCardsWar(nbPlayers);
                             break;
                         /* Exemple ajout autre jeu :
@@ -62,7 +62,7 @@ function test(rawResult,id){//vérifie la conformité des informations de la par
     for(i=0;i<rawResult.length;i++){
         if(rawResult[i]['idJ']==id){
             isNotInParty = false;
-            if(!(rawResult[i]['proprietaire']))return "Le joueur qui a essayé de lancer n'est pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
+            if(!(rawResult[i]['proprietaire']))return "Vous n'êtes pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
         }
     }
     if (isNotInParty)return  "le joueur qui a essayé de lancer n'est pas dans la partie"
@@ -73,7 +73,7 @@ function giveCardsDb(io,db,playerHands,IdPlayerList,nbPlayers,idParty){
     for (i=0;i<nbPlayers;i++){
         var hand = JSON.stringify(playerHands[i]);
         var idJ = IdPlayerList[i];
-        db.query("UPDATE joue SET main =?  WHERE idJ=?  ",[hand, idJ],async(err,result)=>{
+        db.query("UPDATE joue SET main =?  WHERE idJ=? ANd idPartie=? ",[hand, idJ,idParty],async(err,result)=>{
             if(err)throw(err);
             if (!(result.changedRows ==1)) {
                 console.log("Update main joueur raté",idJ,hand)

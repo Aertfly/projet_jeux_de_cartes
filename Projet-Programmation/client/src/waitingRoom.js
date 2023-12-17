@@ -42,14 +42,7 @@ const WaitingRoom = ()=>{
     const [players, setPlayers] = useState([]);
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
-    console.log(idParty)
-    console.log(idJ)
     useEffect(() => {
-        socket.on('playerList', players => {
-            console.log(players);
-            setPlayers(players);
-        });
-
         socket.on('gameStart',data =>{
             if(data.message){
                 setMsg(data.message);
@@ -57,10 +50,9 @@ const WaitingRoom = ()=>{
             }
             else{
                 console.log(data);
-                setTimeout(() => navigate('/Home/Party/'+data.partyId), 250);
+                setTimeout(() => navigate('/Home/Party/'+data.idParty), 250);
             }
         });
-
     }, [socket]);
     
     return (
@@ -68,9 +60,6 @@ const WaitingRoom = ()=>{
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <p style={{color:'red'}}>{msg}</p>
             <ul>Liste des joueurs :</ul>
-            {players.length==0?players.map((pseudo) => (
-            <Player pseudo={pseudo} />
-            )):<li>Attente</li>}
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />

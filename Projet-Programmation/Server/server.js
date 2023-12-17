@@ -230,7 +230,7 @@ io.on('connection', (socket) => {
     socket.on('savedList', (idPlayer) => {
         db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;', [idPlayer], async (err, result) => {
             if (err) throw (err);
-            socket.emit('savedListOut', result);
+            socket.emit('savedListOut', result);    
         })
     });
 

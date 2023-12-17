@@ -4,6 +4,7 @@ import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from './index.js'
 import Deconnection from './deconnection.js';
+import chat from './chatComponent.js';
 
 var sockets = null;
 
@@ -76,6 +77,7 @@ function ChoisirCarteForm(props) {
 function Main2() {
     return (
         <>
+        <Deconnection/>
             <ChoisirCarteForm cartes={
                 [{"enseigne":"Pique","valeur":2},{"enseigne":"Carreau","valeur":4}]
             } playerId={4} /> 
@@ -93,7 +95,7 @@ function Main2() {
                 [{"enseigne":"Trèfle","valeur":3},{"enseigne":"Coeur","valeur":5}]
             } playerId={5} />
             */}
-            
+            {/*<chat />*/}
         </>
     );
 }
