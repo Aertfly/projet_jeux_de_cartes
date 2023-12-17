@@ -37,7 +37,7 @@ function Home(){
         if(idPartyRequested){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
             setIsSubmit(true)
-            socket.on('joinGame',(idParty)=>{
+            socket.on('joinGame2',(idParty)=>{
                 console.log(idParty);
                 if(idParty){
                     setTimeout(() => navigate('/Home/waitingRoom/'+idParty), 250);
@@ -69,7 +69,7 @@ function Home(){
             type="text"
             onChange={(event)=>setIdPartyRequested(event.target.value)}
         />
-         <button type="submit">{isSubmit?"Veuiller Patienter":"Rejoindre la partie !"}</button>
+         <button type="submit" disabled={isSubmit} >{isSubmit?"Veuiller Patienter":"Rejoindre la partie !"}</button>
         <Deconnection disabled={isSubmit}/>
         </form>
     );
