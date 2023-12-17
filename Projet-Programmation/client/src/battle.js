@@ -7,6 +7,9 @@ import Deconnection from './deconnection.js';
 import chat from './chatComponent.js';
 
 var sockets = null;
+const importAll = (context) => context.keys().map(context);
+const images = importAll(require.context('../img', false, /\.(png)$/));
+console.log(images)
 
 function gestionTours(playerId,socket) {
     if(sockets == null){
@@ -76,6 +79,9 @@ function ChoisirCarteForm(props) {
 
 
 
+
+
+
 const GameBoard = ({ numberOfPlayers }) => {
     const [playerPositions, setPlayerPositions] = useState([]);
   
@@ -126,6 +132,7 @@ const GameBoard = ({ numberOfPlayers }) => {
     return(
     <body>
         <GameBoard numberOfPlayers={10} />;
+        <p>Auteur des cartes : David Bellot (david.bellot@free.fr) avec aide de Brigitte Bigi (Brigitte.Bigi@imag.fr)  sous licence LGPL et sous © 2005 David Bellot</p>
     </body>
     );
   };
