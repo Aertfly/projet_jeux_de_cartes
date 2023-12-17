@@ -1,21 +1,20 @@
-/*import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import { useEffect } from 'react';
 import { usePlayer } from './index.js';
 // pour accéder à ce composant, mettre "import Chat from './chatComponent.js';"
 
 function Chat({ data }) {
-  const {socket } = useContext(SocketContext);
+    const {socket} = useContext(SocketContext);
     const [texte, setTexte] = useState('');
     const [messages, setMessages] = useState([]);
 
     // Enregistrement des valeurs de la data
     const {idJ,pseudo} = usePlayer();
     const [party, setParty] = useState('');
-    setPlayer(data.player);
-    setParty(data.party);
 
     useEffect(() => {
+        setParty(data.party)
         socket.on('newMessage', (data) => { // Quand un message est reçu dans le chat
             console.log("message bien envoyé")
             const { username, message } = data;
@@ -29,16 +28,16 @@ function Chat({ data }) {
         return () => {
             socket.off('newMessage'); // Nettoie l'écouteur d'événements lorsque le composant est démonté
         };
-    }, []);
+    }, [socket, data.party]);
 
-  const envoyerMessage = (message, player, party) => { // Pour envoyer un mesage à tous dans la partie
-    console.log("le joueur", player, "envoie le message suivant :", message);
-    socket.emit('chat', { message: message, player: player, party: party });
+  const envoyerMessage = (message, pseudo, party) => { // Pour envoyer un mesage à tous dans la partie
+    console.log("le joueur", pseudo, "envoie le message suivant :", message);
+    socket.emit('chat', { message: message, username : pseudo, party: party });
   };
 
   const handleKeyPress = (e) => { // Pour voir si le joueur presse Entrée, pour valider l'envoie du message
     if (e.key === 'Enter') {
-      envoyerMessage(texte, player, party);
+      envoyerMessage(texte, pseudo, party);
       setTexte('');
     }
   };
@@ -70,4 +69,3 @@ function Chat({ data }) {
 }
 
 export default Chat;
-*/
