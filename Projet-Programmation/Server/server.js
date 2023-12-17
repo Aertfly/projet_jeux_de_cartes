@@ -26,7 +26,7 @@ const port = 3001;
 const db = mysql.createConnection({
     host: 'rateapp.fr',
     user: 'cp2253952p22_projetprogrammation',
-    password: 'azertyu123!',
+    password: 'azertyu123!',   
     database: 'cp2253952p22_projetprogrammation'
 });
 
@@ -38,6 +38,7 @@ db.connect((err) => {
 });
 
 const connectedUsers = {};
+const asso = {};
 const rooms = [];
 
 async function generatePartyId() {
@@ -63,7 +64,7 @@ io.on('connection', (socket) => {
     socket.emit('firstConnection');
 
     socket.on('connexion', async (data) => {
-        const { pseudo, password } = data;
+        const { pseudo, password} = data;
         if (connectedUsers[socket.id]) {
             socket.emit('resultatConnexion', "Déjà connecté");
             console.log('Déjà connecté');
@@ -82,7 +83,8 @@ io.on('connection', (socket) => {
                         const match = await bcrypt.compare(password, user.motdepasse);
 
                         if (match) {
-                            socket.emit('infoPlayer', { 'idJ': result[0].idJ, 'pseudo': result[0].pseudo });
+                            console.log("idJ : ", result[0].idJ);
+                            socket.emit('infoPlayer', {'idJ':result[0].idJ,'pseudo':result[0].pseudo});
                             socket.emit('resultatConnexion', "Connexion réussie");
                             console.log('Connexion réussie');
                             connectedUsers[socket.id] = true;
@@ -91,7 +93,7 @@ io.on('connection', (socket) => {
                             socket.emit('resultatConnexion', "Mot de passe incorrect");
                             console.log('Mot de passe incorrect');
                         }
-                    } else {
+                    }else {
                         socket.emit('resultatConnexion', "pseudo incorrect");
                         console.log('pseudo incorrect');
                     }
@@ -107,10 +109,10 @@ io.on('connection', (socket) => {
         const { pseudo, password } = data;
         if (!pseudo || pseudo.length < 3 || pseudo.length > 30) {
             return socket.emit('resultatInscription', 'Pseudo invalide');
-        }
-        if (!password || password.length !== 64) { // La longueur d'un SHA256 en hexadécimal est 64
+          }
+          if (!password || password.length !== 64) { // La longueur d'un SHA256 en hexadécimal est 64
             return socket.emit('resultatInscription', 'Mot de passe invalide');
-        }
+          }
 
         try {
             const checkEmailQuery = 'SELECT idJ FROM joueurs WHERE pseudo = ?';
@@ -144,12 +146,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('createParty', async data => {
-        const { minValue, maxValue, estPublic, selectedGame, idJ } = data;
+    socket.on('createParty', async data => { 
+        const { minValue, maxValue, estPublic, selectedGame,idJ } = data;
         const estPublicNum = estPublic ? 1 : 0;
-
+        
         try {
-            const partyId = await generatePartyId();
+            const partyId = await generatePartyId(); 
             var sens = "";
             switch (selectedGame) {
                 case "Bataille":
@@ -165,8 +167,8 @@ io.on('connection', (socket) => {
                     } else {
                         socket.emit('resultatCreation', "Création de partie effectuée");
                         console.log("Création de partie effectuée");
-                        socket.join(partyId); rooms.push(partyId);
-                        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
+                        socket.join(partyId);rooms.push(partyId);
+                        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ,partyId]);
                         socket.emit('joinGame', partyId);
                     }
                 });
@@ -179,57 +181,43 @@ io.on('connection', (socket) => {
 
     socket.on('joinRequest', data => {
         const { idParty, idPlayer } = data;
-
-        db.query('SELECT EXISTS(SELECT 1 FROM parties WHERE idPartie = ?) as partyExists', [idParty], (err, existResult) => {
+        db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
             if (err) throw err;
 
-            if (existResult[0].partyExists) {
-
-                db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
-                    if (err) throw err;
-
-
-                    db.query('SELECT joueursMax FROM parties WHERE idPartie = ?', [idParty], (err, maxResult) => {
+            db.query('SELECT joueursMax FROM parties WHERE idPartie = ?', [idParty], (err, maxResult) => {
+                if (err) throw err;
+    
+                if (countResult[0].playerCount < maxResult[0].joueursMax) {
+                    db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
+                    socket.join(idParty);rooms.push(idParty);
+                    db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                         if (err) throw err;
-
-                        if (countResult[0].playerCount < maxResult[0].joueursMax) {
-
-                            db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
-                            socket.join(idParty);
-                            db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
-                                if (err) throw err;
-                                const playerList = result.map(object => object.pseudo);
-                                socket.emit('joinGame2');
-                                socket.emit('playerList', playerList);
-                            });
-                        } else {
-                            console.log('La partie est pleine');
-                            socket.emit('joinGame', null);
-                        }
+                        const playerList = result.map(object => object.pseudo);
+                        socket.emit('joinGame');
+                        socket.emit('playerList', playerList);
                     });
-                });
-            } else {
-                console.log('Partie non présente dans la base');
-                socket.emit('joinGame', null);
-            }
+                } else {
+                    console.log('La partie est pleine');
+                }
+            });
         });
-
+    
         console.log("Ce joueur ", idPlayer, "a demandé à rejoindre", idParty);
     });
+    
 
-
-
-    socket.on('joinableList', () => {
-        const request= "SELECT COUNT(j.idJ) AS nbJoueur, p.idPartie, joueursMin, joueursMax, type,pseudo FROM parties p,joue j,joueurs jo WHERE jo.idJ = j.idJ AND p.idPartie = j.idPartie AND p.sauvegarde = 0 AND p.publique = 1 AND j.idJ = (SELECT jo2.idJ from joueurs jo2,joue j2 where jo2.idJ = j2.idJ AND j.idPartie = j2.idPartie AND proprietaire=1) GROUP BY p.idPartie, joueursMin, joueursMax, type;"
-        db.query(request, [], async (err, result) => {
-            if (err) throw (err);
-            socket.emit('joinableListOut', result);
-            });
+    socket.on('joinableList',()=>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1',[],async (err, result) =>{
+            if(err)throw(err);
+            console.log(result);
+            socket.emit('joinableListOut',result);
+        })
     });
-    socket.on('savedList', (idPlayer) => {
-        db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;', [idPlayer], async (err, result) => {
-            if (err) throw (err);
-            socket.emit('savedListOut', result);
+    socket.on('savedList',()=>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties where sauvegarde = 1',[],async (err, result) =>{
+            if(err)throw(err);
+            console.log(result);
+            socket.emit('savedListOut',result);
         })
     });
 
@@ -242,19 +230,26 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        delete connectedUsers[socket.id];
-        if (reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
-            socket.emit('playerDisconnect', socket.id);
+        if(reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
+            abandon(db, 'playerDisconnect', socket.id);
+            delete connectedUsers[socket.id];
         } else {
-            socket.emit('playerLeaving', socket.id);
+            abandon(db, 'playerLeaving', asso[socket.id]);
+            delete connectedUsers[socket.id];
         }
+        
     });
 
-    startGame(io, socket, db);
-    scores(io, socket, db);
-    abandon(io, socket, db);
-    chat(io, socket, db);
-    sauvegardePartie(io, socket, db);
+    socket.on('test', (data) => {
+        asso[socket.id] = data.idJ;
+        console.log(data.idJ, "voilà");
+    })
+    
+    startGame(io,socket,db);
+    scores(io,socket,db);
+    abandon(io,socket,db);
+    chat(io,socket,db);
+    sauvegardePartie(io,socket,db);
 });
 
 server.listen(port, () => {
