@@ -12,7 +12,7 @@ function Quitter(props){
     function clicked(){
         socket.emit('playerLeaving',{
             'player' : idJ,
-            'party'    : props.idParty,
+            'party'    :props.idParty,
             'pseudo' : pseudo   
         });
         navigate('/home');

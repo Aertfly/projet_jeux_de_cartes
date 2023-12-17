@@ -226,8 +226,8 @@ io.on('connection', (socket) => {
             socket.emit('joinableListOut', result);
         })
     });
-    socket.on('savedList',()=>{
-        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1;',[],async (err, result) =>{
+    socket.on('savedList',(idPlayer)=>{
+        db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;',[idPlayer],async (err, result) =>{
             if(err)throw(err);
             console.log(result);
             socket.emit('savedListOut', result);

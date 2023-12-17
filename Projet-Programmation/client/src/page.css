@@ -87,11 +87,18 @@ background-color: #630000;
     background-color: #363636;
 }
 
-table td,
-table th {
-    border: none;
-}
-
-table{
+table {
     margin:  auto;
-}
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: none;
+    padding: 8px;
+    text-align: left; /* Alignement du texte à gauche */
+  }
+
+  th {
+    background-color: #aaaaaa; /* Couleur de fond pour les en-têtes */
+  }

@@ -45,11 +45,11 @@ function Hide(){
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
-
+  const {idJ} = usePlayer()
   useEffect(() => {
     const fetchParties = async () => {
       try {
-        socket.emit('savedList');
+        socket.emit('savedList',idJ);
         socket.on('savedListOut', (data) => {
           setParties(data);
         });
