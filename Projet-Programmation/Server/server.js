@@ -178,12 +178,15 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinRequest',data=>{
+        
+        const playerList = db.query('SELECT pseudo from joueurs,joue where joueurs.idJ = joue.idJ and joue.idPartie = ?', data.idParty);
+        console.log(playerList);
         console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
-        socket.emit('joinGame',["Roger","Batman","Bernard24"])
+        socket.emit('joinGame',playerList)
     });
 
     socket.on('joinableList',()=>{
-        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties',[],async (err, result) =>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties WHERE sauvegarde = 0 AND publique = 1',[],async (err, result) =>{
             if(err)throw(err);
             console.log(result);
             socket.emit('joinableListOut',result);
