@@ -1,20 +1,21 @@
-var abandon = function(io, socket, db) {
+var abandon = function(db, motif, player) {
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
-
-    socket.on('playerLeaving', (player) => { // Quand c'est volontaire. data demande l'idJ
+    if(motif == 'playerLeaving') { // Quand c'est volontaire. data demande l'idJ
         console.log("le joueur", player, "quitte volontairement");
         db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
             if(err) {
                 throw err;
             }
+            console.log(results);
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
-                if (removePlayer(db, player, party)) {
+                console.log('ça marche', party)
+                if (await removePlayer(db, player, party)) {
                     db.query("SELECT pseudo FROM joueur WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
                             throw err;
                         }
-                        io.to(party).emit("otherPlayerLeft", results);
+                        io.to(party).emit("otherPlayerLeft", results[0]); 
                         console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", data.party);
                     });
                 } else {
@@ -24,9 +25,9 @@ var abandon = function(io, socket, db) {
         });
         // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
         delete disconnectedPlayers[player];
-    });
+    };
 
-    socket.on("playerDisconnect", ( player) => { // Quand c'est involontaire. data demande l'idJ    
+    if(motif == 'playerDisconnect') { // Quand c'est involontaire. data demande l'idJ    
         db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
             if(err) {
                 throw err;
@@ -41,15 +42,15 @@ var abandon = function(io, socket, db) {
                 setTimeout(function() { after30s(io, socket, db, data) }, 30000); // On attend 30 secondes
             });
         });
-    });
+    };
 
-    socket.on("playerReconnect", (data) => { 
+    if(motif == 'playerReconnect') { 
         // Mettre à jour l'état du joueur lorsqu'il se reconnecte
         if (disconnectedPlayers[data.player]) {
             disconnectedPlayers[data.player] = false; // Le joueur est de retour
             console.log("Le joueur", data.player, "est de retour dans la partie", data.party);
         }
-    });
+    };
 };
 
 function after30s(io, socket, db, data) {
@@ -66,15 +67,18 @@ function after30s(io, socket, db, data) {
     }
 }
 
-function removePlayer(db, player, party) { // supprime dans la db un joueur d'un partie
-    db.query("DELETE * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => {
-        if(err){
-            console.log(player, "a essayé de quitter la partie", party, ", sans succès");
-            return false;
-        }
-        console.log("la suppression du joueur", player, "dans la partie", party, "s'est effectué")
-        return true;
-    })
+function removePlayer(db, player, party) {
+    return new Promise((resolve, reject) => {
+        db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
+            if (err) {
+                console.log(player, "a essayé de quitter la partie", party, ", sans succès");
+                reject(false);
+            } else {
+                console.log("la suppression du joueur", player, "dans la partie", party, "s'est effectuée");
+                resolve(true);
+            }
+        });
+    });
 }
 
 module.exports = abandon;
