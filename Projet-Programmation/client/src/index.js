@@ -5,6 +5,7 @@ import Home from './home.js';
 import WaitingRoom from './waitingRoom.js';
 import ListParty from "./listParty.js";
 import NotFound from "./notFound.js";
+import ListPartySaved from "./listPartySaved.js";
 import { SocketProvider } from './socket.js';
 
 
@@ -50,6 +51,7 @@ root.render(
             <Route exact path="/" element={<IC />} />
             <Route path="/Home" element={<Home />}>
               <Route path="listParty" element={<ListParty/>}/>
+              <Route path="listPartySaved" element={<ListPartySaved />}/>
             </Route>
             <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
             <Route path="/Home/createParty" element={<CreateParty />} />

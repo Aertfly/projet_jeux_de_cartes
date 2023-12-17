@@ -49,8 +49,12 @@ function Home(){
     return(
         <form onSubmit={submit}>
         <h2>Souhaitez-vous créer ou rejoindre une partie en ligne?</h2>
+        <p>Créer :</p>
         <CreateButton path='createParty' text="Créer partie" disabled={isSubmit}/>
+        <p>Rejoindre une partie en ligne :</p>
         <PrintButton path='listParty' text="Afficher parties disponibles" disabled={isSubmit}/>
+        <p>Rejoindre une partie que vous avez sauvegardée :</p>
+        <PrintButton path='listPartySaved' text="Afficher parties sauvegardée ?" disabled={isSubmit}/>
         <Outlet/>
         <h2>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</h2>
         <input

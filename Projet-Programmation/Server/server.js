@@ -183,6 +183,13 @@ io.on('connection', (socket) => {
             socket.emit('joinableListOut',result);
         })
     });
+    socket.on('savedList',()=>{
+        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties where sauvegarde = 1',[],async (err, result) =>{
+            if(err)throw(err);
+            console.log(result);
+            socket.emit('savedListOut',result);
+        })
+    });
 
 
 
