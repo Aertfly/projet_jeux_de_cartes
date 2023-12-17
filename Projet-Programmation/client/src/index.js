@@ -7,7 +7,7 @@ import ListParty from "./listParty.js";
 import NotFound from "./notFound.js";
 import ListPartySaved from "./listPartySaved.js";
 import { SocketProvider } from './socket.js';
-
+import Party from './battle.js';
 
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals' ;

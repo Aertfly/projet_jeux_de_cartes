@@ -1,10 +1,13 @@
-import React from 'react';
-import { useState } from 'react';
-import socket from './socket.js';
+import React, { useContext, useState,useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { SocketContext } from './socket.js';
+import { useNavigate } from 'react-router-dom';
+import { usePlayer } from './index.js'
+import Deconnection from './deconnection.js';
 
 var sockets = null;
 
-function gestionTours(playerId) {
+function gestionTours(playerId,socket) {
     if(sockets == null){
         socket.on('newTurn', (data) => {
             // La connexion est active
@@ -30,7 +33,8 @@ function carteVersTexte(carte){
 }
 
 function ChoisirCarteForm(props) {
-    gestionTours(props.playerId);
+    const { socket } = useContext(SocketContext);
+    gestionTours(props.playerId,socket);
     const cartes = props.cartes;
     const [carteChoisie, setCarteChoisie] = React.useState(null); // Ajouter un état pour la carte choisie
 
