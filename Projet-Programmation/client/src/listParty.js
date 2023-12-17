@@ -22,6 +22,8 @@ function Party(props) {
         
       }
     });
+    
+    
   };
 
   return (

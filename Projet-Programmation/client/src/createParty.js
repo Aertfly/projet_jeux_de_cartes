@@ -1,7 +1,7 @@
 import { React, useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import Deconnection from './deconnection.js';
-import { usePlayer } from './index.js';
+import { useIdJ } from './index.js';
 import { useNavigate } from 'react-router-dom';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {
@@ -33,7 +33,7 @@ function CreatePartyForm() {
   const [estPublic, setEstPublic] = useState(false);
   const [estSoumis, setEstSoumis] = useState(false);
   const [selectedGame, setSelectedGame] = useState("");
-  const { idJ } = usePlayer();
+  const { idJ } = useIdJ();
   const navigate = useNavigate();
   
   const handleMinChange = (e) => {
@@ -100,7 +100,7 @@ function CreatePartyForm() {
         <br />
         <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Soumis' : 'Soumettre'}</button>
         <button type="button" onClick={handlePublicClick}>{estPublic ? 'Public' : 'Privé'}</button>
-        <Deconnection goBack={true} path={"/Home"}/>
+        <Deconnection />
       </form>
     </div>
   );

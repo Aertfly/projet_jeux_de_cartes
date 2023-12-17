@@ -40,7 +40,7 @@ const WaitingRoom = ()=>{
         });
 
     }, [socket]);
-
+    
     return (
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
