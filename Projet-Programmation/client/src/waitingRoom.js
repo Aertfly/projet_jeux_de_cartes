@@ -1,77 +1,64 @@
-import React, { useContext, useState,useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from './index.js'
 import Deconnection from './deconnection.js';
 
-
-
-function Quitter(props){
-    function clicked(){
-        props.socket.emit('playerLeaving',{
-            'player' : props.idJ,
-            'party'  : props.idParty,
-            'pseudo' : props.pseudo   
+function Quitter(props) {
+    const { socket } = useContext(SocketContext);
+    const { idJ, pseudo } = usePlayer();
+    const navigate = useNavigate();
+    function clicked() {
+        socket.emit('playerLeaving', {
+            'player': idJ,
+            'party': props.idParty,
+            'pseudo': pseudo
         });
-        props.navigate('/home');
+        navigate('/home');
     }
-    return(
+    return (
         <button type='button' onClick={clicked}>Quitter ?</button>
     );
 }
 
-function Player(props){
-    return(
+function Player(props) {
+    return (
         <li>props.pseudo</li>
     );
 }
 
-function Start(props){
-    function clicked(){
-        props.socket.emit('start',{'idParty':props.idParty,'idJ':props.idJ})
-    }
-    return(
-        <button hidden={props.hidden} onClick={clicked}>Start ?</button>
-    );
-}
+const WaitingRoom = () => {
+    const { socket } = useContext(SocketContext);
+    const { idParty } = useParams();
 
-const WaitingRoom = ()=>{
-    const {socket} = useContext(SocketContext);
-    const {idJ,pseudo} = usePlayer();
-    const {idParty } = useParams();
-    const [players, setPlayers] = useState([]);
-    const [msg, setMsg] = useState("");
-    const navigate = useNavigate();
+    const createPlayerList = (playersList) => {
+        if (playersList && playersList.length > 0) {
+            return playersList.map((pseudo, index) => (
+                <li key={index}>{pseudo}</li> // Utiliser l'index comme clé si les pseudos ne sont pas garantis uniques
+            ));
+        } else {
+            return <li>Attente</li>;
+        }
+    };
 
-    useEffect(() => {
-        socket.on('playerList', players => {
-            console.log(players);
-            setPlayers(players);
-        });
+    let playersList = []; // Initialiser une liste vide
 
-        socket.on('gameStart',data =>{
-            if(data.message){
-                setTimeout(() => navigate('/Home/Party/'+data.partyId), 250);
-            }
-            else{
-                setMsg(data.message);
-                console.log(data.message);
-            }
-        });
+    // Gérer la réception des données du socket
+    socket.on('playerList', (newPlayersList) => {
+        console.log("Players List Received:", newPlayersList);
+        playersList = newPlayersList; // Mettre à jour la liste des joueurs
+        <div>{playersList}</div>
+        console.log("playersList");console.log(playersList);
+        
+    });
 
-    }, [socket]);
-    
     return (
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
-            <p style={{color:'red'}}>{msg}</p>
             <ul>Liste des joueurs :</ul>
-            {players.length==0?players.map((pseudo) => (
-            <Player pseudo={pseudo} />
-            )):<li>Attente</li>}
-            <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
-            <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
+            {createPlayerList(playersList)}
+            <Quitter idParty={idParty} />
             <Deconnection />
         </div>
     );
