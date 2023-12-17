@@ -52,7 +52,7 @@ const WaitingRoom = ()=>{
 
         socket.on('gameStart',data =>{
             if(data.message){
-                setTimeout(() => navigate('/Home/Party'+data.partyId), 250);
+                setTimeout(() => navigate('/Home/Party/'+data.partyId), 250);
             }
             else{
                 setMsg(data.message);
