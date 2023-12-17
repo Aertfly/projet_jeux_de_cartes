@@ -19,26 +19,26 @@ var abandon = function(io, socket, db) {
         console.log("cest bon");
     });
 
-    socket.on("playerDisconnect", (reason, player) => { // Quand c'est involontaire. data demande l'idJ
-        if(reason == "ping timeout" || reason == "transport close") {
-            db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
+    socket.on("playerDisconnect", (reason, player) => { // Quand c'est involontaire. data demande l'idJ    
+        db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
+            if(err) {
+                throw err;
+            }
+            data[party] = results; // On rajoute l'info de quel partie il venait
+            b.query("SELECT pseudo FROM joueur WHERE idJ = ?", [player], async(err, results) => {
                 if(err) {
                     throw err;
                 }
-                data[party] = results; // On rajoute l'info de quel partie il venait
-                b.query("SELECT pseudo FROM joueur WHERE idJ = ?", [player], async(err, results) => {
-                    if(err) {
-                        throw err;
-                    }
-                    data[username] = results; // On rajoute l'info de son pseudonyme, pour l'affichage dans le chat plus tard (s'il ne revient pas)
+                data[username] = results; // On rajoute l'info de son pseudonyme, pour l'affichage dans le chat plus tard (s'il ne revient pas)
+                if(reason == "ping timeout" || reason == "transport close") {
                     disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
                     setTimeout(function() { after30s(io, socket, db, data) }, 30000); // On attend 30 secondes
-                });
+                } else {
+                    socket.emit('disconnectComplete');
+                    removePlayer(db, data.player, data.party);
+                }
             });
-        } else {
-            socket.emit('disconnectComplete');
-            removePlayer(db, data.player, data.party);
-        }
+        });
     });
 
     socket.on("playerReconnect", (data) => { 
