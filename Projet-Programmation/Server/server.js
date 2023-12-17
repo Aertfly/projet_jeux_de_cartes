@@ -220,16 +220,15 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinableList', () => {
-        db.query('SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1 GROUP BY p.idPartie;', [], async (err, result) => {
+        const request= "SELECT COUNT(j.idJ) AS nbJoueur, p.idPartie, joueursMin, joueursMax, type,pseudo FROM parties p,joue j,joueurs jo WHERE jo.idJ = j.idJ AND p.idPartie = j.idPartie AND p.sauvegarde = 0 AND p.publique = 1 AND j.idJ = (SELECT jo2.idJ from joueurs jo2,joue j2 where jo2.idJ = j2.idJ AND j.idPartie = j2.idPartie AND proprietaire=1) GROUP BY p.idPartie, joueursMin, joueursMax, type;"
+        db.query(request, [], async (err, result) => {
             if (err) throw (err);
-            console.log(result);
             socket.emit('joinableListOut', result);
-        })
+            });
     });
-    socket.on('savedList',(idPlayer)=>{
-        db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;',[idPlayer],async (err, result) =>{
-            if(err)throw(err);
-            console.log(result);
+    socket.on('savedList', (idPlayer) => {
+        db.query('SELECT p.idPartie, joueursMin, joueursMax, type FROM parties p,joue j WHERE p.idPartie=j.idPartie AND sauvegarde = 1 AND idJ = ?;', [idPlayer], async (err, result) => {
+            if (err) throw (err);
             socket.emit('savedListOut', result);
         })
     });
@@ -243,7 +242,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        if(reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
+        if (reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
             socket.emit('playerDisconnect', socket.id);
         } else {
             socket.emit('playerLeaving', socket.id);
