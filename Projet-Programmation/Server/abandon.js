@@ -1,23 +1,25 @@
 var abandon = function(io, socket, db) {
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
 
-    socket.on('playerLeaving', (player) => { // Quand c'est volontaire. data demande l'idJ, et l'idPartie
+    socket.on('playerLeaving', (player) => { // Quand c'est volontaire. data demande l'idJ
         console.log("le joueur", player, "quitte volontairement");
         db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
             if(err) {
                 throw err;
             }
-            data[party] = results; // On rajoute l'info de quel partie il venait
-            if (removePlayer(db, data.player, data.party)) {
-                db.query("SELECT pseudo FROM joueur WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
-                    if(err) {
-                        throw err;
-                    }
-                    io.to(data.party).emit("otherPlayerLeft", results);
-                    console.log("L'information du départ du joueur", data.player, "a été envoyée à tous les joueurs de la partie", data.party);
-                });
-            } else {
-                console.log("Annulation du départ du joueur", data.player, "de la partie", data.party);
+            if (results && results.length > 0) {
+                const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
+                if (removePlayer(db, player, party)) {
+                    db.query("SELECT pseudo FROM joueur WHERE idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
+                        if(err) {
+                            throw err;
+                        }
+                        io.to(party).emit("otherPlayerLeft", results);
+                        console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", data.party);
+                    });
+                } else {
+                    console.log("Annulation du départ du joueur", player, "de la partie", party);
+                }
             }
         });
         // Supprimer le joueur du tableau des joueurs déconnectés (s'il était dedans, normalement non mais au cas où)
