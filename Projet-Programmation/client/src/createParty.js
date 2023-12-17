@@ -1,6 +1,7 @@
 import { React, useState, createContext, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import Deconnection from './deconnection.js';
+import { useIdJ } from './index.js';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {
   const games = ["Bataille", "Uno", "Kems", "Président"];
@@ -23,7 +24,7 @@ const GameSelector = ({ selectedGame, onGameSelect }) => {
   );
 };
   
-function MyForm() {
+function CreatePartyForm() {
 
   const [minValue, setMinValue] = useState(2);
   const [maxValue, setMaxValue] = useState(10);
@@ -31,11 +32,8 @@ function MyForm() {
   const [estPublic, setEstPublic] = useState(false);
   const [estSoumis, setEstSoumis] = useState(false);
   const [selectedGame, setSelectedGame] = useState("");
+  const { idJ } = useIdJ();
   
-  const handleGameSelection = (game) => {
-    setSelectedGame(game);
-  };
-
   const handleMinChange = (e) => {
     setMinValue(e.target.value);
   };
@@ -59,7 +57,7 @@ function MyForm() {
       return;
     }
     if (estSoumis){
-      socket.emit('createParty',{minValue,maxValue,estPublic,selectedGame})
+      socket.emit('createParty',{minValue,maxValue,estPublic,selectedGame,idJ})
     }
   };
 
@@ -105,7 +103,7 @@ function MyForm() {
 function CreateParty () {
     return (
         <>
-        <MyForm />
+        <CreatePartyForm  />
         </>
     )
 }

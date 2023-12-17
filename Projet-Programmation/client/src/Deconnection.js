@@ -29,6 +29,11 @@ function Deco() {
     navigate('/');
   })
 
+  socket.on('firstConnection', () => {
+    setEstConnecte("Déconnecté");
+    navigate('/');
+  })
+
   return (
     <div>
       {estConnecte === "Déconnecté" ? (

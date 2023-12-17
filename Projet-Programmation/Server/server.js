@@ -4,7 +4,6 @@ const { Server } = require('socket.io');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql');
 const cors = require('cors');
-const CryptoJS = require('crypto-js')
 const app = express();
 const server = http.createServer(app);
 
@@ -39,29 +38,29 @@ db.connect((err) => {
 });
 
 const connectedUsers = {};
+const rooms = [];
 
 async function generatePartyId() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-
+    let result;
     do {
         result = '';
         for (let i = 0; i < 8; i++) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
-    } while (await isIdInDatabase(result));
-
+    } while (await isCodeInDatabase(result));
     return result;
 }
 
-async function isIdInDatabase(id) {
-    const query = `SELECT idPartie FROM parties WHERE idPartie = '${id}'`;
-    const results = await executeSqlQuery(query);
+async function isCodeInDatabase(code) {
+    const query = `SELECT idPartie FROM parties WHERE idPartie = '${code}'`;
+    const results = db.query(query);
     return results.length > 0;
 }
 
 io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est connecté ' + socket.id);
+    socket.emit('firstConnection');
 
     socket.on('connexion', async (data) => {
         const { pseudo, password } = data;
@@ -145,31 +144,38 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('createParty',data => {
-        const { minValue,maxValue,estPublic,selectedGame } = data;
+    socket.on('createParty', async data => { 
+        const { minValue, maxValue, estPublic, selectedGame,idJ } = data;
         const estPublicNum = estPublic ? 1 : 0;
-        partyId = generatePartyId();
-        console.log(data);
-        console.log(partyId);
-        var sens = ""
-        switch(selectedGame){
-            case "Bataille":
-                var sens = "all";
+        
+        try {
+            const partyId = await generatePartyId(); 
+            var sens = "";
+            switch (selectedGame) {
+                case "Bataille":
+                    sens = "all";
+                    break;
+            }
+            if (minValue && maxValue && selectedGame) {
+                const request = 'INSERT INTO `parties`(`idPartie`, `joueursMin`, `joueursMax`, `sens`, `tour`, `type`, `sauvegarde`, `centre`, `archive`, `pioche`, `publique`) VALUES (?, ?, ?, ?, -1, ?, 0, "{}", "{}", "[]", ?)';
+                db.query(request, [partyId, minValue, maxValue, sens, selectedGame, estPublicNum], (err, result) => {
+                    if (err) {
+                        socket.emit('resultatCreation', "Création de partie échouée, mauvaises informations");
+                        console.log("Création de partie échouée, mauvaises informations");
+                    } else {
+                        socket.emit('resultatCreation', "Création de partie effectuée");
+                        console.log("Création de partie effectuée");
+                        socket.join(partyId);rooms.push(partyId);
+                        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ,partyId]);
+                        socket.emit('joinGame', partyId);
+                    }
+                });
+            }
+        } catch (error) {
+            console.log("Erreur lors de la génération du partyId", error);
+            socket.emit('resultatCreation', "Erreur lors de la création de la partie");
         }
-
-        if(minValue && maxValue && selectedGame){
-            const request = 'INSERT INTO parties (idPartie,joueursMin,joueursMax,sens,tour,type,sauvegarde,centre,archive,pioche,public) VALUES (?,?,?,?,-1,?,0,"{}","{}","[]",?)'
-            db.query(request, [partyId, minValue, maxValue, sens,selectedGame,estPublicNum], async (err, result) => {
-                if (err) {
-                    socket.emit('resultatCreation',"Creation de partie échouée, mauvaises informations");
-                    console.log("Creation de partie échouée, mauvaises informations");
-                } else {
-                    socket.emit('resultatCreation',"Creation de partie effectuée");
-                    console.log("Creation de partie effectuée");
-                }
-
-            });
-        }});
+    });
 
     socket.on('joinRequest',data=>{
         console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
@@ -190,8 +196,6 @@ io.on('connection', (socket) => {
             socket.emit('savedListOut',result);
         })
     });
-
-
 
     socket.on('deconnexion', () => {
         if (socket.id in connectedUsers) {
