@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState,useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -33,11 +33,17 @@ function Player(props){
 const WaitingRoom = ()=>{
     const { socket } = useContext(SocketContext);
     const { idParty } = useParams();
-    const [players, SetPlayers] = useState("");
-    socket.on('playerList',playerList => {
-        SetPlayers(playerList);
-    })
-    return(
+    const [players, setPlayers] = useState([]);
+
+    useEffect(() => {
+        socket.on('playerList', players => {
+            console.log(players);
+            setPlayers(players);
+        });
+
+    }, [socket]);
+
+    return (
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <ul>Liste des joueurs :</ul>
@@ -49,6 +55,6 @@ const WaitingRoom = ()=>{
             <Deconnection />
         </div>
     );
-}
+};
 
 export default WaitingRoom;
