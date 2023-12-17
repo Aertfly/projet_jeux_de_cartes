@@ -45,7 +45,7 @@ const WaitingRoom = ()=>{
         <div>
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <ul>Liste des joueurs :</ul>
-
+            
             {players?players.map((pseudo) => (
             <Player pseudo={pseudo} />
             )):<li>Attente</li>}
@@ -56,3 +56,4 @@ const WaitingRoom = ()=>{
 };
 
 export default WaitingRoom;
+

@@ -11,11 +11,9 @@ function Deco(props) {
   const {idJ, setIdJ, pseudo } = usePlayer();
 
   const handleDeconnection = () => {
-    socket.emit('deconnexion');
     setIdJ(null); 
     setEstConnecte("Déconnecté");
     navigate('/');
-    console.log(socket.id);
   };
 
   window.onload = function(e) {

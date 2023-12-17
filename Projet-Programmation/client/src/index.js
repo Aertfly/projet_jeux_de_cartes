@@ -31,19 +31,6 @@ export const PlayerProvider = ({ children }) => {
   );
 };
 
-const PlayerListContext = createContext();
-export const usePlayerList = () => useContext(PlayerListContext);
-export const PlayerListProvider = ({ children }) => {
-  const [PlayerList, setPlayerList] = useState([]);
-  return (
-    <PlayerListContext.Provider value={{ PlayerList, setPlayerList }}>
-      {children}
-    </PlayerListContext.Provider>
-  );
-};
-
-
-
 root.render(
   <React.StrictMode>
     <PlayerProvider>

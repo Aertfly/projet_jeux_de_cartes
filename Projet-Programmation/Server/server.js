@@ -242,6 +242,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
+        delete connectedUsers[socket.id];
         if (reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
             socket.emit('playerDisconnect', socket.id);
         } else {
