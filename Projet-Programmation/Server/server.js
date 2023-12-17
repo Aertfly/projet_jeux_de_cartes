@@ -178,11 +178,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinRequest',data=>{
-        //const playerList = db.query('SELECT pseudo from joueurs,joue where joueurs.idJ = joue.idJ and joue.idPartie = ?', data.idParty);
-        //console.log(playerList);
+        db.query('SELECT pseudo from joueurs,joue where joueurs.idJ = joue.idJ and joue.idPartie = ?', (data.idParty).toString(), async (err,result) => {
+            if (err){
+                throw(err);
+            }
+            const playerList = result.map(object => object.pseudo);
+            socket.emit('joinGame');
+            db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",0)', [data.idPlayer,data.idParty]);
+            console.log(playerList);
+            socket.emit('playerList',playerList);
+        });
         console.log("Ce joueur ",data.idPlayer,"a demandé à rejoindre",data.idParty)
-        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",0)', [data.idPlayer,data.idParty]);
-        socket.emit('joinGame')
     });
 
     socket.on('joinableList',()=>{
