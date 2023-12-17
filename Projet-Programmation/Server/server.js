@@ -221,7 +221,7 @@ io.on('connection', (socket) => {
 
     socket.on("disconnect", (reason) => {
         if(reason == "ping timeout" || reason == "transport close") {
-            socket.on('playerDisconnect', reason, socket.id);
+            socket.emit('playerDisconnect', reason, socket.id);
         } else {
             socket.emit('disconnectComplete');
         }
