@@ -38,6 +38,7 @@ db.connect((err) => {
 });
 
 const connectedUsers = {};
+const asso = new Map();
 const rooms = [];
 
 async function generatePartyId() {
@@ -242,11 +243,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        delete connectedUsers[socket.id];
-        if (reason == "ping timeout" || reason == "transport close") { // Si le joueur se reconnecte après une déconnexion par manque de co
-            socket.emit('playerDisconnect', socket.id);
+        if(reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
+            abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
+            delete connectedUsers[socket.id]; 
         } else {
-            socket.emit('playerLeaving', socket.id);
+            abandon(db, socket, 'playerLeaving', asso.get(socket.id));
+            delete connectedUsers[socket.id]; 
         }
     });
 
