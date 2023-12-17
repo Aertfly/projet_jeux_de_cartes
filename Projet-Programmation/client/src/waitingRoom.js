@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState,useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { useIdParty } from './index.js';
 
 import Deconnection from './deconnection.js';
 
+<<<<<<< Updated upstream
 function Quitter(props){
     const {socket} = useContext(SocketContext);
     const {idJ} = usePlayer();
@@ -25,19 +26,33 @@ function Quitter(props){
 }
 
 const WaitingRoom = ()=>{
+=======
+const WaitingRoom = () => {
+>>>>>>> Stashed changes
     const { socket } = useContext(SocketContext);
     const { idParty } = useParams();
-    const [players, SetPlayers] = useState("");
-    socket.on('playerList',playerList => {
-        SetPlayers(playerList);
-    })
-    return(
+    const [players, setPlayers] = useState([]);
+
+    useEffect(() => {
+        socket.on('playerList', players => {
+            console.log(players);
+            setPlayers(players);
+        });
+
+    }, [socket]);
+
+    return (
         <div>
+<<<<<<< Updated upstream
             <h1>Bienvenue dans la Partie : {idParty} <br/> Liste des joueurs : {players}</h1>
             <Quitter idParty={idParty}/>
+=======
+            <h1>Bienvenue dans la Partie : {idParty}</h1>
+            <h2>Liste des joueurs : {players}</h2>
+>>>>>>> Stashed changes
             <Deconnection />
         </div>
     );
-}
+};
 
 export default WaitingRoom;
