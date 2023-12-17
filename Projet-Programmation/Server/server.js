@@ -212,7 +212,7 @@ io.on('connection', (socket) => {
         })
     });
     socket.on('savedList',()=>{
-        db.query('SELECT idPartie,joueursMin,joueursMax,type from parties where sauvegarde = 1',[],async (err, result) =>{
+        db.query('SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1;',[],async (err, result) =>{
             if(err)throw(err);
             console.log(result);
             socket.emit('savedListOut',result);

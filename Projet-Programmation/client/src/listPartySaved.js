@@ -57,7 +57,6 @@ function ListParty() {
         console.error('Erreur :', error);
       }
     };
-
     fetchParties();
   }, [socket]);
 
