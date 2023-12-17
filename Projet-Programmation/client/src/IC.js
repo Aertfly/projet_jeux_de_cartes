@@ -109,7 +109,8 @@ function ConnectionForm() {
   socket.on('infoPlayer', (data) => {
     setTimeout(() => navigate('/Home'), 500);
     setIdJ(data.idJ);
-    setPseudo(data.pseudo);  
+    setPseudo(data.pseudo);
+    socket.emit('test', data.idJ)
   });
 
   return (
