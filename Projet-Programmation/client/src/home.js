@@ -36,11 +36,12 @@ function Home(){
         event.preventDefault();
         if(idPartyRequested){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
-            setIsSubmit(true)
-            socket.on('joinGame2',(idParty)=>{
-                console.log(idParty);
-                if(idParty){
-                    setTimeout(() => navigate('/Home/waitingRoom/'+idParty), 250);
+            setIsSubmit(true);
+            console.log("party requested");
+            socket.on('joinGame2',(data)=>{
+                console.log(data.idParty);
+                if(data.idParty){
+                    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
                 }else{
                     setTimeout(() =>{
                         setError(true);
@@ -50,26 +51,26 @@ function Home(){
             })
         }
         else{
-            alert("Veuillez rentrer une id valide");
+            alert("Veuillez rentrer un identifiant valide");
         }
     }
     return(
         <form onSubmit={submit}>
-        <h2>Souhaitez-vous créer ou rejoindre une partie en ligne?</h2>
-        <p style={{color:"red"}}>{error?"Impossible de se rejoindre cette partie : code invalide":""}</p>
-        <p>Créer :</p>
-        <CreateButton path='createParty' text="Créer partie" disabled={isSubmit}/>
-        <p>Rejoindre une partie en ligne :</p>
-        <PrintButton path='listParty' text="Afficher parties disponibles" disabled={isSubmit}/>
+        <h2>Souhaitez-vous créer ou rejoindre une partie ?</h2>
+        <p style={{color:"red"}}>{error?"Impossible de rejoindre cette partie : code invalide":""}</p>
+        <p>Créer une partie :</p>
+        <CreateButton path='createParty' text="Créer une partie" disabled={isSubmit}/>
+        <p>Rejoindre une partie existante:</p>
+        <PrintButton path='listParty' text="Afficher les parties disponibles" disabled={isSubmit}/>
         <p>Rejoindre une partie que vous avez sauvegardée :</p>
-        <PrintButton path='listPartySaved' text="Afficher parties sauvegardée ?" disabled={isSubmit}/>
+        <PrintButton path='listPartySaved' text="Afficher les parties sauvegardée" disabled={isSubmit}/>
         <Outlet/>
-        <h3>Si vous voulez rejoindre la partie d'un ami, renseigner l'ID de la partie ici :</h3>
+        <h3>Si vous voulez rejoindre la partie d'un ami, renseignez l'ID de la partie :</h3>
         <input
             type="text"
             onChange={(event)=>setIdPartyRequested(event.target.value)}
         />
-         <button type="submit" disabled={isSubmit} >{isSubmit?"Veuiller Patienter":"Rejoindre la partie !"}</button>
+         <button type="submit" disabled={isSubmit} >{isSubmit?"Veuillez patienter":"Rejoindre la partie !"}</button>
         <Deconnection disabled={isSubmit}/>
         </form>
     );

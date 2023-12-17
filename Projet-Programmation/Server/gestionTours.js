@@ -1,21 +1,19 @@
-var gagneesAjoutes = true;
-
-var gestionTours = function (io, socket, db, partie) {
-    socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie
+var gestionTours = function (io, socket, db) {
+    socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
         // Intégrer ici le code de Killian
 
         // Let him cook
-        db.query("SELECT * FROM joue WHERE idPartie = ?", [partie.idPartie], async (err, result) => {
+        db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie], async (err, result) => {
             if (err) {
                 throw err;
             }
             nbJoueurs = new Map(Array.from(result, (key, value) => [key, value])).size;
-            console.log("Il y a " + nbJoueurs + " joueurs dans la partie " + partie.idPartie);
+            console.log("Il y a " + nbJoueurs + " joueurs dans la partie " + data.idPartie);
             if (nbJoueurs == 0) {
                 // Plus aucun joueur n'est dans la partie
                 clearInterval(compterJoueurs);
                 console.log("Il n'y a plus aucun joueur");
-                db.query("DELETE FROM parties WHERE idPartie = ?", [partie.idPartie], async (err, result) => {
+                db.query("DELETE FROM parties WHERE idPartie = ?", [data.idPartie], async (err, result) => {
                     if (err || result.affectedRows != 1) {
                         console.log("La partie a déjà été supprimée");
                     } else {
@@ -26,7 +24,7 @@ var gestionTours = function (io, socket, db, partie) {
         });
     });
 
-    socket.on("playerAction", (data) => {
+    socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
         console.log("joueur " + data.playerId + " " + data.action + " " + data.carte.enseigne + " " + data.carte.valeur);
 
         // On dit à tous les joueurs que le joueur en question a joué une carte (à remplacer par un io.broadcast.emit après les tests)
@@ -38,7 +36,7 @@ var gestionTours = function (io, socket, db, partie) {
         });
 
         // On stocke dans "mains" l'ensemble des mains des joueurs
-        const promesse = recupererMains(db, partie.idPartie);
+        const promesse = recupererMains(db, data.idPartie);
         promesse.then((cartesJoueurs) => {
             // console.log("La requête a été résolue"); 
 
@@ -57,19 +55,19 @@ var gestionTours = function (io, socket, db, partie) {
             }
 
             // On répercute l'enlèvement de la carte de la main du joueur dans l'objet vers la base de données
-            db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, partie.idPartie], async (err0, result0) => {
+            db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, data.idPartie], async (err0, result0) => {
                 if (err0) throw err0;
 
 
-                db.query("SELECT centre FROM parties WHERE idPartie=?", [partie.idPartie], async (err, result) => {
+                db.query("SELECT centre FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
                     if (err) throw err;
                     const centre = JSON.parse(result[0]["centre"]); // On peut maintenant accéder au centre, récupéré depuis la BDD
 
                     // On met la carte du joueur au centre
                     centre[data.playerId] = data.carte;
-                    db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), partie.idPartie], async (err, result) => { if (err) throw err; }); // On met à jour la BDD
+                    db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), data.idPartie], async (err, result) => { if (err) throw err; }); // On met à jour la BDD
 
-                    db.query("SELECT archive FROM parties WHERE idPartie=?", [partie.idPartie], async (err2, result2) => {
+                    db.query("SELECT archive FROM parties WHERE idPartie=?", [data.idPartie], async (err2, result2) => {
                         if (err2) throw err2;
                         const archive = JSON.parse(result2[0]["archive"]); // On peut maintenant accéder à archive
 
@@ -77,7 +75,7 @@ var gestionTours = function (io, socket, db, partie) {
                         if (JSON.stringify(archive) == "{}") {
                             console.log("On n'est pas dans une bataille");
                             // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
-                            db.query("SELECT idJ FROM joue WHERE idPartie=? AND main != '[]'", [partie.idPartie], async (err3, result3) => {
+                            db.query("SELECT idJ FROM joue WHERE idPartie=? AND main != '[]'", [data.idPartie], async (err3, result3) => {
                                 if (err3) throw err3;
 
                                 // On fait la liste des joueurs qui ont une main non vide
@@ -87,7 +85,7 @@ var gestionTours = function (io, socket, db, partie) {
                                 }
 
                                 // On fait la liste des joueurs qui ont une carte au centre
-                                db.query("SELECT centre FROM parties WHERE idPartie=?", [partie.idPartie], async (err4, result4) => {
+                                db.query("SELECT centre FROM parties WHERE idPartie=?", [data.idPartie], async (err4, result4) => {
                                     if (err4) throw err4;
                                     //console.log(result4);
                                     let joueursPossibles2 = Object.keys(JSON.parse(result4[0]["centre"]));
@@ -102,10 +100,10 @@ var gestionTours = function (io, socket, db, partie) {
                                     //console.log(unionJoueursPossibles);
 
                                     if (unionJoueursPossibles.length == 1) {
-                                        finDePartie(io, socket, db, unionJoueursPossibles[0], partie.idPartie, cartesJoueurs);
+                                        finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
                                     } else {
                                         annoncerScores(io, socket, db, cartesJoueurs);
-                                        suite(io, socket, db, partie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
+                                        suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
                                     }
                                 });
                             });
@@ -118,9 +116,9 @@ var gestionTours = function (io, socket, db, partie) {
                             //console.log("En jeu :");
                             //console.log(archive);
                             if (joueursPossibles.length == 1) {
-                                finDePartie(io, socket, db, unionJoueursPossibles[0], partie.idPartie, cartesJoueurs);
+                                finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
                             } else {
-                                suite(io, socket, db, partie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
+                                suite(io, socket, db, data.idPartie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
                             }
                         }
 
@@ -154,7 +152,7 @@ function annoncerScores(io, socket, db, cartesJoueurs) {
     });
 }
 
-function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
+function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
         reveal(io, socket, centre, db);
@@ -187,7 +185,7 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
             }
             console.log("Pli remporté par " + gagnantDeLaBataille);
             // On ajoute à ses cartes gagnées toutes les cartes des deux centres
-            db.query("SELECT gagnees FROM joue WHERE idJ=? AND idPartie=?", [gagnantDeLaBataille, partie.idPartie], async (err, result) => {
+            db.query("SELECT gagnees FROM joue WHERE idJ=? AND idPartie=?", [gagnantDeLaBataille, idPartie], async (err, result) => {
                 if (err) throw err;
 
                 cartesGagneesDuGagnant = JSON.parse(result[0]["gagnees"]); // On récupère les cartes gagnées du gagnant
@@ -200,7 +198,7 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
 
                 gagneesAjoutes = false;
                 // On insère cette nouvelle liste de cartes dans la BDD
-                db.query("UPDATE joue SET gagnees=? WHERE idPartie=? AND idJ=?", [JSON.stringify(cartesGagneesDuGagnant), partie.idPartie, gagnantDeLaBataille], async (err2, result2) => {
+                db.query("UPDATE joue SET gagnees=? WHERE idPartie=? AND idJ=?", [JSON.stringify(cartesGagneesDuGagnant), idPartie, gagnantDeLaBataille], async (err2, result2) => {
                     if (err2) throw err2;
                     gagneesAjoutes = true;
                 });
@@ -208,13 +206,13 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
             });
 
             // On vide les deux centres
-            db.query("UPDATE parties SET centre=?, archive=? WHERE idPartie=?", [JSON.stringify({}), JSON.stringify({}), partie.idPartie], async (err2, result2) => { if (err2) throw err2; });
+            db.query("UPDATE parties SET centre=?, archive=? WHERE idPartie=?", [JSON.stringify({}), JSON.stringify({}), idPartie], async (err2, result2) => { if (err2) throw err2; });
 
             // On incrémente le numéro de tour de 1
-            db.query("UPDATE parties SET tour = tour + 1 WHERE idPartie=?", [partie.idPartie], async (err2, result2) => { if (err2) throw err2; });
+            db.query("UPDATE parties SET tour = tour + 1 WHERE idPartie=?", [idPartie], async (err2, result2) => { if (err2) throw err2; });
 
             // On appelle la méthode annoncerJoueurs avec l'ensemble des joueurs : c'est un nouveau tour
-            db.query("SELECT idJ FROM joue WHERE idPartie=?", [partie.idPartie], async (err2, result2) => {
+            db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
                 if (err2) throw err2;
                 let joueurs = [];
                 result2.forEach((idJoueur) => {
@@ -222,11 +220,11 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
                 });
 
                 // On récupère le numéro de tour actuel
-                db.query("SELECT tour FROM parties WHERE idPartie=?", [partie.idPartie], async (err3, result3) => {
+                db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
                     if (err3) throw err3;
 
                     // On annonce un nouveau tour
-                    annoncerJoueurs(io, socket, joueurs, result3[0]["tour"], partie.idPartie, cartesJoueurs);
+                    annoncerJoueurs(io, socket, joueurs, result3[0]["tour"], idPartie, cartesJoueurs);
                 });
             });
 
@@ -257,14 +255,14 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
             console.log(archive);
 
             // On stocke l'archive dans la base de données
-            db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), partie.idPartie], (err, result) => { if (err) throw err; });
+            db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err, result) => { if (err) throw err; });
 
             // On récupère le numéro de tour actuel
-            db.query("SELECT tour FROM parties WHERE idPartie=?", [partie.idPartie], async (err3, result3) => {
+            db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
                 if (err3) throw err3;
 
                 // On appelle la méthode annoncerJoueurs avec les joueurs de cette liste : c'est une bataille
-                annoncerJoueurs(io, socket, joueursEnBataille, result3[0]["tour"], partie.idPartie);
+                annoncerJoueurs(io, socket, joueursEnBataille, result3[0]["tour"], idPartie);
             });
         }
     } else {
@@ -280,11 +278,10 @@ function suite(io, socket, db, partie, nbJoueursPossibles, centre, archive, cart
         }
 
         // On répercute les cartes gagnées de l'objet vers la base de données (gagnees  + main)
-        db.query("UPDATE joue SET gagnees=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("gagnees")), data.playerId, partie.idPartie], async (err, result) => { if (err) throw err; });
-        db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, partie.idPartie], async (err0, result0) => { if (err0) throw err0; });
+        db.query("UPDATE joue SET gagnees=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("gagnees")), data.playerId, idPartie], async (err, result) => { if (err) throw err; });
+        db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, idPartie], async (err0, result0) => { if (err0) throw err0; });
     }
 }
-
 
 function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs) {
     // Envoie sur la route 'winner' le pseudo du gagnant
