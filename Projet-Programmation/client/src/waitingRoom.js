@@ -7,7 +7,6 @@ import { useIdParty } from './index.js';
 
 import Deconnection from './deconnection.js';
 
-<<<<<<< Updated upstream
 function Quitter(props){
     const {socket} = useContext(SocketContext);
     const {idJ} = usePlayer();
@@ -26,9 +25,6 @@ function Quitter(props){
 }
 
 const WaitingRoom = ()=>{
-=======
-const WaitingRoom = () => {
->>>>>>> Stashed changes
     const { socket } = useContext(SocketContext);
     const { idParty } = useParams();
     const [players, setPlayers] = useState([]);
@@ -43,13 +39,8 @@ const WaitingRoom = () => {
 
     return (
         <div>
-<<<<<<< Updated upstream
             <h1>Bienvenue dans la Partie : {idParty} <br/> Liste des joueurs : {players}</h1>
             <Quitter idParty={idParty}/>
-=======
-            <h1>Bienvenue dans la Partie : {idParty}</h1>
-            <h2>Liste des joueurs : {players}</h2>
->>>>>>> Stashed changes
             <Deconnection />
         </div>
     );
