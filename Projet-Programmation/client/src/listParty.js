@@ -15,8 +15,12 @@ function Party(props) {
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
     socket.on('joinGame', data => {
-      setTimeout(() => navigate('/Home/waitingRoom/' + props.idParty), 500);
+      if (!data) {
+        setTimeout(() => navigate('/Home/waitingRoom/' + props.idParty), 500);
+      }
     });
+    
+    
   };
 
   return (
