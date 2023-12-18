@@ -12,7 +12,7 @@ var sockets = null;
 function gestionTours(playerId, socket) {
   if (sockets == null) {
     socket.on('newTurn', (data) => {
-      // La connexion est active
+
       if (data.joueurs.includes(playerId)) {
         console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
       }
@@ -69,9 +69,9 @@ function ChoisirCarteForm(props) {
   }
 
   return (
-    <form onSubmit={jouerCarte}>
-      {elements}
-      <input type="submit" value="Jouer la carte" />
+    <form className="poker-choose-card-form" onSubmit={jouerCarte}>
+    {elements}
+    <input type="submit" value="Jouer la carte" />
     </form>
   );
 }
@@ -102,10 +102,10 @@ const GameBoard = ({ numberOfPlayers }) => {
   }, [numberOfPlayers]);
 
   return (
-    <div className="game-board">
-      {playerPositions.map((position, index) => (
+    <div className="poker-game-board">
+    {playerPositions.map((position, index) => (
         <Player key={index} x={position.x} y={position.y} />
-      ))}
+    ))}
     </div>
   );
 };
@@ -117,14 +117,9 @@ const Player = ({ x, y }) => {
     top: `${y}px`,
   };
 
-  let retour = {};
-  /*for (let index = 0; index < array.length; index++) {
-    const element = array[index];
-    
-  }*/
-  return <div className="player" style={playerStyle}>
-    Roger
-  </div>;
+  return <div className="poker-player" style={playerStyle}>
+          Roger Enzo 
+        </div>
 };
 
 const Battle = () => {
@@ -138,7 +133,7 @@ const Battle = () => {
   function recupererCartes() {
     console.log(idJ);
     console.log(idParty);
-    socket.emit("requestCards", {"idJ": idJ, "idParty": idParty});;
+    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
   }
 
   useEffect(() => {
@@ -155,10 +150,9 @@ const Battle = () => {
   },[]);*/
 
   return (
-    <body>
-      <GameBoard numberOfPlayers={10} />;
-      <p>Auteur des cartes : David Bellot (david.bellot@free.fr) avec aide de Brigitte Bigi (Brigitte.Bigi@imag.fr) sous licence LGPL et sous © 2005 David Bellot</p>
-    </body>
+    <div>
+      <GameBoard numberOfPlayers={10} />
+    </div>
   );
 };
 
