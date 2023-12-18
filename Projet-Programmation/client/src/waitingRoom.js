@@ -29,7 +29,7 @@ function Start(props){
 
 const WaitingRoom = ()=>{
     const {socket} = useContext(SocketContext);
-    const {idJ,pseudo,playerList} = usePlayer();
+    const {idJ,pseudo,playerList,setPlayerList} = usePlayer();
     const {idParty} = useParams();
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
@@ -44,7 +44,10 @@ const WaitingRoom = ()=>{
                 setTimeout(() => navigate('/Home/Party/'+data.idParty), 250);
             }
         });
-
+        socket.on('refreshPlayerList',data=>{
+            console.log("Refresh",data.playerList);
+            setPlayerList(data.playerList);
+        });
     }, [socket]);
 
     function Player(props){
@@ -52,6 +55,7 @@ const WaitingRoom = ()=>{
             <li>{props.pseudo}</li>
         );
     }
+
 
     return (
         <div className="waiting-room-container">
