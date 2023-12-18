@@ -203,7 +203,7 @@ function Draw() {
     return (
         <div>
             <p>Il y a : {draw} cartes dans la pioche</p>
-            <img src={src} />
+            <img src={src}  style={{ width: '50px', height: '50px', margin: '0 auto' }} />
         </div>
     );
 }
