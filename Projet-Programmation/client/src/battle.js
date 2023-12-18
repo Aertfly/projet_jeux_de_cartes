@@ -119,7 +119,7 @@ const Player = ({ x, y }) => {
 
   return <div className="poker-player" style={playerStyle}>
           Roger Enzo 
-        </div>;
+        </div>
 };
 
 const Battle = () => {

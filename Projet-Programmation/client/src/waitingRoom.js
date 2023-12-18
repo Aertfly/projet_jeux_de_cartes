@@ -50,22 +50,28 @@ const WaitingRoom = ()=>{
             setPlayerList(data.playerList);
         });
     }, [socket]);
+    
 
     function Player(props){
         return(
             <li>{props.pseudo}</li>
         );
     }
-
-
+    const paragraphStyle = {
+        color:'black',
+        backgroundColor: isMouseOver ? 'white' : 'black' 
+      };
+    
     return (
         <div className="waiting-room-container">
             <h1>Bienvenue dans la Partie : </h1>
-            <p
-        onMouseEnter={() => setIsMouseOver(true)}
-        onMouseLeave={() => setIsMouseOver(false)}
-        style={{ display: isMouseOver ? 'block' : 'none' }}
-            >{idParty}</p>
+            <span>Passer la souris pour afficher l'id de la partie !
+                <p
+            onMouseEnter={() => setIsMouseOver(true)}
+            onMouseLeave={() => setIsMouseOver(false)}
+            style={paragraphStyle}
+                >{idParty}</p>
+            </span>
             <p style={{color:'red'}}>{msg}</p>
             <ul>
                 Liste des joueurs :
