@@ -8,14 +8,19 @@ function Party(props) {
   const { socket } = useContext(SocketContext);
   const { idJ,setPlayerList} = usePlayer();
   const navigate = useNavigate();
-
+  const [error,setError] = useState("")
+  
   const joinGame = () => {
     props.onJoinClick();
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
     socket.on('joinGame', data => {
-      setPlayerList(data.playerList);
-      setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
+      if(data.message){
+        setError(data.message)
+      }else{
+        setPlayerList(data.playerList);
+        setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
+      }
     });
   };
 

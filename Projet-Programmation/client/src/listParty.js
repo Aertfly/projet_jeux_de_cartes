@@ -8,7 +8,7 @@ function Party(props) {
   const { socket } = useContext(SocketContext);
   const { idJ,setPlayerList } = usePlayer();
   const navigate = useNavigate();
-
+  const [error,setError] = useState("")
   const joinGame = () => {
     // Disable all buttons before making the request
     props.onJoinClick();
@@ -16,23 +16,30 @@ function Party(props) {
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
 
     socket.on('joinGame2', (data) => {
-      setPlayerList(data.playerList);
-      setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
+      if(data.message){
+        setError(data.message)
+      }else{
+        setPlayerList(data.playerList);
+        setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
+      }
     });
     
     
   };
 
   return (
-    <tbody>
-      <tr>
-        <td>{props.idParty}</td>
-        <td>{props.type}</td>
-        <td>{props.min}</td>
-        <td>{props.nbPlayer +"/"+ props.max}</td>
-        <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
-      </tr>
-    </tbody>
+    <>
+      <tbody>
+        <tr>
+          <td>{props.idParty}</td>
+          <td>{props.type}</td>
+          <td>{props.min}</td>
+          <td>{props.nbPlayer +"/"+ props.max}</td>
+          <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
+        </tr>
+      </tbody>
+      <p style={{color:"red"}}>{error}</p>
+    </>
   );
 }
 

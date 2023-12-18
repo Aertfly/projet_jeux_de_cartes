@@ -147,7 +147,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createParty', async data => {
-        const { minValue, maxValue, estPublic, selectedGame, idJ } = data;
+        const { minValue, maxValue, estPublic, selectedGame, idJ ,pseudo} = data;
         const estPublicNum = estPublic ? 1 : 0;
 
         try {
@@ -172,7 +172,7 @@ io.on('connection', (socket) => {
                             rooms.push(partyId);
                         };console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
-                        socket.emit('joinGame', partyId);
+                        socket.emit('joinGame', {'idParty':partyId,'playerList':[pseudo]});
                     }
                 });
             }
@@ -214,13 +214,13 @@ io.on('connection', (socket) => {
                             });
                         } else {
                             console.log('La partie est pleine');
-                            socket.emit('joinGame', null);
+                            socket.emit('joinGame2',{'message': "La partie est pleine'"});
                         }
                     });
                 });
             } else {
                 console.log('Partie non présente dans la base');
-                socket.emit('joinGame', null);
+                socket.emit('joinGame2', {'message': "Partie non existante"});
             }
         });
 
@@ -230,7 +230,7 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinableList', () => {
-        const request= "SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1 GROUP BY p.idPartie;"
+        const request= "SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1 AND tour=-1 GROUP BY p.idPartie;"
         db.query(request, [], async (err, result) => {
             if (err) throw (err);
             socket.emit('joinableListOut', result);

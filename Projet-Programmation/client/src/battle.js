@@ -4,7 +4,7 @@ import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from './index.js'
 import Deconnection from './deconnection.js';
-import chat from './chatComponent.js';
+import Chat from './chatComponent.js';
 
 var sockets = null;
 
@@ -137,6 +137,7 @@ const Battle = () => {
     const { socket } = useContext(SocketContext);
     const { idJ, playerList } = usePlayer();
     const { idParty } = useParams();
+    const navigate = useNavigate();
 
     function recupererCartes() {
         console.log(idJ);
@@ -160,7 +161,8 @@ const Battle = () => {
     return (
         <div>
             <GameBoard playerList={playerList} />
-            <Quitter />
+            <Quitter socket={socket} idJ={idJ} navigate={navigate}/>
+            <Chat data={{party : idParty}} />
             {/*<Deconnection />*/}
         </div>
     );

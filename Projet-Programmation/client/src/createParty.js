@@ -33,7 +33,7 @@ function CreatePartyForm() {
   const [estPublic, setEstPublic] = useState(false);
   const [estSoumis, setEstSoumis] = useState(false);
   const [selectedGame, setSelectedGame] = useState("");
-  const { idJ } = usePlayer();
+  const {idJ ,setPlayerList,pseudo} = usePlayer();
   const navigate = useNavigate();
   
   const handleMinChange = (e) => {
@@ -52,7 +52,8 @@ function CreatePartyForm() {
   };
 
   socket.on('joinGame',data=>{
-    setTimeout(() => navigate('/Home/waitingRoom/'+data), 250);
+    setPlayerList(data.playerList);
+    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
   })
 
   const handleSubmit = (e) => {
@@ -63,7 +64,8 @@ function CreatePartyForm() {
       return;
     }
     if (estSoumis){
-      socket.emit('createParty',{minValue,maxValue,estPublic,selectedGame,idJ})
+      socket.emit('createParty',{minValue,maxValue,estPublic,selectedGame,idJ,pseudo})
+
     }
   };
 

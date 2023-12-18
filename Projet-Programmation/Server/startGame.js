@@ -3,7 +3,7 @@
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Partie ", data.idParty, " lancée par : ", data.idPlayer);
-        db.query("SELECT idJ, type, sauvegarde, tour, proprietaire FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
+        db.query("SELECT idJ, type, sauvegarde, tour, proprietaire,joueursMin FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
             let msg = test(rawResult,data.idPlayer);
             if (msg)socket.emit('gameStart',{'message':msg});
@@ -59,12 +59,15 @@ function test(rawResult,id){//vérifie la conformité des informations de la par
     if (rawResult.length===0)return "Erreur 404 : Partie non trouvé";
     if(rawResult[0].tour>=0)return "Partie déja en cours";
     let isNotInParty = true;
+    var cpt =0;
     for(i=0;i<rawResult.length;i++){
         if(rawResult[i]['idJ']==id){
             isNotInParty = false;
+            cpt++;
             if(!(rawResult[i]['proprietaire']))return "Vous n'êtes pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
         }
     }
+    if(cpt<rawResult[0].joueurMin)return"Attendez ! Il n'y pas encore assez de joueurs"
     if (isNotInParty)return  "le joueur qui a essayé de lancer n'est pas dans la partie"
     return null;
 }

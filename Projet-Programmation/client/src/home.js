@@ -30,7 +30,7 @@ function Home(){
     const {socket } = useContext(SocketContext);
     const {idJ, setPlayerList } = usePlayer();
     const [isSubmit,setIsSubmit] = useState(false);
-    const [error,setError] = useState(false)
+    const [error,setError] = useState("")
     const navigate = useNavigate();
     function submit(event){
         event.preventDefault();
@@ -39,15 +39,14 @@ function Home(){
             setIsSubmit(true);
             console.log("party requested");
             socket.on('joinGame2',(data)=>{
-                console.log(data);
-                if(data.idParty){
-                    setPlayerList(data.playerList);
-                    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
-                }else{
+                if(data.message){
                     setTimeout(() =>{
-                        setError(true);
+                        setError(data.message);
                         setIsSubmit(false);
                     }, 500);
+                }else{
+                    setPlayerList(data.playerList);
+                    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
                 }
             })
         }
@@ -58,7 +57,7 @@ function Home(){
     return(
         <form onSubmit={submit}>
         <h2>Souhaitez-vous créer ou rejoindre une partie ?</h2>
-        <p style={{color:"red"}}>{error?"Impossible de rejoindre cette partie : code invalide":""}</p>
+        <p style={{color:"red"}}>{error}</p>
         <p>Créer une partie :</p>
         <CreateButton path='createParty' text="Créer une partie" disabled={isSubmit}/>
         <p>Rejoindre une partie existante:</p>

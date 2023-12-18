@@ -2,12 +2,14 @@ import React, { useState, useContext } from 'react';
 import { SocketContext } from './socket.js';
 import { useEffect } from 'react';
 import { usePlayer } from './index.js';
+import { useRef } from 'react';
 // pour accéder à ce composant, mettre "import Chat from './chatComponent.js';"
 
 function Chat({ data }) {
     const {socket} = useContext(SocketContext);
     const [texte, setTexte] = useState('');
     const [messages, setMessages] = useState([]);
+    const chatContainerRef = useRef();
 
     // Enregistrement des valeurs de la data
     const {idJ,pseudo} = usePlayer();
@@ -19,11 +21,13 @@ function Chat({ data }) {
             console.log("message bien envoyé")
             const { username, message } = data;
             setMessages(prevMessages => [...prevMessages, { username, message }]);
+            scrollToBottom();
         });
 
         socket.on('otherPlayerLeft', (username) => {
           const leftPlayerMessage = `Le joueur ${username} a quitté.`;
           setMessages(prevMessages => [...prevMessages, { username: 'Server', message: leftPlayerMessage }]);
+          scrollToBottom();
         })
         return () => {
             socket.off('newMessage'); // Nettoie l'écouteur d'événements lorsque le composant est démonté
@@ -41,31 +45,33 @@ function Chat({ data }) {
       setTexte('');
     }
   };
+  const scrollToBottom = () => {
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+  };
 
   const styles = {
     position: 'fixed',
-    bottom: '50px',
+    bottom: '140px',
     right: '50px',
-    backgroundColor: 'green',
+    color:'black',
+    backgroundColor: 'gray',
     width: '300px',
-    height: '200px'
+    height: '200px',
+    overflowY: 'auto',
   };
 
   return (
     <div style={styles}>
-      <div>
-        {messages.map((msg, index) => ( // Le chat avec les messages de tous les joueurs
+      <div ref={chatContainerRef} style={{ height: '100%', overflowY: 'auto' }}>
+        {messages.map((msg, index) => (
           <div key={index}>
             <strong>{msg.username}: </strong>{msg.message}
           </div>
         ))}
       </div>
-      <input // Le champ de texte pour envoyer un message
+      <input
         type="text"
-        style={{position: 'fixed',
-        bottom: '50px',
-        right: '50px', width: '280px',
-        height: '50px'}}
+        style={{ position: 'fixed', bottom: '50px', right: '50px', width: '280px', height: '50px' }}
         value={texte}
         onChange={(e) => setTexte(e.target.value)}
         onKeyPress={handleKeyPress}
