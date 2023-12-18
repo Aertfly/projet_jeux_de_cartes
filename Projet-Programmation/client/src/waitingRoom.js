@@ -49,7 +49,7 @@ const WaitingRoom = ()=>{
     }, [socket]);
 
     return (
-        <div>
+        <div className="waiting-room-container">
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <p style={{color:'red'}}>{msg}</p>
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>

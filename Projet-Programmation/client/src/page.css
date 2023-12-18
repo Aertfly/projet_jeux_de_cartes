@@ -96,9 +96,64 @@ table {
   th, td {
     border: none;
     padding: 8px;
-    text-align: left; /* Alignement du texte à gauche */
+    text-align: left; 
   }
 
   th {
-    background-color: #aaaaaa; /* Couleur de fond pour les en-têtes */
+    background-color: #aaaaaa; 
   }
+
+
+.waiting-room-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+
+.waiting-room-container {
+    text-align: center; 
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.waiting-room-container h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.waiting-room-container p {
+    color: #ff0015;
+    margin-bottom: 20px;
+}
+
+.waiting-room-container button {
+    background-color: #ff0000;
+    color: white;
+    border-radius: 5px;
+    margin: 10px;
+    display: inline-block; 
+}
+
+.waiting-room-container button:hover {
+    background-color: #1d3557;
+}
+
+.waiting-room-container .chat-component {
+    background-color: #fff;
+    border: 1px solid #d3d3d3;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
