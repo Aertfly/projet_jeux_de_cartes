@@ -12,6 +12,7 @@ const scores = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
 const sauvegardePartie = require('./sauvegardePartie.js');
+const { Socket } = require('dgram');
 
 app.use(cors);
 
@@ -189,9 +190,10 @@ io.on('connection', (socket) => {
             if (err) throw err;
 
             if (existResult[0].partyExists) {
-                db.query('SELECT count(idPartie)as nbPartie from joue where idJ = ?;', [idParty], (err, nbGames) => {
+                db.query('SELECT count(idPartie)as nbPartie from joue where idJ = ?;', [idPlayer], (err, nbGames) => {
                     if (err) throw err;
-                    if (existResult[0].nbPartie == 0) {
+                    console.log(nbGames);
+                    if (nbGames[0].nbPartie == 0) {
                         db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
                             if (err) throw err;
 
@@ -271,6 +273,23 @@ io.on('connection', (socket) => {
     socket.on('playerLeaving', (idJ) => {
         abandon(db, socket, 'playerLeaving', idJ)
     })
+
+    socket.on('infoGame',idParty=>{
+        db.query('SELECT pseudo,centre,pioche,main,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
+            if(err)throw(err);
+            var infoPlayers=[];
+            for(i=0;i<result.length;i++){
+                infoPlayers.push({"nbCards":JSON.parse(result[i].main).length,
+                "pseudo":result[i].pseudo})
+            }
+            socket.emit('infoGameOut',{
+                'center' :JSON.parse(result[0].centre),
+                'draw' : JSON.parse(result[0].pioche).length,
+                'infoPlayers' : infoPlayers,
+                'nbTurn' : result[0].tour
+            });
+        });
+    });
 
     startGame(io, socket, db);
     scores(io, socket, db);

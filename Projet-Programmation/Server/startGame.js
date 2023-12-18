@@ -49,7 +49,7 @@ const startGame = function(io,socket,db){
             if (err)throw(err);
             console.log(result);
             console.log(result[0].main);
-            io.to(data.idParty).emit("dealingCards",{'Cards':result[0].main});
+            io.to(data.idParty).emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
         });
     });
 }   

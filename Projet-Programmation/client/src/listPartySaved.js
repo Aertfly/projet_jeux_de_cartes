@@ -62,6 +62,7 @@ function ListParty() {
         console.error('Erreur :', error);
       }
     };
+    socket.off('savedListOut')
     fetchParties();
   }, [socket]);
 

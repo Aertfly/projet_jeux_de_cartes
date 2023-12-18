@@ -28,7 +28,7 @@ var abandon = function(db,socket, motif, player) {
         delete disconnectedPlayers[player];
     };
 
-    if(motif == 'playerDisconnect') { // Quand c'est involontaire. data demande l'idJ    
+    if(motif == 'playerDisconnect') { // Quand c'est involontaire
         db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
             if(err) {
                 throw err;

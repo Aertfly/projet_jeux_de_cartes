@@ -59,16 +59,12 @@ function ListParty() {
 
   useEffect(() => {
     const fetchParties = async () => {
-      try {
-        socket.emit('joinableList');
-        socket.on('joinableListOut', (data) => {
+      socket.emit('joinableList');
+      socket.on('joinableListOut', (data) => {
           setParties(data);
-        });
-      } catch (error) {
-        console.error('Error fetching parties:', error);
-      }
+      });
     };
-
+    socket.off('joinableList')
     fetchParties();
   }, [socket]);
 
