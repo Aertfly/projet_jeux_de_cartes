@@ -151,7 +151,7 @@ const Battle = () => {
 
   return (
     <div>
-      <GameBoard numberOfPlayers={10} />;
+      <GameBoard numberOfPlayers={10} />
     </div>
   );
 };
