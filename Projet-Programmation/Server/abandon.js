@@ -10,13 +10,13 @@ var abandon = function(db,socket, motif, player) {
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log(results[0].idPartie);
+                socket.to(party).emit("otherPlayerLeft", results[0]); 
                 const resultatSuppression = await removePlayer(db, player, party)
                 if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
                             throw err;
                         }
-                        socket.to(party).emit("otherPlayerLeft", results[0]); 
                         console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", party);
                     });
                 } else {
@@ -54,14 +54,15 @@ var abandon = function(db,socket, motif, player) {
     };
 };
 
-function after30s(io, socket, db, data) {
+async function after30s(io, socket, db, data) {
     // Vérifier si le joueur est toujours déconnecté après 30 secondes
     if (disconnectedPlayers[data.player]) {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
         io.to(data.party).emit("otherPlayerLeft", data.username);
         delete disconnectedPlayers[data.player]; // On supprime de notre liste le joueur déco
-        if(removePlayer(db, data.player, data.party)) {
-            console.log("le joueur a été supprimé des données de la partie")
+        const resultatSuppression = await removePlayer(db, data.player, data.party)
+        if(resultatSuppression) {
+            console.log("le joueur a été supprimé des données de la partie avec succès")
         };
     } else {
         console.log("Le joueur", data.player, "est revenu à la partie", data.party);
@@ -70,13 +71,36 @@ function after30s(io, socket, db, data) {
 
 async function removePlayer(db, player, party) {
     return new Promise((resolve, reject) => {
-        db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
+        // Vérifier d'abord si les données à supprimer existent vraiment
+        db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
             if (err) {
-                console.log(player, "a essayé de quitter la partie", party, ", sans succès");
+                console.log("Erreur lors de la vérification des données à supprimer :", err);
                 reject(false);
             } else {
-                console.log("la suppression du joueur", player, "dans la partie", party, "s'est effectuée");
-                resolve(true);
+                if (results.length === 0) {
+                    console.log("Aucune donnée correspondante à supprimer n'a été trouvée.");
+                    resolve(false); // Aucune donnée à supprimer
+                } else {
+                    // Les données existent, on peut procéder à la suppression
+                    db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (deleteErr, deleteResults) => {
+                        if (deleteErr) {
+                            console.log("Erreur lors de la suppression :", deleteErr);
+                            reject(false);
+                        } else {
+                            console.log("La suppression s'est effectuée avec succès.");
+                            /*  code pour vérifier si la table n'existe plus
+                            db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
+                                if (err) {
+                                    console.log("Erreur lors de la récupération des données après suppression :", err);
+                                } else {
+                                    console.log(results);
+                                }
+                            });
+                            */
+                            resolve(true);
+                        }
+                    });
+                }
             }
         });
     });
