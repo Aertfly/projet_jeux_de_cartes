@@ -12,7 +12,7 @@ var sockets = null;
 function gestionTours(playerId, socket) {
   if (sockets == null) {
     socket.on('newTurn', (data) => {
-      // La connexion est active
+
       if (data.joueurs.includes(playerId)) {
         console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
       }
@@ -107,7 +107,13 @@ const GameBoard = ({ numberOfPlayers }) => {
   }, [numberOfPlayers]);
 
   return (
-    <div className="game-board">
+    <div style={{
+        backgroundColor: '#004400', // couleur de fond de test
+        backgroundSize: 'cover', 
+        width: 'cover', // largeur de test
+        height: 'cover', // hauteur de test
+        color: 'white'
+  }} className="game-board">
       {playerPositions.map((position, index) => (
         <Player key={index} x={position.x} y={position.y} />
       ))}
@@ -122,8 +128,8 @@ const Player = ({ x, y }) => {
     top: `${y}px`,
   };
 
-  return <div className="player" style={playerStyle}>
-    Roger
+  return <div  className="player" style={playerStyle}>
+    Roger Enzo 
   </div>;
 };
 
@@ -136,7 +142,7 @@ const Battle = () => {
   function recupererCartes() {
     console.log(idJ);
     console.log(idParty);
-    socket.emit("requestCards", {"idJ": idJ, "idParty": idParty});;
+    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
   }
 
   useEffect(() => {
@@ -146,10 +152,10 @@ const Battle = () => {
   }, [socket]);
 
   return (
-    <body>
+    <div>
       <GameBoard numberOfPlayers={10} />;
       <p>Auteur des cartes : David Bellot (david.bellot@free.fr) avec aide de Brigitte Bigi (Brigitte.Bigi@imag.fr) sous licence LGPL et sous © 2005 David Bellot</p>
-    </body>
+    </div>
   );
 };
 
