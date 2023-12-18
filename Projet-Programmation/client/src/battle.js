@@ -93,7 +93,8 @@ function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
     const { Info,OtherPlayerAction } = useAppContext();
     const infoPlayers = Info.infoPlayer
-    const numberOfPlayers = infoPlayers.length;
+    var numberOfPlayers =0 ;
+    if(infoPlayers){numberOfPlayers= infoPlayers.length}
     useEffect(() => {
         setPlayerPositions(circlePoints(300, numberOfPlayers));
     }, [numberOfPlayers]);
@@ -178,7 +179,8 @@ function Center() {
     const { Info } = useAppContext()
     const [cardsPositions, setCardsPositions] = useState([]);
     const center = Info.center;
-    const numberOfCards = center.length;
+    var numberOfCards =0
+    if(center)numberOfCards = center.length;
     useEffect(() => {
         setCardsPositions(circlePoints(100, numberOfCards));
     }, [numberOfCards]);
