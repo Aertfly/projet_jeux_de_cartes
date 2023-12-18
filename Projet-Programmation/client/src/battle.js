@@ -19,15 +19,15 @@ const AppProvider = ({ children }) => {
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
-    const [isMyTurn,setIsMyTurn] = useState(false);
-    const [OtherPlayerAction,setOtherPlayerAction] = useState()
+    const [isMyTurn, setIsMyTurn] = useState(false);
+    const [OtherPlayerAction, setOtherPlayerAction] = useState()
     const importAll = (context) => {
         return Object.fromEntries(
-          context.keys().map((key) => [key, context(key)])
+            context.keys().map((key) => [key, context(key)])
         );
-      };
+    };
     const images = importAll(require.context('../img', false, /\.(png)$/));
-    const [img,setImg] = useState(images);
+    const [img, setImg] = useState(images);
     console.log(img);
     const contextValue = {
         img,
@@ -57,7 +57,7 @@ const useAppContext = () => {
 };
 
 function cardToText(card) {
-    return "./"+card.valeur + "-" + card.enseigne+".png";
+    return "./" + card.valeur + "-" + card.enseigne + ".png";
 }
 
 
@@ -91,10 +91,10 @@ function circlePoints(r, nb) {
 
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
-    const { Info,OtherPlayerAction } = useAppContext();
+    const { Info, OtherPlayerAction } = useAppContext();
     const infoPlayers = Info.infoPlayer
-    var numberOfPlayers =0 ;
-    if(infoPlayers){numberOfPlayers= infoPlayers.length}
+    var numberOfPlayers = 0;
+    if (infoPlayers) { numberOfPlayers = infoPlayers.length }
     useEffect(() => {
         setPlayerPositions(circlePoints(300, numberOfPlayers));
     }, [numberOfPlayers]);
@@ -110,9 +110,11 @@ function GameBoard() {
 };
 
 function CardHand(props) {
-    const {socket, idJ, img, isMyTurn } = useAppContext();
+    const { socket, idJ, img, isMyTurn } = useAppContext();
     function play() {
         if (isMyTurn) {
+            console.log("On joue la carte :");
+            console.log(props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
         }
     }
@@ -136,15 +138,15 @@ function CardsHand() {
 }
 
 function Player(props) {
-    const { pseudo,action} = useAppContext();
-    const [msg,setMsg] = useState("");
+    const { pseudo, action } = useAppContext();
+    const [msg, setMsg] = useState("");
     const playerStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
     };
-    if (action&&action.pseudoJoueur==pseudo){
-        setMsg("A "+action.natureAction+" une carte")
+    if (action && action.pseudoJoueur == pseudo) {
+        setMsg("A " + action.natureAction + " une carte")
     }
     if (props.pseudo == pseudo) {
         return <div className="poker-player" style={playerStyle}>
@@ -153,25 +155,25 @@ function Player(props) {
             <CardsHand />
         </div>
     } else {
-        if(action){
+        if (action) {
             return <div className="poker-player" style={playerStyle}>
-            <p hidden={!msg}>{msg}</p>
-            <p>{props.pseudo}</p>
-            <p>{props.nbCards}</p>
-        </div>
+                <p hidden={!msg}>{msg}</p>
+                <p>{props.pseudo}</p>
+                <p>{props.nbCards}</p>
+            </div>
         }
 
     }
 };
 function Card(props) {
-    const {img} = useAppContext();
+    const { img } = useAppContext();
     const cardStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
     };
     return (
-        <img style={cardStyle} src={img.cardToText(props.value)}/>
+        <img style={cardStyle} src={img.cardToText(props.value)} />
     );
 }
 
@@ -179,8 +181,8 @@ function Center() {
     const { Info } = useAppContext()
     const [cardsPositions, setCardsPositions] = useState([]);
     const center = Info.center;
-    var numberOfCards =0
-    if(center)numberOfCards = center.length;
+    var numberOfCards = 0;
+    if (center) numberOfCards = center.length;
     useEffect(() => {
         setCardsPositions(circlePoints(100, numberOfCards));
     }, [numberOfCards]);
@@ -188,7 +190,7 @@ function Center() {
     return (
         <div>
             {cardsPositions.map((position, index) => (
-                <Card x={position.x} y={position.y} value={center[index]}/>
+                <Card x={position.x} y={position.y} value={center[index]} />
             ))}
         </div>
     );
@@ -197,20 +199,22 @@ function Center() {
 
 
 function Draw() {
-    const {Info,img} = useAppContext()
+    const { Info, img } = useAppContext()
+    console.log("Info :");
+    console.log(Info);
     const draw = Info.draw;
     const src = img['./dos.png'];
     return (
         <div>
             <p>Il y a : {draw} cartes dans la pioche</p>
-            <img src={src}  style={{ width: '50px', height: '50px', margin: '0 auto' }} />
+            <img src={src} style={{ width: '50px', height: '50px', margin: '0 auto' }} />
         </div>
     );
 }
 
 function Battle() {
     console.log(useAppContext())
-    const { idParty, idJ, setInfo, setCards, Info, socket,setIsMyTurn, setOtherPlayerAction} = useAppContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
 
 
     useEffect(() => {
@@ -220,6 +224,8 @@ function Battle() {
 
             socket.on("dealingCards", (data) => {
                 console.log("Cartes reçues via dealingCards");
+                console.log(data);
+                console.log("--");
                 setCards(data);
             });
             socket.on('infoGameOut', (data) => {
@@ -230,18 +236,18 @@ function Battle() {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setIsMyTurn(true);
-                    setInfo({'Center':Info.center,'draw':Info.draw,'infoPlayers':Info.infoPlayer,'nbTurn': data.numeroTour});
+                    setInfo({ 'Center': Info.center, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': data.numeroTour });
                 }
             });
-    
+
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu");
                 setOtherPlayerAction(data);
             });
-    
+
             socket.on('reveal', (data) => {
                 console.log("reveal reçu");
-                setInfo({'Center': data,'draw':Info.draw,'infoPlayers':Info.infoPlayer,'nbTurn': Info.nbTurn});
+                setInfo({ 'Center': data, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': Info.nbTurn });
             });
         }
         fetchInfoServ();
@@ -255,12 +261,31 @@ function Battle() {
                 "CHARGEMENT..." : <GameBoard />}
 
             <Draw />
+            {/*<JouerForm />*/}
             <Center />
             <Leave />
             <Chat data={{ party: idParty }} />
             {/*<Deconnection />*/}
         </div>);
 }
+
+/*function JouerForm() {
+
+    const action = () => {
+        useEffect(() => {
+            const carte = { "enseigne": "Pique", "valeur": 6 };
+            const playerId = 1;
+
+            console.log(carte.enseigne);
+            console.log("Emission de la carte " + carte);
+            socket.emit('playerAction', { "carte": carte, "player": "Pierre", "action": "joue", "playerId": playerId });
+        });
+    }
+
+    return (
+        <button onClick={action}>Jouer une carte</button>
+    )
+}*/
 
 function App() {
     return (
