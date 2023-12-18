@@ -157,3 +157,49 @@ table {
     justify-content: center;
     align-items: center;
 }
+
+/* Style général pour le plateau de jeu */
+.poker-game-board {
+    background-color: #1a1a1a; /* Couleur foncée pour le fond */
+    color: #f2f2f2; /* Couleur claire pour le texte */
+    border: 2px solid #006600; /* Bordure verte */
+    border-radius: 10px; /* Bordures arrondies */
+    padding: 20px;
+    box-shadow: 0 0 10px 5px #333333; /* Ombre portée */
+}
+
+/* Style pour chaque joueur */
+.poker-player {
+    background-color: #333333; /* Couleur de fond pour chaque joueur */
+    color: white; /* Couleur du texte */
+    padding: 10px;
+    border-radius: 50%; /* Rendre le div circulaire */
+    text-align: center;
+    box-shadow: 0 0 5px 2px #222222; /* Ombre portée */
+}
+
+/* Style pour le formulaire de sélection des cartes */
+.poker-choose-card-form {
+    background-color: #004400; /* Couleur de fond verte */
+    color: white; /* Couleur du texte */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px 3px #222222; /* Ombre portée */
+}
+
+.poker-choose-card-form input[type="radio"] {
+    margin-right: 10px;
+}
+
+.poker-choose-card-form input[type="submit"] {
+    background-color: #006600; /* Couleur de fond pour le bouton */
+    color: white; /* Couleur du texte */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer; /* Curseur en forme de main */
+}
+
+.poker-choose-card-form input[type="submit"]:hover {
+    background-color: #008800; /* Couleur de fond au survol */
+}

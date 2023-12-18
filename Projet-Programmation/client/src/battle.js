@@ -69,9 +69,9 @@ function ChoisirCarteForm(props) {
   }
 
   return (
-    <form onSubmit={jouerCarte}>
-      {elements}
-      <input type="submit" value="Jouer la carte" />
+    <form className="poker-choose-card-form" onSubmit={jouerCarte}>
+    {elements}
+    <input type="submit" value="Jouer la carte" />
     </form>
   );
 }
@@ -102,16 +102,10 @@ const GameBoard = ({ numberOfPlayers }) => {
   }, [numberOfPlayers]);
 
   return (
-    <div style={{
-        backgroundColor: '#004400', // couleur de fond de test
-        backgroundSize: 'cover', 
-        width: 'cover', // largeur de test
-        height: 'cover', // hauteur de test
-        color: 'white'
-  }} className="game-board">
-      {playerPositions.map((position, index) => (
+    <div className="poker-game-board">
+    {playerPositions.map((position, index) => (
         <Player key={index} x={position.x} y={position.y} />
-      ))}
+    ))}
     </div>
   );
 };
@@ -123,9 +117,9 @@ const Player = ({ x, y }) => {
     top: `${y}px`,
   };
 
-  return <div  className="player" style={playerStyle}>
-    Roger Enzo 
-  </div>;
+  return <div className="poker-player" style={playerStyle}>
+          Roger Enzo 
+        </div>;
 };
 
 const Battle = () => {
@@ -158,7 +152,6 @@ const Battle = () => {
   return (
     <div>
       <GameBoard numberOfPlayers={10} />;
-      <p>Auteur des cartes : David Bellot (david.bellot@free.fr) avec aide de Brigitte Bigi (Brigitte.Bigi@imag.fr) sous licence LGPL et sous © 2005 David Bellot</p>
     </div>
   );
 };
