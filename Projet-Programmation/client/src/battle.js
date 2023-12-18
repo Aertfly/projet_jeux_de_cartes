@@ -28,11 +28,6 @@ function gestionTours(playerId, socket) {
       console.log(data);
     });
 
-    socket.on('dealingCards', (data) => {
-      console.log("dealingCards reçu");
-      console.log(data);
-    });
-
 
   }
 }
@@ -86,7 +81,7 @@ const GameBoard = ({ numberOfPlayers }) => {
 
   useEffect(() => {
     const calculatePlayerPositions = () => {
-      const radius = 500; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
+      const radius = 300; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
       const angleIncrement = (2 * Math.PI) / numberOfPlayers;
       const positions = [];
 
@@ -136,7 +131,9 @@ const Player = ({ x, y }) => {
 const Battle = () => {
   const [cards, setCards] = useState();
   const { socket } = useContext(SocketContext);
-  const { idJ } = usePlayer();
+  console.log(usePlayer());
+  console.log("--");
+  const { idJ, playerList } = usePlayer();
   const { idParty } = useParams();
 
   function recupererCartes() {
@@ -147,9 +144,16 @@ const Battle = () => {
 
   useEffect(() => {
     socket.on("dealingCards", (data) => {
+      console.log("Cartes reçues via dealingCards");
       setCards(data);
     });
   }, [socket]);
+
+  /*useEffect(()=>{
+    const importAll = (context) => context.keys().map(context);
+    const images = importAll(require.context('../img', false, /\.(png)$/));
+    console.log(images)
+  },[]);*/
 
   return (
     <div>

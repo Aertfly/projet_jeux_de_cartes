@@ -32,7 +32,7 @@ var gestionTours = function (io, socket, db) {
         const requetePseudo = recupererPseudo(db, data.playerId);
         requetePseudo.then((data2) => {
             pseudoJoueur = data2;
-            io.emit('conveyAction', { "pseudoJoueur": pseudoJoueur, "natureAction": data.action });
+            socket.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": pseudoJoueur, "natureAction": data.action });
         });
 
         // On stocke dans "mains" l'ensemble des mains des joueurs
@@ -102,7 +102,7 @@ var gestionTours = function (io, socket, db) {
                                     if (unionJoueursPossibles.length == 1) {
                                         finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
                                     } else {
-                                        annoncerScores(io, socket, db, cartesJoueurs);
+                                        annoncerScores(io, socket, db, cartesJoueurs, data.idPartie);
                                         suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
                                     }
                                 });
@@ -130,7 +130,7 @@ var gestionTours = function (io, socket, db) {
     });
 }
 
-function annoncerScores(io, socket, db, cartesJoueurs) {
+function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
     // Prend en entrée le dictionnaire des cartes et retourne le score de chaque joueur sous la forme d'un dictionnaire idJoueur:score
     console.log("Envoi des scores :");
 
@@ -148,14 +148,14 @@ function annoncerScores(io, socket, db, cartesJoueurs) {
         });
 
         console.log(scores);
-        io.emit('updateScores', scores);
+        socket.to(idPartie).emit('updateScores', scores);
     });
 }
 
 function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
-        reveal(io, socket, centre, db);
+        reveal(io, socket, centre, db, idPartie);
         // console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
         compterValeurs = {};
@@ -283,12 +283,12 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
     }
 }
 
-function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs) {
+function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs, idPartie) {
     // Envoie sur la route 'winner' le pseudo du gagnant
     // socket.to
-    io.emit('winner', vainqueur);
+    socket.to(idPartie).emit('winner', vainqueur);
 
-    annoncerScores(io, socket, db, cartesJoueurs);
+    annoncerScores(io, socket, db, cartesJoueurs, idPartie);
 
     // Passe le tour à -2
     db.query("UPDATE parties SET tour=? WHERE idPartie=?", [-2, idPartie], async (err, result) => { if (err) throw err; });
@@ -326,7 +326,7 @@ function annoncerJoueurs(io, socket, listeJoueurs, numeroTour, idPartie) {
     console.log("On attend 5 secondes avant de passer au nouveau tour");
     setTimeout(() => {
         // io.to('partie' + idPartie).emit('newTurn', {"numeroTour": numeroTour, "joueurs": listeJoueurs});
-        io.emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
+        socket.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
     }, 5000);
@@ -372,13 +372,13 @@ function recupererPseudo(db, idJoueur) {
 }
 
 // On envoie à tous les joueurs le dictionnaire qui comporte l'ensemble des cartes au centre
-async function reveal(io, socket, centre, db) {
+async function reveal(io, socket, centre, db, idPartie) {
     var centreAEnvoyer = {};
     for (const clé of Object.keys(centre)) {
         const recuperer = await recupererPseudo(db, clé);
         centreAEnvoyer[recuperer] = centre[clé];
     }
-    io.emit('reveal', centreAEnvoyer);
+    socket.to(idPartie).emit('reveal', centreAEnvoyer);
 }
 
 module.exports = gestionTours;
