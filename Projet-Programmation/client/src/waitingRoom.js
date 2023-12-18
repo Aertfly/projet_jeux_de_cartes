@@ -33,6 +33,7 @@ const WaitingRoom = ()=>{
     const {idParty} = useParams();
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
+    const [isMouseOver, setIsMouseOver] = useState(false);
     useEffect(() => {
         socket.on('gameStart',data =>{
             if(data.message){
@@ -59,7 +60,12 @@ const WaitingRoom = ()=>{
 
     return (
         <div className="waiting-room-container">
-            <h1>Bienvenue dans la Partie : {idParty}</h1>
+            <h1>Bienvenue dans la Partie : </h1>
+            <p
+        onMouseEnter={() => setIsMouseOver(true)}
+        onMouseLeave={() => setIsMouseOver(false)}
+        style={{ display: isMouseOver ? 'block' : 'none' }}
+            >{idParty}</p>
             <p style={{color:'red'}}>{msg}</p>
             <ul>
                 Liste des joueurs :
@@ -67,10 +73,12 @@ const WaitingRoom = ()=>{
                     <Player pseudo={name} />
                 ))}
             </ul>
+
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
             <Chat data={{party : idParty}} />
+            
         </div>
     );
 };

@@ -42,10 +42,13 @@ function Chat({ data }) {
     }
   };
 
-  const styles = { // Tout en bas à droite
+  const styles = {
     position: 'fixed',
-    bottom: '20px',
-    right: '20px',
+    bottom: '50px',
+    right: '50px',
+    backgroundColor: 'green',
+    width: '300px',
+    height: '200px'
   };
 
   return (
@@ -59,6 +62,10 @@ function Chat({ data }) {
       </div>
       <input // Le champ de texte pour envoyer un message
         type="text"
+        style={{position: 'fixed',
+        bottom: '50px',
+        right: '50px', width: '280px',
+        height: '50px'}}
         value={texte}
         onChange={(e) => setTexte(e.target.value)}
         onKeyPress={handleKeyPress}
