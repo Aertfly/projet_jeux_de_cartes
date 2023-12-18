@@ -6,16 +6,16 @@ import { usePlayer } from './index.js';
 
 function Party(props) {
   const { socket } = useContext(SocketContext);
-  const { idJ } = usePlayer();
+  const { idJ,setPlayerList} = usePlayer();
   const navigate = useNavigate();
 
   const joinGame = () => {
-    // Disable all buttons before making the request
     props.onJoinClick();
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
     socket.on('joinGame', data => {
-      setTimeout(() => navigate('/Home/waitingRoom/' + props.idParty), 500);
+      setPlayerList(data.playerList);
+      setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
     });
   };
 
@@ -45,7 +45,7 @@ function Hide(){
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
-  const {idJ} = usePlayer()
+  const {idJ } = usePlayer()
   useEffect(() => {
     const fetchParties = async () => {
       try {

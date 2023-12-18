@@ -24,8 +24,9 @@ export const usePlayer = () => useContext(PlayerContext);
 export const PlayerProvider = ({ children }) => {
   const [idJ, setIdJ] = useState(null);
   const [pseudo, setPseudo] = useState(null);
+  const [playerList, setPlayerList] = useState([]);
   return (
-    <PlayerContext.Provider value={{ idJ, setIdJ, pseudo, setPseudo }}>
+    <PlayerContext.Provider value={{ idJ, setIdJ, pseudo, setPseudo,playerList, setPlayerList }}>
       {children}
     </PlayerContext.Provider>
   );

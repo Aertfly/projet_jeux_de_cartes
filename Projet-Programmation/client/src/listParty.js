@@ -6,7 +6,7 @@ import { usePlayer } from './index.js';
 
 function Party(props) {
   const { socket } = useContext(SocketContext);
-  const { idJ } = usePlayer();
+  const { idJ,setPlayerList } = usePlayer();
   const navigate = useNavigate();
 
   const joinGame = () => {
@@ -15,8 +15,9 @@ function Party(props) {
     
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
 
-    socket.on('joinGame2', () => {
-        setTimeout(() => navigate('/Home/waitingRoom/' + props.idParty), 500);
+    socket.on('joinGame2', (data) => {
+      setPlayerList(data.playerList);
+      setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
     });
     
     

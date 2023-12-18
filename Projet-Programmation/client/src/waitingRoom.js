@@ -29,11 +29,10 @@ function Start(props){
 
 const WaitingRoom = ()=>{
     const {socket} = useContext(SocketContext);
-    const {idJ,pseudo} = usePlayer();
+    const {idJ,pseudo,playerList} = usePlayer();
     const {idParty} = useParams();
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
-    
     useEffect(() => {
         socket.on('gameStart',data =>{
             if(data.message){
@@ -48,10 +47,22 @@ const WaitingRoom = ()=>{
 
     }, [socket]);
 
+    function Player(props){
+        return(
+            <li>{props.pseudo}</li>
+        );
+    }
+
     return (
         <div className="waiting-room-container">
             <h1>Bienvenue dans la Partie : {idParty}</h1>
             <p style={{color:'red'}}>{msg}</p>
+            <ul>
+                Liste des joueurs :
+                {playerList.length === 0?"En attente des données du serveur":playerList.map(name => (
+                    <Player pseudo={name} />
+                ))}
+            </ul>
             <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
