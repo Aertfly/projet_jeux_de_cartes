@@ -46,7 +46,7 @@ var abandon = function(db,socket, motif, player) {
     };
 
     if(motif == 'playerReconnect') { 
-        // Mettre à jour l'état du joueur lorsqu'il se reconnecte
+        // Mettre à jour l'état du joueur lorsqu'il soit considéré comme "connectable"
         if (disconnectedPlayers[data.player]) {
             disconnectedPlayers[data.player] = false; // Le joueur est de retour
             console.log("Le joueur", data.player, "est de retour dans la partie", data.party);
