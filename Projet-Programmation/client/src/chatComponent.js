@@ -62,7 +62,7 @@ function Chat({ data }) {
 
   return (
     <div style={styles}>
-      <div ref={chatContainerRef} style={{ height: '100%', overflowY: 'auto' }}>
+      <div ref={chatContainerRef} style={{ height: '100%', overflowY: 'auto', textAlign: 'left', paddingLeft: '10px' }}>
         {messages.map((msg, index) => (
           <div key={index}>
             <strong>{msg.username}: </strong>{msg.message}
