@@ -12,7 +12,7 @@ var sockets = null;
 function gestionTours(playerId, socket) {
   if (sockets == null) {
     socket.on('newTurn', (data) => {
-      // La connexion est active
+
       if (data.joueurs.includes(playerId)) {
         console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
       }
@@ -25,11 +25,6 @@ function gestionTours(playerId, socket) {
 
     socket.on('reveal', (data) => {
       console.log("reveal reçu");
-      console.log(data);
-    });
-
-    socket.on('dealingCards', (data) => {
-      console.log("dealingCards reçu");
       console.log(data);
     });
 
@@ -86,7 +81,7 @@ const GameBoard = ({ numberOfPlayers }) => {
 
   useEffect(() => {
     const calculatePlayerPositions = () => {
-      const radius = 500; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
+      const radius = 300; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
       const angleIncrement = (2 * Math.PI) / numberOfPlayers;
       const positions = [];
 
@@ -107,7 +102,13 @@ const GameBoard = ({ numberOfPlayers }) => {
   }, [numberOfPlayers]);
 
   return (
-    <div className="game-board">
+    <div style={{
+        backgroundColor: '#004400', // couleur de fond de test
+        backgroundSize: 'cover', 
+        width: 'cover', // largeur de test
+        height: 'cover', // hauteur de test
+        color: 'white'
+  }} className="game-board">
       {playerPositions.map((position, index) => (
         <Player key={index} x={position.x} y={position.y} />
       ))}
@@ -122,34 +123,43 @@ const Player = ({ x, y }) => {
     top: `${y}px`,
   };
 
-  return <div className="player" style={playerStyle}>
-    Roger
+  return <div  className="player" style={playerStyle}>
+    Roger Enzo 
   </div>;
 };
 
 const Battle = () => {
   const [cards, setCards] = useState();
   const { socket } = useContext(SocketContext);
-  const { idJ } = usePlayer();
+  console.log(usePlayer());
+  console.log("--");
+  const { idJ, playerList } = usePlayer();
   const { idParty } = useParams();
 
   function recupererCartes() {
     console.log(idJ);
     console.log(idParty);
-    socket.emit("requestCards", {"idJ": idJ, "idParty": idParty});;
+    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
   }
 
   useEffect(() => {
     socket.on("dealingCards", (data) => {
+      console.log("Cartes reçues via dealingCards");
       setCards(data);
     });
   }, [socket]);
 
+  /*useEffect(()=>{
+    const importAll = (context) => context.keys().map(context);
+    const images = importAll(require.context('../img', false, /\.(png)$/));
+    console.log(images)
+  },[]);*/
+
   return (
-    <body>
+    <div>
       <GameBoard numberOfPlayers={10} />;
       <p>Auteur des cartes : David Bellot (david.bellot@free.fr) avec aide de Brigitte Bigi (Brigitte.Bigi@imag.fr) sous licence LGPL et sous © 2005 David Bellot</p>
-    </body>
+    </div>
   );
 };
 
