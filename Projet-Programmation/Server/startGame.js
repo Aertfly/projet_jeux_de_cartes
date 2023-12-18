@@ -76,12 +76,12 @@ function giveCardsDb(io,db,playerHands,IdPlayerList,nbPlayers,idParty){
         db.query("UPDATE joue SET main =?  WHERE idJ=? ANd idPartie=? ",[hand, idJ,idParty],async(err,result)=>{
             if(err)throw(err);
             if (!(result.changedRows ==1)) {
-                console.log("Update main joueur raté",idJ,hand)
+                console.log("Update main joueur raté",idJ,hand);
                 return false;
             }
         });
     }
-    console.log("Mains correctement transmises")
+    console.log("Mains correctement transmises à la BDD");
     return true;
 }
 //algorithme Fisher-Yates, également appelé mélange de Knuth
@@ -119,7 +119,7 @@ function dealCardsWar(nbPlayers){
         var index = i % nbPlayers;
         (playerHands[index]).push(draw[i]);
     }
-    return playerHands
+    return playerHands;
 }
 
 module.exports = startGame;
