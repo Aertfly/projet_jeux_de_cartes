@@ -81,22 +81,44 @@ async function removePlayer(db, player, party) {
                     console.log("Aucune donnée correspondante à supprimer n'a été trouvée.");
                     resolve(false); // Aucune donnée à supprimer
                 } else {
-                    // Les données existent, on peut procéder à la suppression
+                    const isOwner = results[0].proprietaire === 1; // Vérifier si le joueur est propriétaire
+                    if (isOwner) {
+                        // Mettre propriétaire le joueur suivant
+                        db.query("SELECT idJ FROM joue WHERE idPartie = ? AND idJ <> ? LIMIT 1", [party, player], async (err, nextPlayerResult) => {
+                            if (err) {
+                                console.log("Erreur lors de la récupération du prochain propriétaire :", err);
+                                reject(false);
+                            } else {
+                                const nextPlayer = nextPlayerResult && nextPlayerResult.length > 0 ? nextPlayerResult[0].idJ : null;
+                                console.log("Next Owner:", nextPlayer);
+
+                                if (nextPlayer) { // Si il y a un autre joueur dans la partie, donc transmettre la propriété
+                                    db.query("UPDATE joue SET proprietaire = 1 WHERE idPartie = ? AND idJ = ?", [party, nextPlayer], async (err, updateResult) => {
+                                        if (err) {
+                                            console.log("Erreur lors de la mise à jour du prochain propriétaire :", err);
+                                            reject(false);
+                                        } else {
+                                            console.log("Nouveau propriétaire mis en place :", nextPlayer);
+                                        }
+                                    });
+                                } else { // S'il est tout seul
+                                    console.log("Aucun joueur suivant trouvé pour devenir propriétaire.");
+                                }
+                            }
+                        });
+                    }
+
+                    // Supprimer le joueur
                     db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (deleteErr, deleteResults) => {
                         if (deleteErr) {
                             console.log("Erreur lors de la suppression :", deleteErr);
                             reject(false);
                         } else {
                             console.log("La suppression s'est effectuée avec succès.");
-                            //  code pour vérifier si la table n'existe plus
-                            db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
-                                if (err) {
-                                    console.log("Erreur lors de la récupération des données après suppression :", err);
-                                } else {
-                                    console.log("Ce qui reste de la table joue :", results);
-                                }
-                            });
-                            
+                            // Vérifier si le joueur supprimé était propriétaire
+                            if (isOwner) {
+                                console.log("L'ancien propriétaire a été supprimé.");
+                            }
                             resolve(true);
                         }
                     });
@@ -105,5 +127,6 @@ async function removePlayer(db, player, party) {
         });
     });
 }
+
 
 module.exports = abandon;
