@@ -28,8 +28,8 @@ const startGame = function(io,socket,db){
                             const handPlayers = dealCardsPoker(nbPlayers);
                             break;*/
                         default:
-                            console.log("type inconnu"); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
-                            break;
+                            io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
+                            return;
                     }
                     if (!(giveCardsDb(io, db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
                         io.to(data.idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});

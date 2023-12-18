@@ -9,151 +9,161 @@ import chat from './chatComponent.js';
 var sockets = null;
 
 
+function Quitter(props){
+    function clicked(){
+        props.socket.emit('playerLeaving',props.idJ);
+        props.navigate('/home');
+    }
+    return(
+        <button type='button' onClick={clicked}>Quitter ?</button>
+    );
+}
+
 function gestionTours(playerId, socket) {
-  if (sockets == null) {
-    socket.on('newTurn', (data) => {
+    if (sockets == null) {
+        socket.on('newTurn', (data) => {
 
-      if (data.joueurs.includes(playerId)) {
-        console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-      }
-    });
+            if (data.joueurs.includes(playerId)) {
+                console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
+            }
+        });
 
-    socket.on('conveyAction', (data) => {
-      console.log("conveyAction reçu");
-      console.log(data);
-    });
+        socket.on('conveyAction', (data) => {
+            console.log("conveyAction reçu");
+            console.log(data);
+        });
 
-    socket.on('reveal', (data) => {
-      console.log("reveal reçu");
-      console.log(data);
-    });
+        socket.on('reveal', (data) => {
+            console.log("reveal reçu");
+            console.log(data);
+        });
 
 
-  }
+    }
 }
 
 function carteVersTexte(carte) {
-  return carte.valeur + " de " + carte.enseigne;
+    return carte.valeur + " de " + carte.enseigne;
 }
 
 function ChoisirCarteForm(props) {
-  const { socket } = useContext(SocketContext);
-  gestionTours(props.playerId, socket);
-  const cartes = props.cartes;
-  const [carteChoisie, setCarteChoisie] = React.useState(null); // Ajouter un état pour la carte choisie
+    const { socket } = useContext(SocketContext);
+    gestionTours(props.playerId, socket);
+    const cartes = props.cartes;
+    const [carteChoisie, setCarteChoisie] = React.useState(null); // Ajouter un état pour la carte choisie
 
-  const elements = cartes.map((carte) => {
+    const elements = cartes.map((carte) => {
+        return (
+            <>
+                <label htmlFor={carteVersTexte(carte)}>
+                    {carteVersTexte(carte)}
+                </label>
+                <input
+                    type="radio"
+                    name="carte"
+                    id={carteVersTexte(carte)}
+                    value={carteVersTexte(carte)}
+                    key={carteVersTexte(carte)}
+                    onChange={(e) => setCarteChoisie(carte)} // Mettre à jour l'état quand on change de carte
+                />
+                <br />
+            </>
+        );
+    });
+
+    const jouerCarte = (e) => {
+        e.preventDefault(); // Empêcher le comportement par défaut du formulaire
+        console.log('playerAction :');
+        console.log({ "carte": carteChoisie, "player": "Pierre", "action": "joue", "playerId": props.playerId });
+        socket.emit('playerAction', { "carte": carteChoisie, "action": "joue", "playerId": props.playerId }); // Émettre la carte choisie sur la route 'playerAction'
+    }
+
     return (
-      <>
-        <label htmlFor={carteVersTexte(carte)}>
-          {carteVersTexte(carte)}
-        </label>
-        <input
-          type="radio"
-          name="carte"
-          id={carteVersTexte(carte)}
-          value={carteVersTexte(carte)}
-          key={carteVersTexte(carte)}
-          onChange={(e) => setCarteChoisie(carte)} // Mettre à jour l'état quand on change de carte
-        />
-        <br />
-      </>
+        <form className="poker-choose-card-form" onSubmit={jouerCarte}>
+            {elements}
+            <input type="submit" value="Jouer la carte" />
+        </form>
     );
-  });
-
-  const jouerCarte = (e) => {
-    e.preventDefault(); // Empêcher le comportement par défaut du formulaire
-    console.log('playerAction :');
-    console.log({ "carte": carteChoisie, "player": "Pierre", "action": "joue", "playerId": props.playerId });
-    socket.emit('playerAction', { "carte": carteChoisie, "action": "joue", "playerId": props.playerId }); // Émettre la carte choisie sur la route 'playerAction'
-  }
-
-  return (
-    <form className="poker-choose-card-form" onSubmit={jouerCarte}>
-    {elements}
-    <input type="submit" value="Jouer la carte" />
-    </form>
-  );
 }
 
-const GameBoard = ({ numberOfPlayers }) => {
-  const [playerPositions, setPlayerPositions] = useState([]);
+const GameBoard = ({ playerList }) => {
+    const [playerPositions, setPlayerPositions] = useState([]);
+    const numberOfPlayers = playerList.length;
+    useEffect(() => {
+        const calculatePlayerPositions = () => {
+            const radius = 300; 
+            const angleIncrement = (2 * Math.PI) / numberOfPlayers;
+            const positions = [];
 
-  useEffect(() => {
-    const calculatePlayerPositions = () => {
-      const radius = 300; // Remplacez 100 par la valeur souhaitée pour le rayon du cercle
-      const angleIncrement = (2 * Math.PI) / numberOfPlayers;
-      const positions = [];
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
 
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
+            for (let i = 0; i < numberOfPlayers; i++) {
+                const angle = i * angleIncrement;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                positions.push({ x, y });
+            }
 
-      for (let i = 0; i < numberOfPlayers; i++) {
-        const angle = i * angleIncrement;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * radius;
-        positions.push({ x, y });
-      }
+            setPlayerPositions(positions);
+        };
 
-      setPlayerPositions(positions);
-    };
+        calculatePlayerPositions();
+    }, [numberOfPlayers]);
 
-    calculatePlayerPositions();
-  }, [numberOfPlayers]);
-
-  return (
-    <div className="poker-game-board">
-    {playerPositions.map((position, index) => (
-        <Player key={index} x={position.x} y={position.y} />
-    ))}
-    </div>
-  );
+    return (
+        <div className="poker-game-board">
+            {playerPositions.map((position, index) => (
+                <Player key={index} x={position.x} y={position.y} pseudo={playerList[index]} />
+            ))}
+        </div>
+    );
 };
 
-const Player = ({ x, y }) => {
-  const playerStyle = {
-    position: 'absolute',
-    left: `${x}px`,
-    top: `${y}px`,
-  };
+const Player = (props) => {
+    const playerStyle = {
+        position: 'absolute',
+        left: `${props.x}px`,
+        top: `${props.y}px`,
+    };
 
-  return <div className="poker-player" style={playerStyle}>
-          Roger Enzo 
-        </div>
+    return <div className="poker-player" style={playerStyle}>
+        {props.pseudo}
+    </div>
 };
 
 const Battle = () => {
-  const [cards, setCards] = useState();
-  const { socket } = useContext(SocketContext);
-  console.log(usePlayer());
-  console.log("--");
-  const { idJ, playerList } = usePlayer();
-  const { idParty } = useParams();
+    const [cards, setCards] = useState();
+    const { socket } = useContext(SocketContext);
+    const { idJ, playerList } = usePlayer();
+    const { idParty } = useParams();
 
-  function recupererCartes() {
-    console.log(idJ);
-    console.log(idParty);
-    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
-  }
+    function recupererCartes() {
+        console.log(idJ);
+        console.log(idParty);
+        socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
+    }
 
-  useEffect(() => {
-    socket.on("dealingCards", (data) => {
-      console.log("Cartes reçues via dealingCards");
-      setCards(data);
-    });
-  }, [socket]);
+    useEffect(() => {
+        socket.on("dealingCards", (data) => {
+            console.log("Cartes reçues via dealingCards");
+            setCards(data);
+        });
+    }, [socket]);
 
-  /*useEffect(()=>{
-    const importAll = (context) => context.keys().map(context);
-    const images = importAll(require.context('../img', false, /\.(png)$/));
-    console.log(images)
-  },[]);*/
+    /*useEffect(()=>{
+      const importAll = (context) => context.keys().map(context);
+      const images = importAll(require.context('../img', false, /\.(png)$/));
+      console.log(images)
+    },[]);*/
 
-  return (
-    <div>
-      <GameBoard numberOfPlayers={10} />
-    </div>
-  );
+    return (
+        <div>
+            <GameBoard playerList={playerList} />
+            <Quitter />
+            {/*<Deconnection />*/}
+        </div>
+    );
 };
 
 export default Battle;
