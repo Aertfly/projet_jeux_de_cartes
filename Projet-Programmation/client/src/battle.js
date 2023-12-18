@@ -119,7 +119,7 @@ const Player = ({ x, y }) => {
 
   return <div className="poker-player" style={playerStyle}>
           Roger Enzo 
-        </div>;
+        </div>
 };
 
 const Battle = () => {
@@ -151,7 +151,7 @@ const Battle = () => {
 
   return (
     <div>
-      <GameBoard numberOfPlayers={10} />;
+      <GameBoard numberOfPlayers={10} />
     </div>
   );
 };
