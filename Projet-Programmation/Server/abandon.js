@@ -10,7 +10,7 @@ var abandon = function(db,socket, motif, player) {
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log(results[0].idPartie);
-                socket.to(party).emit("otherPlayerLeft", results[0]); 
+                socket.to(results[0].idPartie).emit("otherPlayerLeft", results[0]); 
                 const resultatSuppression = await removePlayer(db, player, party)
                 if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
@@ -88,7 +88,7 @@ async function removePlayer(db, player, party) {
                             reject(false);
                         } else {
                             console.log("La suppression s'est effectuée avec succès.");
-                            /*  code pour vérifier si la table n'existe plus
+                            //  code pour vérifier si la table n'existe plus
                             db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
                                 if (err) {
                                     console.log("Erreur lors de la récupération des données après suppression :", err);
@@ -96,7 +96,7 @@ async function removePlayer(db, player, party) {
                                     console.log(results);
                                 }
                             });
-                            */
+                            
                             resolve(true);
                         }
                     });
