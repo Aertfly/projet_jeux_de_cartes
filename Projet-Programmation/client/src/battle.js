@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect,createContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -7,12 +7,39 @@ import Deconnection from './deconnection.js';
 import Chat from './chatComponent.js';
 
 var sockets = null;
+const AppContext = createContext();
+const AppProvider = ({ children }) => {
+  const { socket } = useContext(SocketContext);
+  const { idJ, playerList } = usePlayer();
+  const { idParty } = useParams();
+  const navigate = useNavigate();
+  const [cards, setCards] = useState();
+  const contextValue = {
+    cards,
+    setCards,
+    socket,
+    idJ,
+    playerList,
+    idParty,
+    navigate,
+  };
+  return (
+    <AppContext.Provider value={contextValue}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+const useAppContext = () => {
+    return useContext(AppContext);
+};
+
 
 
 function Quitter(props){
+    const {socket,idJ,navigate} = useAppContext();
     function clicked(){
-        props.socket.emit('playerLeaving',props.idJ);
-        props.navigate('/home');
+        socket.emit('playerLeaving',idJ);
+        navigate('/home');
     }
     return(
         <button type='button' onClick={clicked}>Quitter ?</button>
@@ -114,6 +141,7 @@ const GameBoard = ({ playerList }) => {
     return (
         <div className="poker-game-board">
             {playerPositions.map((position, index) => (
+                
                 <Player key={index} x={position.x} y={position.y} pseudo={playerList[index]} />
             ))}
         </div>
@@ -133,11 +161,21 @@ const Player = (props) => {
 };
 
 const Battle = () => {
+    
     const [cards, setCards] = useState();
     const { socket } = useContext(SocketContext);
     const { idJ, playerList } = usePlayer();
     const { idParty } = useParams();
     const navigate = useNavigate();
+    const contextValue = {
+        cards,
+        setCards,
+        socket,
+        idJ,
+        playerList,
+        idParty,
+        navigate,
+      };
 
     function recupererCartes() {
         console.log(idJ);
@@ -159,12 +197,14 @@ const Battle = () => {
     },[]);*/
 
     return (
+        <AppProvider>
         <div>
             <GameBoard playerList={playerList} />
-            <Quitter socket={socket} idJ={idJ} navigate={navigate}/>
+            <Quitter />
             <Chat data={{party : idParty}} />
             {/*<Deconnection />*/}
         </div>
+        </AppProvider>
     );
 };
 

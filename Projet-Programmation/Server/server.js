@@ -147,7 +147,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createParty', async data => {
-        const { minValue, maxValue, estPublic, selectedGame, idJ ,pseudo} = data;
+        const { minValue, maxValue, estPublic, selectedGame, idJ, pseudo } = data;
         const estPublicNum = estPublic ? 1 : 0;
 
         try {
@@ -167,12 +167,12 @@ io.on('connection', (socket) => {
                     } else {
                         socket.emit('resultatCreation', "Création de partie effectuée");
                         console.log("Création de partie effectuée");
-                        socket.join(partyId); 
+                        socket.join(partyId);
                         if (!rooms.includes(partyId)) {
                             rooms.push(partyId);
-                        };console.log(rooms);
+                        }; console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
-                        socket.emit('joinGame', {'idParty':partyId,'playerList':[pseudo]});
+                        socket.emit('joinGame', { 'idParty': partyId, 'playerList': [pseudo] });
                     }
                 });
             }
@@ -189,38 +189,45 @@ io.on('connection', (socket) => {
             if (err) throw err;
 
             if (existResult[0].partyExists) {
-
-                db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
+                db.query('SELECT count(idPartie)as nbPartie from joue where idJ = ?;', [idParty], (err, nbGames) => {
                     if (err) throw err;
+                    if (existResult[0].nbPartie == 0) {
+                        db.query('SELECT COUNT(*) as playerCount FROM joue WHERE idPartie = ?', [idParty], (err, countResult) => {
+                            if (err) throw err;
 
 
-                    db.query('SELECT joueursMax FROM parties WHERE idPartie = ?', [idParty], (err, maxResult) => {
-                        if (err) throw err;
-
-                        if (countResult[0].playerCount < maxResult[0].joueursMax) {
-
-                            db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
-                            socket.join(idParty);
-                            console.log("Le joueur a rejoint la room");
-                            db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                            db.query('SELECT joueursMax FROM parties WHERE idPartie = ?', [idParty], (err, maxResult) => {
                                 if (err) throw err;
-                                const playerList = result.map(object => object.pseudo);
-                                io.to(idParty).emit('refreshPlayerList',{"playerList": playerList});
-                                socket.emit('joinGame2', {"playerList": playerList, "idParty": idParty});
-                                socket.join(idParty);
-                                if (!rooms.includes(idParty)) {
-                                    rooms.push(idParty);
-                                };console.log(rooms);
+
+                                if (countResult[0].playerCount < maxResult[0].joueursMax) {
+
+                                    db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
+                                    socket.join(idParty);
+                                    console.log("Le joueur a rejoint la room");
+                                    db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                                        if (err) throw err;
+                                        const playerList = result.map(object => object.pseudo);
+                                        io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
+                                        socket.emit('joinGame2', { "playerList": playerList, "idParty": idParty });
+                                        socket.join(idParty);
+                                        if (!rooms.includes(idParty)) {
+                                            rooms.push(idParty);
+                                        }; console.log(rooms);
+                                    });
+                                } else {
+                                    console.log('La partie est pleine');
+                                    socket.emit('joinGame2', { 'message': "La partie est pleine'" });
+                                }
                             });
-                        } else {
-                            console.log('La partie est pleine');
-                            socket.emit('joinGame2',{'message': "La partie est pleine'"});
-                        }
-                    });
+                        });
+                    }else{
+                        socket.emit('joinGame2', { 'message': "Déja dans une partie" });
+                    }
                 });
+
             } else {
                 console.log('Partie non présente dans la base');
-                socket.emit('joinGame2', {'message': "Partie non existante"});
+                socket.emit('joinGame2', { 'message': "Partie non existante" });
             }
         });
 
@@ -230,7 +237,7 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinableList', () => {
-        const request= "SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1 AND tour=-1 GROUP BY p.idPartie;"
+        const request = "SELECT count(idJ)as nbJoueur,p.idPartie,joueursMin,joueursMax,type from parties p,joue j WHERE p.idPartie=j.idPartie and sauvegarde = 0 AND publique = 1 AND tour=-1 GROUP BY p.idPartie;"
         db.query(request, [], async (err, result) => {
             if (err) throw (err);
             socket.emit('joinableListOut', result);

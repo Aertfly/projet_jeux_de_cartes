@@ -107,9 +107,11 @@ async function removePlayer(db, player, party) {
                             }
                         });
                     }
+                    db.query("SELECT count(idJ) from joue where idPartie = ?",[player],async (del, delRes) =>{
 
+                    });
                     // Supprimer le joueur
-                    db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (deleteErr, deleteResults) => {
+                    db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], async (deleteErr, deleteResults) => {
                         if (deleteErr) {
                             console.log("Erreur lors de la suppression :", deleteErr);
                             reject(false);
@@ -119,6 +121,15 @@ async function removePlayer(db, player, party) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
+                            db.query("SELECT count(idJ)as nbJoueur from joue where idPartie = ?", [party], async (err, nbRes) => {
+                                if (err) throw (err)
+                                if (nbRes[0].nbJoueur == 0) {
+                                    db.query("DELETE FROM parties where idPartie=?", [party], async (err, delRes) => {
+                                        if (err) throw (err)
+                                        delRes.affectedRows==1?console.log("La partie a été supprimé."):console.log("La partie n'a pas été supprimé avec succés");
+                                    });
+                                }
+                            });
                             resolve(true);
                         }
                     });
