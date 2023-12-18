@@ -98,8 +98,9 @@ function CreatePartyForm() {
           onGameSelect={setSelectedGame}
         />
         <br />
-        <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Soumis' : 'Soumettre'}</button>
         <button type="button" onClick={handlePublicClick}>{estPublic ? 'Public' : 'Privé'}</button>
+        <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Soumis' : 'Soumettre'}</button>
+        
         <Deconnection />
       </form>
     </div>

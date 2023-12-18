@@ -79,7 +79,7 @@ function ListParty() {
             <th>ID Partie</th>
             <th>Type</th>
             <th>Min</th>
-            <th>Joueurs Actuels</th>
+            <th>joueurs Actuels</th>
             <th>Cliquer ici</th>
           </tr>
         </thead>

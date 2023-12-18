@@ -167,8 +167,8 @@ io.on('connection', (socket) => {
                         socket.emit('resultatCreation', "Création de partie effectuée");
                         console.log("Création de partie effectuée");
                         socket.join(partyId); 
-                        if (!rooms.includes(idParty)) {
-                            rooms.push(idParty);
+                        if (!rooms.includes(partyId)) {
+                            rooms.push(partyId);
                         };console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
                         socket.emit('joinGame', partyId);
