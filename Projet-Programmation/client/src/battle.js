@@ -7,9 +7,7 @@ import Deconnection from './deconnection.js';
 import chat from './chatComponent.js';
 
 var sockets = null;
-const importAll = (context) => context.keys().map(context);
-const images = importAll(require.context('../img', false, /\.(png)$/));
-console.log(images)
+
 
 function gestionTours(playerId,socket) {
     if(sockets == null){
@@ -129,6 +127,12 @@ const GameBoard = ({ numberOfPlayers }) => {
   };
   
   const App = () => {
+    useEffect(()=>{
+        const importAll = (context) => context.keys().map(context);
+        const images = importAll(require.context('../img', false, /\.(png)$/));
+        console.log(images)
+    },[]);
+
     return(
     <body>
         <GameBoard numberOfPlayers={10} />;
