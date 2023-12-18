@@ -93,7 +93,7 @@ async function removePlayer(db, player, party) {
                                 if (err) {
                                     console.log("Erreur lors de la récupération des données après suppression :", err);
                                 } else {
-                                    console.log(results);
+                                    console.log("Ce qui reste de la table joue :", results);
                                 }
                             });
                             
