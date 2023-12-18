@@ -6,15 +6,8 @@ import { usePlayer } from './index.js'
 import Deconnection from './deconnection.js';
 import Chat from './chatComponent.js';
 
-const importAll = (context) => {
-    return Object.fromEntries(
-      context.keys().map((key) => [key, context(key)])
-    );
-  };
-const images = importAll(require.context('../img', false, /\.(png)$/));
-console.log(images)
 
-  
+
 
 
 var sockets = null;
@@ -28,10 +21,16 @@ const AppProvider = ({ children }) => {
     const [Info, setInfo] = useState([]);
     const [isMyTurn,setIsMyTurn] = useState(false);
     const [OtherPlayerAction,setOtherPlayerAction] = useState()
-    const [img,setImg] = useState()
-
-
+    const importAll = (context) => {
+        return Object.fromEntries(
+          context.keys().map((key) => [key, context(key)])
+        );
+      };
+    const images = importAll(require.context('../img', false, /\.(png)$/));
+    const [img,setImg] = useState(images);
+    console.log(img);
     const contextValue = {
+        img,
         setInfo,
         setIsMyTurn,
         setOtherPlayerAction,
@@ -196,12 +195,13 @@ function Center() {
 
 
 function Draw() {
-    const { Info,img} = useAppContext()
+    const {Info,img} = useAppContext()
     const draw = Info.draw;
+    const src = img['./dos.png'];
     return (
         <div>
             <p>Il y a : {draw} cartes dans la pioche</p>
-            <img src={img.dos} />
+            <img src={src} />
         </div>
     );
 }
