@@ -254,9 +254,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('deconnexion', () => {
+
         if (socket.id in connectedUsers) {
             delete connectedUsers[socket.id];
-            socket.emit('deconnexion', "Déconnexion réussie !");
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
         }
     });

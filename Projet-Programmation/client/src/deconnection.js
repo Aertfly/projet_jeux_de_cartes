@@ -15,6 +15,7 @@ function Deco(props) {
     setEstConnecte("Déconnecté");
     socket.emit('deconnexion');
     navigate('/');
+    socket.emit('playerLeaving',idJ);
   };
 
   window.onload = function(e) {
@@ -22,12 +23,6 @@ function Deco(props) {
     handleDeconnection();
     e.returnValue = 'Déconnecté'; 
   };
-
-  socket.on('deconnexion', () => {
-    setEstConnecte("Déconnecté");
-    socket.emit('playerLeaving',idJ);
-    navigate('/');
-  })
 
   socket.on('firstConnection', () => {
     setEstConnecte("Déconnecté");
