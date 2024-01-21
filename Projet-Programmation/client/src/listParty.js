@@ -8,27 +8,23 @@ function Party(props) {
   const { socket } = useContext(SocketContext);
   const { idJ,setPlayerList } = usePlayer();
   const navigate = useNavigate();
-  const [error,setError] = useState("")
-  const joinGame = () => {
-    // Disable all buttons before making the request
-    props.onJoinClick();
-    
-    socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
+  
 
-    socket.on('joinGame2', (data) => {
+  const joinGame = () => {
+    props.onJoinClick();
+    socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
+    socket.on('joinGame2', data => {
       if(data.message){
-        setError(data.message)
+        props.onError(data.message);
       }else{
         setPlayerList(data.playerList);
         setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
       }
     });
-    
-    
   };
+  
 
   return (
-    <>
       <tbody>
         <tr>
           <td>{props.idParty}</td>
@@ -38,8 +34,6 @@ function Party(props) {
           <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
         </tr>
       </tbody>
-      <p style={{color:"red"}}>{error}</p>
-    </>
   );
 }
 
@@ -56,16 +50,22 @@ function Hide(){
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
+  const [error,setError] = useState("")
 
   useEffect(() => {
     const fetchParties = async () => {
-      socket.emit('joinableList');
       socket.on('joinableListOut', (data) => {
-          setParties(data);
+        setParties(data);
       });
+      socket.emit('joinableList');
     };
-    socket.off('joinableList')
+    
+    const cleanup = () => {
+      socket.off('joinableListOut');
+    };
+
     fetchParties();
+    return cleanup;
   }, [socket]);
 
   const [allButtonsDisabled, setAllButtonsDisabled] = useState(false);
@@ -74,9 +74,14 @@ function ListParty() {
     setAllButtonsDisabled(true);
   };
 
+  const handleError = (error) => {
+    setError(error);
+  };
+
   return (
     <div>
       <h3>Liste des Parties :</h3>
+      <p style={{color:"red"}}>{error}</p>
       <table border="1">
         <thead>
           <tr>
@@ -97,6 +102,7 @@ function ListParty() {
             nbPlayer={party.nbJoueur}
             disabled={allButtonsDisabled}
             onJoinClick={handleJoinClick}
+            onError={handleError}
           />
         ))}
       </table>

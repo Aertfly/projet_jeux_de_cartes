@@ -8,15 +8,13 @@ function Party(props) {
   const { socket } = useContext(SocketContext);
   const { idJ,setPlayerList} = usePlayer();
   const navigate = useNavigate();
-  const [error,setError] = useState("")
-  
+
   const joinGame = () => {
     props.onJoinClick();
-    
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
-    socket.on('joinGame', data => {
+    socket.on('joinGame2', data => {
       if(data.message){
-        setError(data.message)
+        props.onError(data.message);
       }else{
         setPlayerList(data.playerList);
         setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
@@ -50,21 +48,22 @@ function Hide(){
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
-  const {idJ } = usePlayer()
+  const {idJ} = usePlayer()
+  const [error,setError] = useState("")
+
   useEffect(() => {
     const fetchParties = async () => {
-      try {
-        socket.emit('savedList',idJ);
-        socket.on('savedListOut', (data) => {
-          setParties(data);
-        });
-      } catch (error) {
-        console.error('Erreur :', error);
-      }
+      socket.on('savedListOut', (data) => {
+        setParties(data);
+      });
+      socket.emit('savedList',idJ);
+    };  
+    const cleanup = () => {
+      socket.off('savedListOut');
     };
-    socket.off('savedListOut')
     fetchParties();
-  }, [socket]);
+    return cleanup;
+  }, [socket,idJ]);
 
   const [allButtonsDisabled, setAllButtonsDisabled] = useState(false);
 
@@ -72,9 +71,14 @@ function ListParty() {
     setAllButtonsDisabled(true);
   };
 
+  const handleError = (error) => {
+    setError(error);
+  };
+
   return (
     <div>
       <h3>Liste des Parties sauvergardées :</h3>
+      <p style={{color:"red"}}>{error}</p>
       <table border="1">
         <thead>
           <tr>
@@ -94,6 +98,7 @@ function ListParty() {
             type={party.type}
             disabled={allButtonsDisabled}
             onJoinClick={handleJoinClick}
+            onError={handleError}
           />
         ))}
       </table>

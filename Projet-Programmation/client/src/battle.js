@@ -45,13 +45,13 @@ const AppProvider = ({ children }) => {
         navigate,
     };
 
-
     return (
         <AppContext.Provider value={contextValue}>
             {children}
         </AppContext.Provider>
     );
 };
+
 const useAppContext = () => {
     return useContext(AppContext);
 };
