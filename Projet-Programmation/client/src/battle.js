@@ -121,11 +121,12 @@ function CardHand(props) {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '50px', 
+        width: '75', 
         height: '100px', 
-        margin: '0 auto' 
+        margin: '0 auto',
     };
     function play() {
+        console.log("Je clique sur la carte :",props.value)
         if (isMyTurn) {
             console.log("On joue la carte :",props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
@@ -133,7 +134,7 @@ function CardHand(props) {
     }
     return (
         <div>
-            <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)}  style={cardStyle}/>
+            <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)}  style={cardStyle} className='CardHand'/>
         </div>
     );
 }
@@ -145,7 +146,7 @@ function CardsHand() {
         <div>
             <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
             {cards.map((card,index) => 
-                <CardHand value={card}  x={-100+50*index} y={100} />
+                <CardHand value={card}  x={-100+80*index} y={100} />
             )}
         </div>
     );
@@ -188,7 +189,7 @@ function Card(props) {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '50px', 
+        width: '75px', 
         height: '100px', 
         margin: '0 auto' 
     };
