@@ -16,6 +16,45 @@ const { Socket } = require('dgram');
 
 app.use(cors);
 
+function queryLine(db, lineName, tableName, condition, value) {
+    if (!db || !tableName || !lineName || !condition || !value) {
+        return Promise.reject("Paramètres invalides");
+    }
+
+    return new Promise((resolve, reject) => {
+        const query = `SELECT ${lineName} FROM ${tableName} WHERE ${condition} = ?`;
+
+        db.query(query, [value], (error, results) => {
+            if (error) {
+                console.error('Erreur lors de l\'exécution de la requête :', error);
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
+function updateTable(db, tableName, lineName, condition, value) {
+    if (!db || !tableName || !lineName || !condition || !value) {
+        return Promise.reject("Paramètres invalides");
+    }
+
+    return new Promise((resolve, reject) => {
+        const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ?`;
+
+        db.query(query, [value], (error, results) => {
+            if (error) {
+                console.error('Erreur lors de l\'exécution de la requête :', error);
+                reject(error);
+            } else {
+                console.log('Résultats de la requête UPDATE :', results);
+                resolve(results);
+            }
+        });
+    });
+}
+
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000",
@@ -36,6 +75,11 @@ db.connect((err) => {
         throw err;
     }
     console.log('Connecté à MySQL');
+
+    queryLine(db, "archive", "parties", "idPartie", "LQC42XOB").then((value) => {
+        console.log(value);
+    })
+    
 });
 
 const connectedUsers = {};
@@ -254,7 +298,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('deconnexion', () => {
-        abandon(db, socket, 'playerLeaving', asso.get(socket.id));
+
         if (socket.id in connectedUsers) {
             delete connectedUsers[socket.id];
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
@@ -262,11 +306,6 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        console.log(reason);
-        if (socket.id in connectedUsers) {
-            delete connectedUsers[socket.id];
-            console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle (disconnect)');
-        }
         if (reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
             abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
             delete connectedUsers[socket.id];
