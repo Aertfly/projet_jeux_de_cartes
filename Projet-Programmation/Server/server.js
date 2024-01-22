@@ -25,10 +25,10 @@ const io = new Server(server, {
 const port = 3001;
 
 const db = mysql.createConnection({
-    host: 'rateapp.fr',
-    user: 'cp2253952p22_projetprogrammation',
-    password: 'azertyu123!',
-    database: 'cp2253952p22_projetprogrammation'
+    host: 'mysql.etu.umontpellier.fr',
+    user: 'e20220005227',
+    password: 'azertyu',
+    database: 'e20220005227'
 });
 
 db.connect((err) => {
