@@ -123,7 +123,7 @@ function generateDrawSQP(){
     var len = 104;
     var nbBoeufs = 0;   
     res = [];
-    for (i=0 ; i<len;i++){
+    for (i=1 ; i<=len;i++){
         const lastNumber = i%10;
         if(lastNumber === 5) nbBoeufs +=2;
         if(lastNumber === 0) nbBoeufs += 3;
