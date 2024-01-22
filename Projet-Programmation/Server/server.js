@@ -254,7 +254,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('deconnexion', () => {
-
+        abandon(db, socket, 'playerLeaving', asso.get(socket.id));
         if (socket.id in connectedUsers) {
             delete connectedUsers[socket.id];
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
@@ -262,6 +262,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
+        console.log(reason);
+        if (socket.id in connectedUsers) {
+            delete connectedUsers[socket.id];
+            console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle (disconnect)');
+        }
         if (reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
             abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
             delete connectedUsers[socket.id];
