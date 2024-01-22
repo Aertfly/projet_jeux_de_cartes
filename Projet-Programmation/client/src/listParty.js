@@ -54,6 +54,7 @@ function ListParty() {
 
   useEffect(() => {
     const fetchParties = async () => {
+      console.log("fetchParties");
       socket.on('joinableListOut', (data) => {
         setParties(data);
       });
@@ -61,6 +62,7 @@ function ListParty() {
     };
     
     const cleanup = () => {
+      console.log("Cleanup");
       socket.off('joinableListOut');
     };
 

@@ -47,9 +47,13 @@ const startGame = function(io,socket,db){
         db.query("SELECT main from joue where idPartie = ? and idJ = ?; ",[data.idParty,data.idJ],async(err,result)=>{
             await result;
             if (err)throw(err);
-            console.log(result);
-            console.log(result[0].main);
-            io.to(data.idParty).emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
+            if (result.length != 0){
+                console.log(result);
+                console.log(result[0].main);
+                socket.emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
+            }else{
+                console.log("Erreur envoie cartes :",result,data.idParty,data.idJ)
+            }
         });
     });
 }   
@@ -111,7 +115,7 @@ function generateDraw(familyList,nbCards){
     return FYK(res);
 }
 function dealCardsWar(nbPlayers){
-    const draw = generateDraw(["Pique","Carreau","Trefle","Coeur"],13);
+    const draw = generateDraw(["pique","carreau","trefle","coeur"],13);
     const playerHands = []; // Array(nbPlayers).fill([]) fait pointer chaque case vers la même liste vide
     for(i=0;i<nbPlayers;i++){
         const li = [];
