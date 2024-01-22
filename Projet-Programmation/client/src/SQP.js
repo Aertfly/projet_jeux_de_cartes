@@ -48,7 +48,7 @@ const AppProvider = ({ children }) => {
 
 const useAppContext = () => {
     return useContext(AppContext);
-};
+}; 
 
 function circlePoints(r, nb) {
     const radius = r;
@@ -100,21 +100,41 @@ function Card(props) {
     );
 };
 
+function Hand(props) {
+    // Vous pouvez ajuster le positionnement des cartes selon vos besoins
+    const cardPositions = cards.map((card, index) => ({
+        x: 150 * index,
+        y: 0,
+    }));
+
+    return (
+        <div>
+            {cardPositions.map((position, index) => (
+                <Card
+                    key={index}
+                    x={position.x}
+                    y={position.y}
+                    card={cards[index]}
+                    onClick={() => onCardClick(index)}
+                />
+            ))}
+        </div>
+    );
+}
 function CardBoard() {
     const { cards } = useAppContext();
     const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
-    // Styles for the card board
+
     const cardBoardStyles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '200px', // Adjust the height according to your needs
+        height: '200px', 
         backgroundColor: 'lightgray',
     };
 
     return (
         <div style={cardBoardStyles}>
-            {/* Map through the cards and render each Card component */}
             {cards.map((card, index) => (
                 <Card card={card} x={index * 120} y={0} />
             ))}
