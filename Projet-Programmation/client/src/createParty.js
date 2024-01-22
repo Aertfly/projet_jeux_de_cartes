@@ -5,7 +5,7 @@ import { usePlayer } from './index.js';
 import { useNavigate } from 'react-router-dom';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {
-  const games = ["Bataille", "Uno", "Kems", "Président"];
+  const games = ["Bataille", "Uno", "6 Qui Prend", "Président"];
 
   return (
     <ul>

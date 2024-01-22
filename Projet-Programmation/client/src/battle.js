@@ -91,7 +91,7 @@ function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
     const { Info, OtherPlayerAction } = useAppContext();
     const infoPlayers = Info.infoPlayers    
-    var numberOfPlayers = infoPlayers ? numberOfPlayers = infoPlayers.length  : 0;
+    var numberOfPlayers = infoPlayers ?  infoPlayers.length  : 0;
 
     useEffect(() => {
         const handleResize = () => {
@@ -115,7 +115,6 @@ function GameBoard() {
 };
 
 function CardHand(props) {
-    console.log(cardImgName(props.value));
     const { socket, idJ, images, isMyTurn } = useAppContext();
     const cardStyle = {
         position: 'absolute',
@@ -141,7 +140,6 @@ function CardHand(props) {
 
 function CardsHand() {
     const {cards,isMyTurn} = useAppContext();
-    console.log("Cards joueur",cards);
     return (
         <div>
             <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
@@ -154,7 +152,6 @@ function CardsHand() {
 
 function Player(props) {
     const {pseudo, action } = useAppContext();
-    console.log("Pseudo",pseudo);
     const [msg, setMsg] = useState("");
     const playerStyle = {
         position: 'absolute',
@@ -265,6 +262,7 @@ function Battle() {
                 console.log("Info other", data);
                 setInfo(data);
             });
+            
             socket.on('newTurn', (data) => {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);

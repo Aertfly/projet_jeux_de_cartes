@@ -41,8 +41,14 @@ const WaitingRoom = ()=>{
                 console.log(data.message);
             }
             else{
-                console.log(data);
-                setTimeout(() => navigate('/Home/Party/'+data.idParty), 250);
+                switch (data.type) {
+                    case "Bataille":
+                        setTimeout(() => navigate('/Home/Bataille/'+data.idParty), 250);
+                        break;
+                    case "6 Qui Prend"://traduit en SQP pour le reste du code
+                        setTimeout(() => navigate('/Home/6 Qui Prend/'+data.idParty), 250);
+                        break;
+                }
             }
         });
         socket.on('refreshPlayerList',data=>{

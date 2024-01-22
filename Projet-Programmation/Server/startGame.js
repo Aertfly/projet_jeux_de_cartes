@@ -23,10 +23,14 @@ const startGame = function(io,socket,db){
                         case "Bataille":
                             playerHands = dealCardsWar(nbPlayers);
                             break;
+                        case "6 Qui Prend"://traduit en SQP pour le reste du code
+                            playerHands = dealCardsSQP(nbPlayers,db,data.idParty);
+                            console.log("MAIN :",playerHands);
+                            break;
                         /* Exemple ajout autre jeu :
                         case "poker":
                             const handPlayers = dealCardsPoker(nbPlayers);
-                            break;*/
+                            break;*/    
                         default:
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
                             return;
@@ -36,7 +40,7 @@ const startGame = function(io,socket,db){
                     }
                     db.query("UPDATE parties SET tour=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', {'idParty':data.idParty}): io.to(data.idParty).emit('gameStart', {'message':"La partie n'a pas put être lancée"});
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', {'idParty':data.idParty,'type':rawResult[0].type}): io.to(data.idParty).emit('gameStart', {'message':"La partie n'a pas put être lancée"});
                     });
                 }
             }
@@ -114,6 +118,53 @@ function generateDraw(familyList,nbCards){
     }
     return FYK(res);
 }
+
+function generateDrawSQP(){
+    var len = 104;
+    var nbBoeufs = 0;   
+    res = [];
+    for (i=0 ; i<len;i++){
+        const lastNumber = i%10;
+        if(lastNumber === 5) nbBoeufs +=2;
+        if(lastNumber === 0) nbBoeufs += 3;
+        if(i%11 === 0)  nbBoeufs += 5;
+        if(nbBoeufs === 0) nbBoeufs = 1;
+        res.push({
+            "valeur" : i,
+            "nbBoeufs" : nbBoeufs
+        });
+        nbBoeufs = 0;
+    }
+    return FYK(res);
+}
+
+
+function dealCardsSQP(nbPlayers,db,idParty){
+    const draw = generateDrawSQP();
+    const playerHands = []; 
+    for(let i=0;i<nbPlayers;i++){
+        const li = [];
+        playerHands.push(li);
+    }
+    const len = nbPlayers*10;
+    if (len > 100)return;//normalement le nombre de joueur max est 10 mais on vérifie
+    for(let i=0;i<len;i++){
+        var index = i % nbPlayers;
+        (playerHands[index]).push(draw[i]);
+    }
+    const archives = [];
+    for(let c=1;c<=4;c++){archives.push(draw[104-c])}
+    console.log("Archives",archives);
+    db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
+        if(err)throw(err);
+        if (!(result.changedRows ==1)) {
+            console.log("Update archive raté",archives,idParty);
+            return false;
+        }
+    });
+    return playerHands;
+}
+
 function dealCardsWar(nbPlayers){
     const draw = generateDraw(["pique","carreau","trefle","coeur"],13);
     const playerHands = []; // Array(nbPlayers).fill([]) fait pointer chaque case vers la même liste vide

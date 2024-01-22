@@ -33,17 +33,15 @@ var abandon = function(db,socket, motif, player) {
             if(err) {
                 throw err;
             }
-            if (results && results.length > 0) {
-                data[party] = results; // On rajoute l'info de quel partie il venait
-                b.query("SELECT pseudo FROM joueurs WHERE idJ = ?", [player], async(err, results) => {
-                    if(err) {
-                        throw err;
-                    }
-                    data[username] = results; // On rajoute l'info de son pseudonyme, pour l'affichage dans le chat plus tard (s'il ne revient pas)
-                    disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
-                    setTimeout(function() { after30s(io, socket, db, data) }, 30000); // On attend 30 secondes
-                });
-            }
+            data[party] = results; // On rajoute l'info de quel partie il venait
+            b.query("SELECT pseudo FROM joueurs WHERE idJ = ?", [player], async(err, results) => {
+                if(err) {
+                    throw err;
+                }
+                data[username] = results; // On rajoute l'info de son pseudonyme, pour l'affichage dans le chat plus tard (s'il ne revient pas)
+                disconnectedPlayers[data.player] = true; // Marquer le joueur comme déconnecté
+                setTimeout(function() { after30s(io, socket, db, data) }, 30000); // On attend 30 secondes
+            });
         });
     };
 

@@ -16,45 +16,6 @@ const { Socket } = require('dgram');
 
 app.use(cors);
 
-function queryLine(db, lineName, tableName, condition, value) {
-    if (!db || !tableName || !lineName || !condition || !value) {
-        return Promise.reject("Paramètres invalides");
-    }
-
-    return new Promise((resolve, reject) => {
-        const query = `SELECT ${lineName} FROM ${tableName} WHERE ${condition} = ?`;
-
-        db.query(query, [value], (error, results) => {
-            if (error) {
-                console.error('Erreur lors de l\'exécution de la requête :', error);
-                reject(error);
-            } else {
-                resolve(results);
-            }
-        });
-    });
-}
-
-function updateTable(db, tableName, lineName, condition, value) {
-    if (!db || !tableName || !lineName || !condition || !value) {
-        return Promise.reject("Paramètres invalides");
-    }
-
-    return new Promise((resolve, reject) => {
-        const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ?`;
-
-        db.query(query, [value], (error, results) => {
-            if (error) {
-                console.error('Erreur lors de l\'exécution de la requête :', error);
-                reject(error);
-            } else {
-                console.log('Résultats de la requête UPDATE :', results);
-                resolve(results);
-            }
-        });
-    });
-}
-
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000",
@@ -75,11 +36,6 @@ db.connect((err) => {
         throw err;
     }
     console.log('Connecté à MySQL');
-
-    queryLine(db, "archive", "parties", "idPartie", "LQC42XOB").then((value) => {
-        console.log(value);
-    })
-    
 });
 
 const connectedUsers = {};
@@ -320,15 +276,19 @@ io.on('connection', (socket) => {
     })
 
     socket.on('infoGame',idParty=>{
-        db.query('SELECT pseudo,centre,pioche,main,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
+        db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
             if(err)throw(err);
             var infoPlayers=[];
             for(i=0;i<result.length;i++){
-                infoPlayers.push({"nbCards":JSON.parse(result[i].main).length,
-                "pseudo":result[i].pseudo})
+                infoPlayers.push({
+                    "nbCards":JSON.parse(result[i].main).length,
+                    "pseudo":result[i].pseudo,
+                    "score":result[i].score
+                })
             }
             socket.emit('infoGameOut',{
                 'center' :JSON.parse(result[0].centre),
+                'archive' : JSON.parse(result[0].archive),
                 'draw' : JSON.parse(result[0].pioche).length,
                 'infoPlayers' : infoPlayers,
                 'nbTurn' : result[0].tour

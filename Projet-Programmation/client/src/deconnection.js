@@ -15,10 +15,12 @@ function Deco(props) {
     setEstConnecte("Déconnecté");
     socket.emit('deconnexion');
     navigate('/');
+    socket.emit('playerLeaving',idJ);
   };
 
   window.onload = function(e) {
     e.preventDefault();
+    handleDeconnection();
     e.returnValue = 'Déconnecté'; 
   };
 
