@@ -1,6 +1,6 @@
 const playerActionSQP = require('./sqp/playerActionSQP');
 
-var gestionTours = function (io, socket, db) {
+const gestionTours = function (io, socket, db) {
     socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
         // Intégrer ici le code de Killian
 
@@ -75,7 +75,7 @@ var gestionTours = function (io, socket, db) {
                         
                         // On regarde dans quel jeu on est
                         db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err3, result3) => {
-                            const jeu = JSON.parse(result3[0]["type"]);
+                            const jeu = result3[0]["type"];
                             switch (jeu){
                                 case "Bataille": 
                                     // On passe à une logique spécifique à la bataille
