@@ -1,69 +1,103 @@
-function queryLine(db,condition,value,tableName,lineName){
+function queryLine(db, lineName, tableName, condition, value) {
     if (!db || !tableName || !lineName || !condition || !value) {
-        return "Paramètres invalides";
+        return Promise.reject("Paramètres invalides");
     }
-    const query = `SELECT ${lineName} FROM ${tableName} WHERE ${condition} = ${value}`;
-    return results[0][lineName];
-}
 
-function updateTable(db,condition, value, tableName, lineName) {
-    if (!db || !tableName || !lineName || !condition || !value) {
-        return "Paramètres invalides";
-    }
-    const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ${value}`;
-    db.query(query, updateValues, (error, results) => {
-        if (error) {
-            console.error('Erreur lors de l\'exécution de la requête :', error);
-        }
+    return new Promise((resolve, reject) => {
+        const query = `SELECT ${lineName} FROM ${tableName} WHERE ${condition} = ?`;
+
+        db.query(query, [value], (error, results) => {
+            if (error) {
+                console.error('Erreur lors de l\'exécution de la requête :', error);
+                reject(error);
+            } else {
+                resolve(results[0][lineName]);
+            }
         });
-};
-
-var playerActionSQP = function(io, socket, db){
-    socket.on('playerAction', data => {  // Quand on reçoit une action de la part d'un joueur
-        /*
-        data {
-            playerId : int,
-            idPartie : int,
-            action : string,
-            carte {
-                enseigne: string,
-                valeur: string
-            },
-            ligne : int
-        }
-        */
-
-        // On récupère le centre et l'archive
-        centre = JSON.parse(queryLine(db, 'idParty', data.idPartie, 'parties', 'centre'));
-        console.log(centre);
-        // archive = queryLine(db, 'idParty', data.idPartie, 'parties', 'archive');
-
-        // Si playerAction = 'joue'
-        if (data.action == 'joue'){
-            // On ajoute la carte du joueur au centre
- 
-            // Si le centre est égal au nombre de joueurs (récupérer sur la BDD le nombre de joueurs)
-                // On joue : appel à declencherLogique
-
-        }
-
-        // Si playerAction = 'ligne'
-            // Le joueur renvoie également sa carte
-            
-            // Le joueur récupère la ligne qu'il a enlevée :
-            // On enlève la carte du joueur du centre
-            // On ajoute au score du joueur les têtes de boeuf qu'il a ramassées
-            // On remplace la ligne ramassée par la carte du joueur
     });
 }
 
-var declencherLogique = function(io, socket, db, idPartie){
+function updateTable(db, tableName, lineName, condition, value) {
+    if (!db || !tableName || !lineName || !condition || !value) {
+        return Promise.reject("Paramètres invalides");
+    }
+
+    return new Promise((resolve, reject) => {
+        const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ?`;
+
+        db.query(query, [value], (error, results) => {
+            if (error) {
+                console.error('Erreur lors de l\'exécution de la requête :', error);
+                reject(error);
+            } else {
+                console.log('Résultats de la requête UPDATE :', results);
+                resolve(results);
+            }
+        });
+    });
+}
+
+var playerActionSQP = function(io, socket, db, centre, archive, data){
+    // Quand on reçoit une action de la part d'un joueur, et qu'on est dans une partie de 6 qui prend
+    console.log("appel de playerActionSQP");
+    /*
+    data {
+        playerId : int,
+        idPartie : int,
+        action : string,
+        carte {
+            enseigne: string,
+            valeur: string
+        },
+        ligne : int
+    }
+    */
+
+    console.log(centre);
+    console.log(archive);
+    
+    // Si playerAction = 'joue'
+    if (data.action == 'joue'){
+        // Si le centre est égal au nombre de joueurs (récupérer sur la BDD le nombre de joueurs)
+        qb.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
+            var nbJoueurs = result[0]["COUNT(*)"];
+            if (nbJoueurs == Object.keys(centre).length){
+                // On joue : appel à declencherLogique
+                console.log("on joue : appel à déclencherLogique");
+                declencherLogique(io, socket, db, data.idPartie, centre, archive);
+            }
+        });
+    }
+}
+
+var choixLigne = function(io, socket, db){
+    socket.on('ligne', (data) => { // Quand un joueur choisit une ligne
+        // On récupère la carte du joueur au centre (il a déjà joué sa carte, là il dit simplement quelle ligne il veut remplacer)
+        // On enlève la carte du joueur du centre
+
+        // remplacerLigne(db, data.idJ, data.idPartie, data.ligne, carte)
+    });
+}
+
+var declencherLogique = function(io, socket, db, idPartie, centre, archive){
+    console.log("declencherLogique appelé");
+
     // on suppose que le nombre de cartes au centre est égal au nombre de joueurs (assert ?)
 
-    // on reveal : on envoie infoGameOut (center, archive, draw (vide), infoPlayers, nbTurn)
-    // on attend 1s
+    // on révèle les cartes : on envoie infoGameOut (center, archive, draw (vide), infoPlayers, nbTurn)
+    socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: {}, nbTurn: 0});
 
     // on trie les cartes par ordre croissant
+    let temp = [];
+    for (let [clé, val] of centre){
+        temp.push([clé, val]);
+    }
+
+    let triees = trier(temp);
+    for(let i in temp){
+        console.log(triees[i][0] + " " + triees[i][1].valeur + " " + triees[i][1].nbBoeufs);
+    }
+    
 
     // tant que le centre n'est pas vide
         // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
@@ -82,7 +116,7 @@ var declencherLogique = function(io, socket, db, idPartie){
             // On enlève LA carte du centre
             // Si la longueur de la ligne est égale à 6
                 // 6 qui prend :
-                // recupererLigne(db, idJ, idPartie, ligne, LA carte)
+                // remplacerLigne(db, idJ, idPartie, ligne, LA carte)
 
         // On envoie les centres mis à jour :
         // on envoie infoGameOut (center, archive, draw (vide), infoPlayers, nbTurn)
@@ -111,4 +145,17 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
     // Dans la variable qui correspond au centre2, on remplace la ligne correspondante par juste la carte passée en paramètre
     // On met à jour la db à partir de la variable du centre2
     // On renvoie true
+}
+
+function trier(temp) {
+    // Créer une fonction de comparaison qui compare les valeurs des attributs "valeur" des deux objets
+    const comparer = (a, b) => {
+      return a[1].valeur - b[1].valeur;
+    };
+  
+    // Trier la liste `temp` en fonction de la fonction de comparaison
+    temp.sort(comparer);
+  
+    // Retourner la liste triée
+    return temp;
 }
