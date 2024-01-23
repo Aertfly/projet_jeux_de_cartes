@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import io from 'socket.io-client';
-const socket = io('http://localhost:3001');
+import { SocketContext } from '../../socket.js';
 // pour accéder à ce composant, mettre "import Save from './saveComponent.js';"
 
 function Save({ data }) {
     // Enregistrement de la valeur de la data
+    const { socket } = useContext(SocketContext);
     const [party, setParty] = useState(data.party);
 
   const handleSave = () => {

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
-const socket = io('http://localhost:3001');
+import { SocketContext } from '../../socket.js';
 // pour accéder à ce composant, mettre "import Score from './scoreComponent.js';"
 
 const Score = () => {
+  const { socket } = useContext(SocketContext);
   const [scores, setScores] = useState({});
 
   useEffect(() => {
