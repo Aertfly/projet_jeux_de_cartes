@@ -25,7 +25,10 @@ const startGame = function(io,socket,db){
                             break;
                         case "6 Qui Prend"://traduit en SQP pour le reste du code
                             playerHands = dealCardsSQP(nbPlayers,db,data.idParty);
-                            console.log("MAIN :",playerHands);
+                            if(playerHands.length == 0){
+                                io.to(data.idParty).emit('gameStart', {'message':"Probléme lors de l'accés à la base de donnée"});
+                                return;
+                            }
                             break;
                         /* Exemple ajout autre jeu :
                         case "poker":
@@ -104,6 +107,8 @@ function FYK(list){
     }
     return list;
 }
+
+
 function generateDraw(familyList,nbCards){
     var len = familyList.length;
     //console.log(len,familyList,nbCards);
@@ -159,7 +164,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
         if(err)throw(err);
         if (!(result.changedRows ==1)) {
             console.log("Update archive raté",archives,idParty);
-            return false;
+            return [];
         }
     });
     return playerHands;
