@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { SocketContext } from '../../socket.js';
 // pour accéder à ce composant, mettre "import Save from './saveComponent.js';"
 
