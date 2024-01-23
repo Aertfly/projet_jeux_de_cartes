@@ -34,9 +34,30 @@ const Score = () => {
     score: scores[player]
   }));
 
+  const Style = {
+    position: 'fixed',
+    top: '10px',
+    right: '100px',
+    width: '200px', // Changer la largeur à deux fois plus grande
+    height: '200px', // Changer la hauteur à deux fois plus grande
+    backgroundColor: 'white',
+    color: 'black',
+    padding: '10px',
+    borderRadius: '10px',
+    border: '2px solid black',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  };
+
+  const headerStyle = {
+    textAlign: 'center', // Centrer le texte
+  };
+
   return (
-    <div>
-      <h2>Scores de la partie</h2>
+    <div style={Style}>
+      <h2 style={headerStyle}>Scores de la partie</h2>
       <ul>
         {scoresArray.map((player, index) => (
           <li key={index}>
