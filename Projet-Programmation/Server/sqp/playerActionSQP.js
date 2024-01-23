@@ -37,7 +37,7 @@ function updateTable(db, tableName, lineName, condition, value) {
     });
 }
 
-var playerActionSQP = function(io, socket, db, centre, archive, data){
+const playerActionSQP = function(io, socket, db, centre, archive, data){
     // Quand on reçoit une action de la part d'un joueur, et qu'on est dans une partie de 6 qui prend
     console.log("appel de playerActionSQP");
     /*
@@ -59,7 +59,7 @@ var playerActionSQP = function(io, socket, db, centre, archive, data){
     // Si playerAction = 'joue'
     if (data.action == 'joue'){
         // Si le centre est égal au nombre de joueurs (récupérer sur la BDD le nombre de joueurs)
-        qb.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
+        db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
             var nbJoueurs = result[0]["COUNT(*)"];
             if (nbJoueurs == Object.keys(centre).length){
                 // On joue : appel à declencherLogique
@@ -89,12 +89,14 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
 
     // on trie les cartes par ordre croissant
     let temp = [];
-    for (let [clé, val] of centre){
-        temp.push([clé, val]);
+    console.log("----");
+    console.log(centre);
+    for (let clé of Object.keys(centre)){
+        temp.push([clé, centre[clé]]);
     }
 
     let triees = trier(temp);
-    for(let i in temp){
+    for(let i in triees){
         console.log(triees[i][0] + " " + triees[i][1].valeur + " " + triees[i][1].nbBoeufs);
     }
     
@@ -159,3 +161,5 @@ function trier(temp) {
     // Retourner la liste triée
     return temp;
 }
+
+module.exports = playerActionSQP;
