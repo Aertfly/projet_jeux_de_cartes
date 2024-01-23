@@ -40,9 +40,7 @@ const AppProvider = ({ children }) => {
     const [isMyTurn, setIsMyTurn] = useState(false);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
-    const image = require('../img/SQP/boeuf.png');
     const contextValue = {
-        image,
         setInfo,
         setIsMyTurn,
         setOtherPlayerAction,
@@ -86,6 +84,23 @@ function circlePoints(r, nb) {
     return positions;
 }
 
+function generatePointCards(nb,widthCards,heightCards){
+    const width = window.innerWidth - (2*widthCards);
+    const listPoints = [];
+    const ecart = width/nb;
+    var x;
+
+    for (let  i=1 ; i<=nb ; i++){
+        x = (width/nb)*i
+        listPoints.push(x)
+    }
+
+    return {
+        'y' : window.innerHeight-heightCards,
+        'x' : listPoints
+    }
+}
+
 function Leave() {
     const { socket, idJ, navigate } = useAppContext();
     function clicked() {
@@ -108,7 +123,7 @@ function Card(props) {
         border: '1px solid black', // Bordure pour visualiser le rectangle
         textAlign: 'center',
         padding: '10px',
-        backgroundColor: 'white', // Couleur de fond
+        backgroundImage: 'url("../img/SQP/boeuf.png")'
     };
 
     return (
@@ -119,13 +134,13 @@ function Card(props) {
     );
 };
 
-function Hand(props) {
+function CardHand(props) {
     const { idJ, isMyTurn, socket } = useAppContext();
 
     function onCardClick() {
         if (isMyTurn) {
             console.log("le Joueur", idJ, "joue la carte", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
+            socket.emit('playerActionSQP', { "carte": props.value, "action": "joue", "playerId": idJ });
         }
     }
 
@@ -141,17 +156,20 @@ function Hand(props) {
     );
 }
 
-function CardHand() {
+function CardsHand() {
     const {cards,isMyTurn} = useAppContext();
+    const pointsCards = generatePointCards(cards.length,100,150);
+    console.log(pointsCards);
     return (
         <div>
             <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
             {cards.map((card,index) => 
-                <Hand value={card} x={-100+80*index} y={100} />
+                <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
         </div>
     );
 }
+
 
 function SixQuiPrend() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
@@ -159,10 +177,12 @@ function SixQuiPrend() {
     useEffect(() => {
         const fetchInfoServ = async () => {
             console.log("fetchInfoServ")
+
             socket.on("dealingCards", (data) => {
                 console.log("Cartes reçues via dealingCards",data);
                 setCards(data.Cards);
             });
+
             socket.on('infoGameOut', (data) => {
                 console.log("Info other", data);
                 setInfo(data);
@@ -186,6 +206,14 @@ function SixQuiPrend() {
                 setInfo({ 'Center': data, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': Info.nbTurn });
             });
 
+            socket.on('loser',(data)=>{
+                console.log("Ce mec la a perdu",data);
+            });
+
+            socket.on('requestAction',(data)=>{
+                console.log("Je dois faire un truc",data)
+            });
+
             socket.emit('infoGame', idParty);
             socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
         }
@@ -204,6 +232,7 @@ function SixQuiPrend() {
             <Save data={{party: idParty}} />
             <Chat data={{party: idParty}} />
             <Deconnection />
+            <Leave />
             <Score />
         </>
     )
@@ -213,6 +242,7 @@ function App2() {
     
     return (
         <AppProvider>
+            <CardsHand />
             <SixQuiPrend />
             <Test />
         </AppProvider>
