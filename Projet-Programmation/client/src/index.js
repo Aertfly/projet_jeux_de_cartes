@@ -7,7 +7,8 @@ import ListParty from "./listParty.js";
 import NotFound from "./notFound.js";
 import ListPartySaved from "./listPartySaved.js";
 import { SocketProvider } from './socket.js';
-import Party from './battle.js';
+import Battle from './battle.js';
+import SQP from './SQP.js';
 
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals' ;
@@ -45,8 +46,8 @@ root.render(
             </Route>
             <Route path="/Home/createParty" element={<CreateParty />} />
             <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
-            <Route path="/Home/Bataille/:idParty" element={<> <Party /> </>} />
-            <Route path="/Home/6 Qui Prend/:idParty" element={<> <Party /> </>} />
+            <Route path="/Home/Bataille/:idParty" element={<> <Battle /> </>} />
+            <Route path="/Home/6 Qui Prend/:idParty" element={<> <SQP /> </>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

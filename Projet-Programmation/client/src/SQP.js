@@ -121,8 +121,8 @@ function Hand(props) {
         </div>
     );
 }
-function CardHands() {
-    const { cards , isMyTurn } = useAppContext();
+function CardBoard() {
+    const { cards } = useAppContext();
     const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
 
     const cardBoardStyles = {
@@ -135,9 +135,8 @@ function CardHands() {
 
     return (
         <div style={cardBoardStyles}>
-            <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
             {cards.map((card, index) => (
-                <Hand card={card} x={index * 120} y={0} />
+                <Card card={card} x={index * 120} y={0} />
             ))}
         </div>
     );
