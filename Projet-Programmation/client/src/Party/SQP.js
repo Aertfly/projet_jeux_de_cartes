@@ -8,6 +8,27 @@ import Chat from '../Page/Component/chatComponent.js';
 import Save from '../Page/Component/saveComponent.js';
 import Score from '../Page/Component/scoreComponent.js';
 
+function Test() {
+    const { idJ, idParty, socket } = useAppContext();
+
+    const handleCardChoisie = () => {
+        socket.emit('playerAction', {carte: {valeur: 50, enseigne: "SQP", nbBoeufs: 3},playerId: idJ, idPartie: idParty, "action": "joue"});
+    }
+
+
+    const handleLigneChoisie = () => {
+        socket.emit('ligne', {ligne: 2});
+    }
+
+    return (
+      <div>
+          <br />
+          <button type="button" onClick={handleCardChoisie}>{'Jouer cette carte'}</button>
+          <button type="submit" onClick={handleLigneChoisie}>{'Jouer cette ligne'}</button>
+      </div>
+    );
+  }
+
 const AppContext = createContext();
 const AppProvider = ({ children }) => {
     const { socket } = useContext(SocketContext);
@@ -193,6 +214,7 @@ function App2() {
     return (
         <AppProvider>
             <SixQuiPrend />
+            <Test />
         </AppProvider>
     );
 };
