@@ -170,6 +170,31 @@ function CardsHand() {
     );
 }
 
+function Center() {
+    const { Info } = useAppContext()
+    const [cardsPositions, setCardsPositions] = useState([]);
+    const center = Info.center;
+    if (center)var numberOfCards = center.length;
+    else var numberOfCards = 0;
+    useEffect(() => {
+        const handleResize = () => {
+            setCardsPositions(circlePoints(100, numberOfCards));
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    },[]);
+
+    return (
+        <div className="center-container">
+            {cardsPositions.map((position, index) => (
+                <Card x={position.x} y={position.y} value={center[index]} />
+            ))}
+        </div>
+    );
+}
 
 function SixQuiPrend() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
@@ -234,6 +259,7 @@ function SixQuiPrend() {
             <Deconnection />
             <Leave />
             <Score />
+            <Center />
         </>
     )
 }
