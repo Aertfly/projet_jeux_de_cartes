@@ -8,8 +8,6 @@ import Chat from '../Page/Component/chatComponent.js';
 import Save from '../Page/Component/saveComponent.js';
 import Score from '../Page/Component/scoreComponent.js';
 
-
-
 const AppContext = createContext();
 const AppProvider = ({ children }) => {
     const { socket } = useContext(SocketContext);
@@ -79,7 +77,7 @@ function Leave() {
 }
 
 function Card(props) {
-    // Styles pour le rectangle représentant la carte
+    // Styles pour le rectangle reprÃ©sentant la carte
     const cardStyles = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -101,92 +99,41 @@ function Card(props) {
 };
 
 function Hand(props) {
-    // Vous pouvez ajuster le positionnement des cartes selon vos besoins
-    const cardPositions = cards.map((card, index) => ({
-        x: 150 * index,
-        y: 0,
-    }));
+    const { idJ, isMyTurn, socket } = useAppContext();
+
+    function onCardClick() {
+        if (isMyTurn) {
+            console.log("le Joueur", idJ, "joue la carte", props.value);
+            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
+        }
+    }
 
     return (
         <div>
-            {cardPositions.map((position, index) => (
-                <Card
-                    key={index}
-                    x={position.x}
-                    y={position.y}
-                    card={cards[index]}
-                    onClick={() => onCardClick(index)}
-                />
-            ))}
+            <Card
+                x={props.x}
+                y={props.y}
+                card={props.value}
+                onClick={() => onCardClick()}
+            />
         </div>
     );
 }
-function CardBoard() {
-    const { cards } = useAppContext();
-    const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
 
-    const cardBoardStyles = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '200px', 
-        backgroundColor: 'lightgray',
-    };
-
+function CardHand() {
+    const {cards,isMyTurn} = useAppContext();
     return (
-        <div style={cardBoardStyles}>
-            {cards.map((card, index) => (
-                <Card card={card} x={index * 120} y={0} />
-            ))}
+        <div>
+            <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
+            {cards.map((card,index) => 
+                <Hand value={card} x={-100+80*index} y={100} />
+            )}
         </div>
     );
 }
 
 function SixQuiPrend() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
-
-    useEffect(() => {
-        const fetchInfoServ = async () => {
-            console.log("fetchInfoServ")
-            socket.on("dealingCards", (data) => {
-                console.log("Cartes reçues via dealingCards",data);
-                setCards(data.Cards);
-            });
-            socket.on('infoGameOut', (data) => {
-                console.log("Info other", data);
-                setInfo(data);
-            });
-            
-            socket.on('newTurn', (data) => {
-                if (data.joueurs.includes(idJ)) {
-                    console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    setIsMyTurn(true);
-                    setInfo({ 'Center': Info.center, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': data.numeroTour });
-                }
-            });
-
-            socket.on('conveyAction', (data) => {
-                console.log("conveyAction reçu");
-                setOtherPlayerAction(data);
-            });
-
-            socket.on('reveal', (data) => {
-                console.log("reveal reçu");
-                setInfo({ 'Center': data, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': Info.nbTurn });
-            });
-
-            socket.emit('infoGame', idParty);
-            socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
-        }
-
-        const cleanup = () => {
-            console.log("Nettoyage")
-            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards"];
-            for(const n of listNameSocket){socket.off(n)};
-        }
-        fetchInfoServ();
-        return cleanup;
-    }, []);
 
     return (
         <>
