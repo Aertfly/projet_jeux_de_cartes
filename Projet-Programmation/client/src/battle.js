@@ -25,7 +25,7 @@ const AppProvider = ({ children }) => {
             context.keys().map((key) => [key, context(key)])
         );
     };
-    const images = importAll(require.context('../img', false, /\.(png)$/));
+    const images = importAll(require.context('../img/Battle', false, /\.(png)$/));
     const contextValue = {
         images,
         setInfo,

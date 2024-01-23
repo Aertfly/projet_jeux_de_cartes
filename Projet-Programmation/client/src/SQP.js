@@ -21,7 +21,7 @@ const AppProvider = ({ children }) => {
     const [isMyTurn, setIsMyTurn] = useState(false);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
-    const image = require('./boeuf.png');
+    const image = require('../img/Battle/boeuf.png');
     const contextValue = {
         image,
         setInfo,
