@@ -7,6 +7,7 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
+const gestionTours = require('./gestionTours.js');
 const startGame = require('./startGame.js');
 const scores = require('./scores.js');
 const abandon = require('./abandon.js');
@@ -301,6 +302,7 @@ io.on('connection', (socket) => {
     abandon(io, socket, db);
     chat(io, socket, db);
     sauvegardePartie(io, socket, db);
+    gestionTours(io, socket, db);
 });
 
 server.listen(port, () => {
