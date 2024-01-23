@@ -135,8 +135,51 @@ function CardHand() {
 function SixQuiPrend() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
 
+    useEffect(() => {
+        const fetchInfoServ = async () => {
+            console.log("fetchInfoServ")
+            socket.on("dealingCards", (data) => {
+                console.log("Cartes reçues via dealingCards",data);
+                setCards(data.Cards);
+            });
+            socket.on('infoGameOut', (data) => {
+                console.log("Info other", data);
+                setInfo(data);
+            });
+            
+            socket.on('newTurn', (data) => {
+                if (data.joueurs.includes(idJ)) {
+                    console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
+                    setIsMyTurn(true);
+                    setInfo({ 'Center': Info.center, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': data.numeroTour });
+                }
+            });
+
+            socket.on('conveyAction', (data) => {
+                console.log("conveyAction reçu");
+                setOtherPlayerAction(data);
+            });
+
+            socket.on('reveal', (data) => {
+                console.log("reveal reçu");
+                setInfo({ 'Center': data, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': Info.nbTurn });
+            });
+
+            socket.emit('infoGame', idParty);
+            socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
+        }
+
+        const cleanup = () => {
+            console.log("Nettoyage")
+            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards"];
+            for(const n of listNameSocket){socket.off(n)};
+        }
+        fetchInfoServ();
+        return cleanup;
+    }, []);
+
     return (
-        <>
+        <>  
             <Save data={{party: idParty}} />
             <Chat data={{party: idParty}} />
             <Deconnection />
