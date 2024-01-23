@@ -1,10 +1,10 @@
 import React, { useContext, useState,useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { SocketContext } from './socket.js';
+import { SocketContext } from '../socket.js';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from './index.js'
-import Deconnection from './deconnection.js';
-import Chat from './chatComponent.js';
+import { usePlayer } from '../index.js'
+import Deconnection from './Component/deconnection.js';
+import Chat from './Component/chatComponent.js';
 
 
 function Quitter(props){

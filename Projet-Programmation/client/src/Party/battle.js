@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect, createContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { SocketContext } from './socket.js';
+import { SocketContext } from '../socket.js';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from './index.js'
-import Deconnection from './deconnection.js';
-import Chat from './chatComponent.js';
+import { usePlayer } from '../index.js'
+import Deconnection from '../Page/Component/deconnection.js';
+import Chat from '../Page/Component/chatComponent.js';
 
 
 
@@ -25,7 +25,7 @@ const AppProvider = ({ children }) => {
             context.keys().map((key) => [key, context(key)])
         );
     };
-    const images = importAll(require.context('./img/Battle', false, /\.(png)$/));
+    const images = importAll(require.context('../img/Battle', false, /\.(png)$/));
     const contextValue = {
         images,
         setInfo,

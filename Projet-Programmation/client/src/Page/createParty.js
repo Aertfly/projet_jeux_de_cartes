@@ -1,7 +1,7 @@
 import { React, useState, useContext } from 'react';
-import { SocketContext } from './socket.js';
-import Deconnection from './deconnection.js';
-import { usePlayer } from './index.js';
+import { SocketContext } from '../socket.js';
+import Deconnection from './Component/deconnection.js';
+import { usePlayer } from '../index.js';
 import { useNavigate } from 'react-router-dom';
 
 const GameSelector = ({ selectedGame, onGameSelect }) => {

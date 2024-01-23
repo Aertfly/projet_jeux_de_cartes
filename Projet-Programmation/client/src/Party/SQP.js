@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect, createContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { SocketContext } from './socket.js';
+import { SocketContext } from '../socket.js';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from './index.js'
-import Deconnection from './deconnection.js';
-import Chat from './chatComponent.js';
-import Save from './saveComponent.js';
-import Score from './scoreComponent.js';
+import { usePlayer } from '../index.js'
+import Deconnection from '../Page/Component/deconnection.js';
+import Chat from '../Page/Component/chatComponent.js';
+import Save from '../Page/Component/saveComponent.js';
+import Score from '../Page/Component/scoreComponent.js';
 
 
 
@@ -21,7 +21,7 @@ const AppProvider = ({ children }) => {
     const [isMyTurn, setIsMyTurn] = useState(false);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
-    const image = require('./img/SQP/boeuf.png');
+    const image = require('../img/SQP/boeuf.png');
     const contextValue = {
         image,
         setInfo,

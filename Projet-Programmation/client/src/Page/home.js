@@ -1,8 +1,8 @@
 import React, { useState, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Deconnection from "./deconnection.js";
-import { SocketContext } from './socket.js';
-import { usePlayer } from './index.js';
+import Deconnection from "./Component/deconnection.js";
+import { SocketContext } from '../socket.js';
+import { usePlayer } from '../index.js';
 import { Outlet } from "react-router-dom";
 
 function CreateButton(props){

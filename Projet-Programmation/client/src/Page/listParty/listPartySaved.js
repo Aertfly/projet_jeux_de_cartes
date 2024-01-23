@@ -1,14 +1,13 @@
 import React, { useState, useContext } from 'react';
-import { SocketContext } from './socket.js';
+import { SocketContext } from '../../socket.js';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from './index.js';
+import { usePlayer } from '../../index.js';
 
 function Party(props) {
   const { socket } = useContext(SocketContext);
-  const { idJ,setPlayerList } = usePlayer();
+  const { idJ,setPlayerList} = usePlayer();
   const navigate = useNavigate();
-  
 
   const joinGame = () => {
     props.onJoinClick();
@@ -22,18 +21,17 @@ function Party(props) {
       }
     });
   };
-  
 
   return (
-      <tbody>
-        <tr>
-          <td>{props.idParty}</td>
-          <td>{props.type}</td>
-          <td>{props.min}</td>
-          <td>{props.nbPlayer +"/"+ props.max}</td>
-          <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
-        </tr>
-      </tbody>
+    <tbody>
+      <tr>
+        <td>{props.idParty}</td>
+        <td>{props.min}</td>
+        <td>{props.max}</td>
+        <td>{props.type}</td>
+        <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
+      </tr>
+    </tbody>
   );
 }
 
@@ -50,25 +48,22 @@ function Hide(){
 function ListParty() {
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
+  const {idJ} = usePlayer()
   const [error,setError] = useState("")
 
   useEffect(() => {
     const fetchParties = async () => {
-      console.log("fetchParties");
-      socket.on('joinableListOut', (data) => {
+      socket.on('savedListOut', (data) => {
         setParties(data);
       });
-      socket.emit('joinableList');
-    };
-    
+      socket.emit('savedList',idJ);
+    };  
     const cleanup = () => {
-      console.log("Cleanup");
-      socket.off('joinableListOut');
+      socket.off('savedListOut');
     };
-
     fetchParties();
     return cleanup;
-  }, [socket]);
+  }, [socket,idJ]);
 
   const [allButtonsDisabled, setAllButtonsDisabled] = useState(false);
 
@@ -82,15 +77,15 @@ function ListParty() {
 
   return (
     <div>
-      <h3>Liste des Parties :</h3>
+      <h3>Liste des Parties sauvergardées :</h3>
       <p style={{color:"red"}}>{error}</p>
       <table border="1">
         <thead>
           <tr>
             <th>ID Partie</th>
-            <th>Type</th>
             <th>Min</th>
-            <th>joueurs Actuels</th>
+            <th>Max</th>
+            <th>Type</th>
             <th>Cliquer ici</th>
           </tr>
         </thead>
@@ -101,7 +96,6 @@ function ListParty() {
             min={party.joueursMin}
             max={party.joueursMax}
             type={party.type}
-            nbPlayer={party.nbJoueur}
             disabled={allButtonsDisabled}
             onJoinClick={handleJoinClick}
             onError={handleError}

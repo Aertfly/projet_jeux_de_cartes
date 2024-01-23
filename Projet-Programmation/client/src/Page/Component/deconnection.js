@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import { SocketContext } from './socket.js';
-import { ConnexionContext, ConnexionProvider } from './IC.js'; 
+import { SocketContext } from '../../socket.js';
+import { ConnexionContext, ConnexionProvider } from '../IC.js'; 
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from './index.js';
+import { usePlayer } from '../../index.js';
 
 function Deco(props) {
   const { socket } = useContext(SocketContext);

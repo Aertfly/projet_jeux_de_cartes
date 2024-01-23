@@ -1,17 +1,17 @@
 import "./page.css";
-import IC from './IC.js'
-import CreateParty from './createParty.js';
-import Home from './home.js';
-import WaitingRoom from './waitingRoom.js';
-import ListParty from "./listParty.js";
-import NotFound from "./notFound.js";
-import ListPartySaved from "./listPartySaved.js";
+import IC from './Page/IC.js'
+import CreateParty from './Page/createParty.js';
+import Home from './Page/home.js';
+import WaitingRoom from './Page/waitingRoom.js';
+import ListParty from "./Page/listParty/listParty.js";
+import NotFound from "./Page/notFound.js";
+import ListPartySaved from "./Page/listParty/listPartySaved.js";
 import { SocketProvider } from './socket.js';
-import Battle from './battle.js';
-import SQP from './SQP.js';
+import Battle from './Party/battle.js';
+import SQP from './Party/SQP.js';
 
 import ReactDOM from 'react-dom/client';
-import reportWebVitals from './reportWebVitals' ;
+import reportWebVitals from './reportWebVitals.js' ;
 
 import React, { createContext, useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';

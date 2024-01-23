@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { SocketContext } from './socket.js';
+import { SocketContext } from '../../socket.js';
 import { useEffect } from 'react';
-import { usePlayer } from './index.js';
+import { usePlayer } from '../../index.js';
 import { useRef } from 'react';
 // pour accéder à ce composant, mettre "import Chat from './chatComponent.js';"
 
