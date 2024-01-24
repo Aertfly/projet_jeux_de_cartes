@@ -87,15 +87,12 @@ function circlePoints(r, nb) {
 function generatePointCards(nb,widthCards,heightCards){
     const width = window.innerWidth ; 
     const listPoints = [];
-    const ecart = width/nb;
-    var start = 0;
-    var x;
+    const ecart = (width - 100)/(nb)
 
-    for (let  i=0 ; i<nb ; i++){
-        x = start + (width/nb)*i
-        listPoints.push(x)
+    for (var i = 0; i < nb; i++) {
+        var x = 100 + i * ecart;
+        listPoints.push(x);
     }
-
     return {
         'y' : window.innerHeight-heightCards-50,
         'x' : listPoints
@@ -114,7 +111,9 @@ function Leave() {
 }
 
 function Card(props) {
-    // Styles pour le rectangle reprÃ©sentant la carte
+    const image = require('../img/SQP/boeuf.png');
+    console.log(image); 
+    
     const cardStyles = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -124,11 +123,11 @@ function Card(props) {
         border: '1px solid black', // Bordure pour visualiser le rectangle
         textAlign: 'center',
         padding: '10px',
-        backgroundImage: 'url("../img/SQP/boeuf.png")'
     };
 
     return (
         <div style={cardStyles}>
+            <img src={image} alt="Fond de boeuf" style={{block:'inline'}} />
             <p>Valeur: {props.card.valeur}</p>
             <p>Boeufs: {props.card.nbBoeufs}</p>
         </div>
