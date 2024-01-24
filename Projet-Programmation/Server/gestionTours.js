@@ -94,6 +94,22 @@ const gestionTours = function (io, socket, db) {
             });
         });
     });
+
+    socket.on("ligne", (data) => {
+        console.log("Ligne reçue : " + data.idJoueur + " " + data.idPartie + " " + data.ligne);
+        // On regarde dans quel jeu on est
+        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
+            const jeu = result[0]["type"];
+            switch (jeu){
+                case "6 Qui Prend":
+                    playerActionSQP(io, socket, db, data);
+                    break;
+                default:
+                    throw "Jeu inconnu";
+            }
+        });
+
+    })
 }
 
 function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
