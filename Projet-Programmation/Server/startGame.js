@@ -55,8 +55,8 @@ const startGame = function(io,socket,db){
             await result;
             if (err)throw(err);
             if (result.length != 0){
-                console.log(result);
-                console.log(result[0].main);
+                //console.log(result);
+                //console.log(result[0].main);
                 socket.emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
             }else{
                 console.log("Erreur envoie cartes :",result,data.idParty,data.idJ)
@@ -159,7 +159,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     const archives = [];
     for(let c=1;c<=4;c++){archives.push([draw[104-c]])}
     archives.sort((a, b) => a[0].valeur - b[0].valeur);
-    console.log("Archives",archives);
+    // console.log("Archives",archives);
     db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);
         if (!(result.changedRows ==1)) {
