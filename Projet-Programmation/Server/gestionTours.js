@@ -1,30 +1,30 @@
 const playerActionSQP = require('./sqp/playerActionSQP');
 
 const gestionTours = function (io, socket, db) {
-    socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
-        // Intégrer ici le code de Killian
+    // socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
+    //     // Intégrer ici le code de Killian
 
-        // Let him cook
-        db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie], async (err, result) => {
-            if (err) {
-                throw err;
-            }
-            nbJoueurs = new Map(Array.from(result, (key, value) => [key, value])).size;
-            console.log("Il y a " + nbJoueurs + " joueurs dans la partie " + data.idPartie);
-            if (nbJoueurs == 0) {
-                // Plus aucun joueur n'est dans la partie
-                clearInterval(compterJoueurs);
-                console.log("Il n'y a plus aucun joueur");
-                db.query("DELETE FROM parties WHERE idPartie = ?", [data.idPartie], async (err, result) => {
-                    if (err || result.affectedRows != 1) {
-                        console.log("La partie a déjà été supprimée");
-                    } else {
-                        console.log("Normalement la partie a bien été supprimée");
-                    }
-                });
-            }
-        });
-    });
+    //     // Let him cook
+    //     db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie], async (err, result) => {
+    //         if (err) {
+    //             throw err;
+    //         }
+    //         nbJoueurs = new Map(Array.from(result, (key, value) => [key, value])).size;
+    //         console.log("Il y a " + nbJoueurs + " joueurs dans la partie " + data.idPartie);
+    //         if (nbJoueurs == 0) {
+    //             // Plus aucun joueur n'est dans la partie
+    //             clearInterval(compterJoueurs);
+    //             console.log("Il n'y a plus aucun joueur");
+    //             db.query("DELETE FROM parties WHERE idPartie = ?", [data.idPartie], async (err, result) => {
+    //                 if (err || result.affectedRows != 1) {
+    //                     console.log("La partie a déjà été supprimée");
+    //                 } else {
+    //                     console.log("Normalement la partie a bien été supprimée");
+    //                 }
+    //             });
+    //         }
+    //     });
+    // });
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
         console.log("joueur " + data.playerId + " " + data.action + " " + data.carte.enseigne + " " + data.carte.valeur);
