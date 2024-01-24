@@ -1,4 +1,4 @@
-const playerActionSQP = require('./sqp/playerActionSQP');
+const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP');
 
 const gestionTours = function (io, socket, db) {
     // socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
@@ -102,7 +102,7 @@ const gestionTours = function (io, socket, db) {
             const jeu = result[0]["type"];
             switch (jeu){
                 case "6 Qui Prend":
-                    playerActionSQP(io, socket, db, data);
+                    ligneSQP(io, socket, db, data);
                     break;
                 default:
                     throw "Jeu inconnu";
