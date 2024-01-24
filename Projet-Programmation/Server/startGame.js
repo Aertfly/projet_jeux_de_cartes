@@ -158,7 +158,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
         (playerHands[index]).push(draw[i]);
     }
     const archives = [];
-    for(let c=1;c<=4;c++){archives.push(draw[104-c])}
+    for(let c=1;c<=4;c++){archives.push([draw[104-c]])}
     console.log("Archives",archives);
     db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);

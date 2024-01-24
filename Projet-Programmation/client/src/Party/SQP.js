@@ -85,18 +85,19 @@ function circlePoints(r, nb) {
 }
 
 function generatePointCards(nb,widthCards,heightCards){
-    const width = window.innerWidth - (2*widthCards);
+    const width = window.innerWidth ; 
     const listPoints = [];
     const ecart = width/nb;
+    var start = 0;
     var x;
 
-    for (let  i=1 ; i<=nb ; i++){
-        x = (width/nb)*i
+    for (let  i=0 ; i<nb ; i++){
+        x = start + (width/nb)*i
         listPoints.push(x)
     }
 
     return {
-        'y' : window.innerHeight-heightCards,
+        'y' : window.innerHeight-heightCards-50,
         'x' : listPoints
     }
 }
