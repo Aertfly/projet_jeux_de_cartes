@@ -1,3 +1,5 @@
+const { query } = require("express");
+
 function queryLine(db, lineName, tableName, condition, value) {
     if (!db || !tableName || !lineName || !condition || !value) {
         return Promise.reject("Paramètres invalides");
@@ -53,24 +55,24 @@ const playerActionSQP = function(io, socket, db, centre, archive, data){
     }
     */
     
-    // Si playerAction = 'joue'
-    if (data.action == 'joue'){
-        // Si le centre est égal au nombre de joueurs (récupérer sur la BDD le nombre de joueurs)
-        db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
-            var nbJoueurs = result[0]["COUNT(*)"];
-            if (nbJoueurs == Object.keys(centre).length){
-                // On joue : appel à declencherLogique
-                console.log("on joue : appel à déclencherLogique");
-                declencherLogique(io, socket, db, data.idPartie, centre, archive);
-            }
-        });
-    }
+    if (data.action != "joue") throw "Erreur d'action"
+    
+    // Si le centre est égal au nombre de joueurs (récupérer sur la BDD le nombre de joueurs)
+    db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
+        var nbJoueurs = result[0]["COUNT(*)"];
+        if (nbJoueurs == Object.keys(centre).length){
+            // On joue : appel à declencherLogique
+            console.log("on joue : appel à déclencherLogique");
+            declencherLogique(io, socket, db, data.idPartie, centre, archive);
+        }
+    });
 }
 
 var declencherLogique = function(io, socket, db, idPartie, centre, archive){
     console.log("declencherLogique appelé");
 
     // on suppose que le nombre de cartes au centre est égal au nombre de joueurs (assert ?)
+    // pas forcément : possiblement reprise après ligne choisie
 
     // on révèle les cartes : on envoie infoGameOut
     queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
@@ -102,7 +104,6 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             clearInterval(intervalle);
         }
         
-        // si on n'attend pas de carte
         // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
         let carteActuelle = triees.shift();
 
@@ -197,18 +198,36 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
     // Prend une connexion à une base de données, un idJ, un idPartie, un numéro de ligne (de 0 à 3) et la carte qui viendra remplacer la ligne
     // Renvoie un booléen qui dit si on peut continuer ou non
 
-    // On récupère le centre2 = archive depuis la base de données
-    // On récupère la ligne correspondante
-    // sommeTetes = on récupère le score du joueur dans la table joue
-    // Pour chaque carte dans la ligne :
-        // sommeTetes += nombre de boeufs de la carte en question
-    // Si le nombre de tetes du joueur est supérieur ou égal à 66
-        // Le joueur a perdu :
-        // On envoie sur la route 'looser' l'idJ
-        // On retourne false
-    // Dans la variable qui correspond au centre2, on remplace la ligne correspondante par juste la carte passée en paramètre
-    // On met à jour la db à partir de la variable du centre2
-    // On renvoie true
+    // On récupère l'archive depuis la base de données
+    queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive) => {
+        // archive[ligne]
+        
+        // sommeTetes = on récupère le score du joueur dans la table joue
+        db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
+            if(err) throw err;
+            sommeTetes = result[0]["score"]; // A tester 
+
+            // Pour chaque carte dans la ligne :
+            for(carte of archive[ligne]){
+                sommeTetes += carte.nbBoeufs;
+            }
+
+            // Si le nombre de tetes du joueur est supérieur ou égal à 66
+            if(sommeTetes >= 66){
+                // Le joueur a perdu :
+                socket.to(idPartie).emit('looser', {idJ: idJ});
+                // On envoie sur la route 'looser' l'idJ
+                return false;
+                // On retourne false
+            }
+                
+            // A FINIR
+            // Dans la variable qui correspond au centre2, on remplace la ligne correspondante par juste la carte passée en paramètre
+            // On met à jour la db à partir de la variable du centre2
+            // On renvoie true
+
+            })
+    });
 }
 
 function trier(temp) {
@@ -224,8 +243,37 @@ function trier(temp) {
     return temp;
 }
 
-module.exports = playerActionSQP;
+const ligneSQP = function(io, socket, db, data){
+    // On récupère le centre
+    queryLine(db, "centre", "parties", "idPartie", data.idPartie).then((centre) => {    
+        // On récupère LA carte du joueur au centre (il a déjà joué sa carte, là il dit simplement quelle ligne il veut remplacer)
+        console.log(data.idJoueur);
+        console.log(JSON.stringify(centre));
 
+        carteActuelle = centre[data.idJoueur];
+
+        console.log(JSON.stringify(carteActuelle));
+
+        // On enlève LA carte du centre
+        centre = Object.keys(centre).filter((clé) => clé !== carteActuelle[0])
+            .reduce((objet, clé) => {
+                objet[clé] = centre[clé];
+                return objet;
+            }, {});
+
+        // On met à jour le centre dans la bd
+        db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), idPartie], (err, result) => {
+            if(err) throw err;
+            console.log("BDD mise à jour" + result);
+        });
+
+        remplacerLigne(db, idJ, data.idPartie, data.ligne, carteActuelle);
+
+        queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive) => {
+            declencherLogique(io, socket, db, data.idPartie, centre, archive);
+        })
+    });
+}
 
 function infoPartie(db, idParty){
     return new Promise((resolve, reject) => {
@@ -244,3 +292,5 @@ function infoPartie(db, idParty){
     });
     
 };
+
+module.exports = { playerActionSQP, ligneSQP};
