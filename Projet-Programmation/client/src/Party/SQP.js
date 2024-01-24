@@ -12,12 +12,12 @@ function Test() {
     const { idJ, idParty, socket } = useAppContext();
 
     const handleCardChoisie = () => {
-        socket.emit('playerAction', {carte: {valeur: 50, enseigne: "SQP", nbBoeufs: 3},playerId: idJ, idPartie: idParty, "action": "joue"});
+        socket.emit('playerAction', {carte: {valeur: 2, enseigne: "SQP", nbBoeufs: 3},playerId: idJ, idPartie: idParty, "action": "joue"});
     }
 
 
     const handleLigneChoisie = () => {
-        socket.emit('ligne', {ligne: 2});
+        socket.emit('ligne', {ligne: 2, idJoueur: idJ, idPartie: idParty});
     }
 
     return (
