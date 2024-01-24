@@ -143,7 +143,6 @@ function generateDrawSQP(){
     return FYK(res);
 }
 
-
 function dealCardsSQP(nbPlayers,db,idParty){
     const draw = generateDrawSQP();
     const playerHands = []; 
@@ -159,6 +158,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     }
     const archives = [];
     for(let c=1;c<=4;c++){archives.push([draw[104-c]])}
+    archives.sort((a, b) => a[0].valeur - b[0].valeur);
     console.log("Archives",archives);
     db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);
