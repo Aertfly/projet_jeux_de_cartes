@@ -87,10 +87,10 @@ function circlePoints(r, nb) {
 function generatePointCards(nb,widthCards,heightCards){
     const width = window.innerWidth ; 
     const listPoints = [];
-    const ecart = (width - 100)/(nb)
+    const ecart = (width - widthCards - 400)/(nb)
 
     for (var i = 0; i < nb; i++) {
-        var x = 100 + i * ecart;
+        var x = widthCards + i * ecart;
         listPoints.push(x);
     }
     return {
@@ -112,7 +112,8 @@ function Leave() {
 
 function Card(props) {
     const image = require('../img/SQP/boeuf.png');
-    console.log(image); 
+    const boeufs = [];for(let i=0;i<props.card.nbBoeufs;i++){boeufs.push(0)}//pour la parcourir ensuite autant de fois qu'il y a de têtes
+    console.log(boeufs); 
     
     const cardStyles = {
         position: 'absolute',
@@ -125,11 +126,22 @@ function Card(props) {
         padding: '10px',
     };
 
+    const textStyles = {
+        position: 'absolute',
+        bottom: '10px', // Ajustez la position verticale du texte
+        left: '50%', // Centre le texte horizontalement
+        transform: 'translateX(-50%)', // Centre le texte horizontalement
+        color: 'black', // Couleur du texte (à ajuster selon vos besoins)
+        fontSize: '50px'
+    };
+
     return (
-        <div style={cardStyles}>
-            <img src={image} alt="Fond de boeuf" style={{block:'inline'}} />
-            <p>Valeur: {props.card.valeur}</p>
-            <p>Boeufs: {props.card.nbBoeufs}</p>
+        <div style={cardStyles} onClick={props.onClick} className='CardHand'>
+            <p style={textStyles}>{props.card.valeur} </p>
+            <img src={image} alt="Fond de boeuf" style={{display:'inline', width: '100px', height: '100px'}}/>
+                {boeufs.map(() => (
+                    <img src={image} alt="tête de boeuf" style={{display:'inline', width: '25px', height: '40px'}}/>
+                ))}
         </div>
     );
 };
@@ -138,6 +150,7 @@ function CardHand(props) {
     const { idJ, isMyTurn, socket } = useAppContext();
 
     function onCardClick() {
+        console.log("Je clique sur",props.value)
         if (isMyTurn) {
             console.log("le Joueur", idJ, "joue la carte", props.value);
             socket.emit('playerActionSQP', { "carte": props.value, "action": "joue", "playerId": idJ });
@@ -158,7 +171,18 @@ function CardHand(props) {
 
 function CardsHand() {
     const {cards,isMyTurn} = useAppContext();
-    const pointsCards = generatePointCards(cards.length,100,150);
+    const [pointsCards,setPointCards] = useState(generatePointCards(cards.length,100,150));
+
+    useEffect(() => {
+        const handleResize = () => {
+            setPointCards(generatePointCards(cards.length,100,150));
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []); 
     console.log(pointsCards);
     return (
         <div>

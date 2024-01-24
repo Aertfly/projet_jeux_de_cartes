@@ -13,19 +13,20 @@ import Chat from '../Page/Component/chatComponent.js';
 const AppContext = createContext();
 const AppProvider = ({ children }) => {
     const { socket } = useContext(SocketContext);
-    const { idJ,pseudo } = usePlayer();
+    const { idJ, pseudo } = usePlayer();
     const { idParty } = useParams();
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
     const [isMyTurn, setIsMyTurn] = useState(false);
-    const [OtherPlayerAction, setOtherPlayerAction] = useState()
+    const [OtherPlayerAction, setOtherPlayerAction] = useState([])
     const importAll = (context) => {
         return Object.fromEntries(
             context.keys().map((key) => [key, context(key)])
         );
     };
     const images = importAll(require.context('../img/Battle', false, /\.(png)$/));
+
     const contextValue = {
         images,
         setInfo,
@@ -75,6 +76,21 @@ function circlePoints(r, nb) {
     return positions;
 }
 
+function generatePointCards(nb, widthCards, heightCards) {
+    const width = window.innerWidth;
+    const listPoints = [];
+    const ecart = (width - widthCards - 500) / (nb - 1) //-500 pour éviter de déborder sur le chat
+
+    for (var i = 0; i < nb; i++) {
+        var x = widthCards + i * ecart;
+        listPoints.push(x);
+    }
+    return {
+        'y': window.innerHeight - heightCards - 100,
+        'x': listPoints
+    }
+}
+
 
 function Leave() {
     const { socket, idJ, navigate } = useAppContext();
@@ -90,8 +106,8 @@ function Leave() {
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
     const { Info, OtherPlayerAction } = useAppContext();
-    const infoPlayers = Info.infoPlayers    
-    var numberOfPlayers = infoPlayers ?  infoPlayers.length  : 0;
+    const infoPlayers = Info.infoPlayers
+    var numberOfPlayers = infoPlayers ? infoPlayers.length : 0;
 
     useEffect(() => {
         const handleResize = () => {
@@ -102,8 +118,8 @@ function GameBoard() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [numberOfPlayers]); 
-    
+    }, [numberOfPlayers]);
+
 
     return (
         <div className="battle-game-board">
@@ -120,64 +136,71 @@ function CardHand(props) {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '75', 
-        height: '100px', 
-        margin: '0 auto',
+        width: '100px', // Ajustez la largeur selon vos besoins
+        height: '150px', // Ajustez la hauteur selon vos besoins
+        textAlign: 'center',
+        padding: '10px',
     };
     function play() {
-        console.log("Je clique sur la carte :",props.value)
+        console.log("Je clique sur la carte :", props.value)
         if (isMyTurn) {
-            console.log("On joue la carte :",props.value);
+            console.log("On joue la carte :", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
         }
     }
     return (
         <div>
-            <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)}  style={cardStyle} className='CardHand'/>
+            <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)} style={cardStyle} className='CardHand' />
         </div>
     );
 }
 
 function CardsHand() {
-    const {cards,isMyTurn} = useAppContext();
+    const { cards, isMyTurn } = useAppContext();
+    const [pointsCards, setPointCards] = useState(generatePointCards(cards.length, 75, 100));
+
+
+    useEffect(() => {
+        const handleResize = () => {
+            setPointCards(generatePointCards(cards.length, 75, 100));
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+    console.log(pointsCards);
+
     return (
         <div>
-            <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
-            {cards.map((card,index) => 
-                <CardHand value={card}  x={-100+80*index} y={100} />
+            {cards.map((card, index) =>
+                <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
         </div>
     );
 }
 
+
 function Player(props) {
-    const {pseudo, action } = useAppContext();
+    const { pseudo, action,OtherPlayerAction, isMyTurn} = useAppContext();
     const [msg, setMsg] = useState("");
     const playerStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
     };
-    if ((action)&&( action.pseudoJoueur === pseudo)) {
+    if ((action) && (action.pseudoJoueur === pseudo)) {
         setMsg("A " + action.natureAction + " une carte")
     }
-    if (props.pseudo === pseudo) {
-        return (
+    return (
         <div className="battle-player" style={playerStyle}>
-            {props.pseudo + "(VOUS) "}
-            {props.nbCards + " cartes"}
-            <CardsHand />
+            {(props.pseudo === pseudo)? <p>{isMyTurn  ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
+            <p hidden={!msg}>{msg}</p>
+            <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
+            <p>{props.nbCards} cartes</p>
+            {OtherPlayerAction.includes(props.pseudo) ? <Card x={100} y={100}/> : <></> }
         </div>);
-    } else {
-            return (
-            <div className="battle-player" style={playerStyle}>
-                <p hidden={!msg}>{msg}</p>
-                <p>{props.pseudo}</p>
-                <p>{props.nbCards} cartes</p>
-                <Card x={100} y={100} />
-            </div>);
-
-    }
 };
 function Card(props) {
     const { images } = useAppContext();
@@ -186,9 +209,10 @@ function Card(props) {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '75px', 
-        height: '100px', 
-        margin: '0 auto' 
+        width: '100px', // Ajustez la largeur selon vos besoins
+        height: '150px', // Ajustez la hauteur selon vos besoins
+        textAlign: 'center',
+        padding: '10px',
     };
     return (
         <img style={cardStyle} src={src} alt={props.value ? "image de" + props.value : "dos de carte"} />
@@ -199,7 +223,7 @@ function Center() {
     const { Info } = useAppContext()
     const [cardsPositions, setCardsPositions] = useState([]);
     const center = Info.center;
-    if (center)var numberOfCards = center.length;
+    if (center) var numberOfCards = center.length;
     else var numberOfCards = 0;
     useEffect(() => {
         const handleResize = () => {
@@ -210,7 +234,7 @@ function Center() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    },[]);
+    }, []);
 
     return (
         <div>
@@ -230,39 +254,39 @@ function Draw() {
     const [midY, setMidY,] = useState(window.innerHeight / 2);
     useEffect(() => {
         const handleResize = () => {
-            setMidX(window.innerWidth/2);
-            setMidY(window.innerHeight/2);
+            setMidX(window.innerWidth / 2);
+            setMidY(window.innerHeight / 2);
         };
         window.addEventListener('resize', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    },[]);
+    }, []);
 
     return (
         <div>
-            <p style={{position: 'absolute',left: `${midX-50}px`,top: `${midY-50}px`}}>Il y a : {draw} cartes dans la pioche</p>
+            <p style={{ position: 'absolute', left: `${midX - 50}px`, top: `${midY - 50}px` }}>Il y a : {draw} cartes dans la pioche</p>
             <Card x={midX} y={midY} />
         </div>
-    );   
+    );
 }
 
 function Battle() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn,OtherPlayerAction, setOtherPlayerAction } = useAppContext()
 
 
     useEffect(() => {
         const fetchInfoServ = async () => {
             console.log("fetchInfoServ")
             socket.on("dealingCards", (data) => {
-                console.log("Cartes reçues via dealingCards",data);
+                console.log("Cartes reçues via dealingCards", data);
                 setCards(data.Cards);
             });
             socket.on('infoGameOut', (data) => {
                 console.log("Info other", data);
                 setInfo(data);
             });
-            
+
             socket.on('newTurn', (data) => {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
@@ -273,7 +297,7 @@ function Battle() {
 
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu");
-                setOtherPlayerAction(data);
+                setOtherPlayerAction(OtherPlayerAction.push(data.pseudo));
             });
 
             socket.on('reveal', (data) => {
@@ -287,8 +311,8 @@ function Battle() {
 
         const cleanup = () => {
             console.log("Nettoyage")
-            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards"];
-            for(const n of listNameSocket){socket.off(n)};
+            const listNameSocket = ['reveal', 'conveyAction', 'newTurn', 'infoGameOut', "dealingCards"];
+            for (const n of listNameSocket) { socket.off(n) };
         }
         fetchInfoServ();
         return cleanup;
@@ -298,20 +322,21 @@ function Battle() {
 
     return (
         <div className='BattleBody'>
-          {Info == undefined ? (
-            "CHARGEMENT..."
-          ) : (
-            <>
-              <Draw />
-              <Center />
-              <Deconnection />
-              <Leave />
-              <Chat data={{ party: idParty }} />
-              <GameBoard />
-            </>
-          )}
+            {Info == undefined ? (
+                "CHARGEMENT..."
+            ) : (
+                <>
+                    {/*<Draw /> car on n'a pas besoin d'une pioche dans la bataille*/}
+                    <Center />
+                    <Deconnection />
+                    <Leave />
+                    <Chat data={{ party: idParty }} />
+                    <GameBoard />
+                    <CardsHand />
+                </>
+            )}
         </div>
-      );
+    );
 }
 
 /*function JouerForm() {
@@ -333,7 +358,7 @@ function Battle() {
 }*/
 
 function App() {
-    
+
     return (
         <AppProvider>
             <Battle />
