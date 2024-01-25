@@ -79,7 +79,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
     // on révèle les cartes : on envoie infoGameOut
     queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
         infoPartie(db, idPartie).then((infoJoueurs) => {
-            socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+            io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
         });
     });    
     
@@ -114,7 +114,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                 // On va chercher infoPlayers
                 infoPartie(db, idPartie).then((infoJoueurs) => {
                     // On envoie les dernières infos sur la partie au joueur
-                    socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+                    io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
 
                     db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
                         if (err2) throw err2;
@@ -125,11 +125,11 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
 
                         console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
                         // On dit aux joueurs qu'on est dans un nouveau tour
-                        socket.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
+                        io.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
                     });
                 });
             });
-        } else {
+        } else { // Il reste encore des cartes à traiter, on continue
             console.log("On fait un tour de boucle avec un centre de longueur " + triees.length);
             // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
             let carteActuelle = triees.shift();
@@ -204,7 +204,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
                 infoPartie(db, idPartie).then((infoJoueurs) => {
                     console.log("On envoie infoGameOut sur la room d'id " + idPartie);
-                    socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+                    io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
                 });
             });
         }
@@ -238,7 +238,7 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
             // Si le nombre de tetes du joueur est supérieur ou égal à 66
             if(sommeTetes >= 66){
                 // Le joueur a perdu :
-                socket.to(idPartie).emit('looser', {idJ: idJ});
+                io.to(idPartie).emit('looser', {idJ: idJ});
                 // On envoie sur la route 'looser' l'idJ
                 // throw "partie terminée (message de test)";
                 return false;
