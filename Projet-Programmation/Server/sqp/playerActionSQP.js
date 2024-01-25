@@ -153,13 +153,12 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             
             console.log("Ligne déterminée : " + ligne);
             
-            // Si ligne == -1
-            if(ligne == -1){
+            if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
                 // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
-                socket.emit('requestAction', {});  // Dico vide : a priori pas de détails à envoyer ?
-                console.log("On clear l'intervalle");
+                socket.to('requestAction', {idJ: carteActuelle[0]});  // Dico vide : a priori pas de détails à envoyer ?
+                console.log("On requestAction avec " + JSON.stringify({idJ: carteActuelle[0]}));
                 clearInterval(intervalle);
-            } else {  // Sinon
+            } else {  // Sinon : une ligne peut accueillir la carte
                 // Si la ligne a une longueur de 5 : le joueur remplace la ligne
                 if(archive[ligne] == 5){  // 6 qui prend :
                     // On enlève LA carte du centre
