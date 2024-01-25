@@ -48,6 +48,9 @@ const WaitingRoom = ()=>{
                     case "6 Qui Prend"://traduit en SQP pour le reste du code
                         setTimeout(() => navigate('/Home/6 Qui Prend/'+data.idParty), 250);
                         break;
+                    default :
+                        setMsg("Jeu inconnu");
+
                 }
             }
         });
@@ -55,7 +58,7 @@ const WaitingRoom = ()=>{
             console.log("Refresh",data.playerList);
             setPlayerList(data.playerList);
         });
-    }, [socket]);
+    }, [socket,navigate,setPlayerList]);
     
 
     function Player(props){
