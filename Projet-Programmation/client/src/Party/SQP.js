@@ -37,7 +37,7 @@ const AppProvider = ({ children }) => {
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
-    const [isMyTurn, setIsMyTurn] = useState(false);
+    const [isMyTurn, setIsMyTurn] = useState(null);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
     const contextValue = {
@@ -147,22 +147,22 @@ function Card(props) {
 };
 
 function CardHand(props) {
-    const { idJ, isMyTurn, socket, idParty , setIsMyTurn } = useAppContext();
-    const [played,isPlayed] = useState(false);
+    const {cards,setCards, idJ, isMyTurn, socket, idParty , setIsMyTurn } = useAppContext();
 
     function onCardClick() {
         console.log("Je clique sur",props.value)
         if (isMyTurn) {
-            console.log("le Joueur", idJ, "joue la carte", props.value);
+            console.log("Moi le joueur d'id :", idJ, "joue la carte", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ ,"idPartie": idParty});
             setIsMyTurn(false);
+            cards.splice(cards.indexOf(props.value),1)
+            setCards(cards);
         }
     }
 
     return (
         <div>
             <Card
-                played={played}
                 x={props.x}
                 y={props.y}
                 card={props.value}
@@ -292,7 +292,10 @@ function SixQuiPrend() {
             });
 
             socket.on('requestAction',(data)=>{
-                console.log("Je dois faire un truc",data)
+                console.log("Cette personne doit faire un truc",data);
+                if(data.idJ = idJ){
+                    console.log("Je dois faire un truc")
+                }
             });
 
             socket.emit('infoGame', idParty);
