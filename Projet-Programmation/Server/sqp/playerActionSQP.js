@@ -211,6 +211,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
 }
 
 function recupererPseudo(db, idJoueur) {
+    console.log("Appel de recupererPseudo avec idJoueur="+idJoueur);
     return new Promise((resolve, reject) => {
         db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
             if (err) {
@@ -225,18 +226,24 @@ var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTo
     // console.log("On envoie infoGameOut")
     let centre2 = centre;
     let listePseudos = {};
+    console.log("Centre2 : " + JSON.stringify(centre2));
+    
     // On doit convertir le centre pour que les id des cartes soient le pseudo des joueurs et pas leur idJ
-    for(carte of centre2){
-        recupererPseudo(db, carte[0]).then((pseudo) => {
-            listePseudos[carte[0]] = pseudo;
+    /*for(i of Object.keys(centre2)){
+        // i vaut un idJ
+        recupererPseudo(db, i).then((pseudo) => {
+            listePseudos[i] = pseudo; // listePseudos[idJ] = pseudo
 
-            if(Object.keys(listePseudos).length == Object.keys(centre).length){ // Si le pseudo récupéré est le dernier : on les a tous
-                for(carte2 of centre2){
-                    carte2[0] = listePseudos[carte2[0]];
+            setTimeout(() => {
+                if(Object.keys(listePseudos).length == Object.keys(centre).length){ // Si le pseudo récupéré est le dernier : on les a tous
+                    for(j of Object.keys(centre2)){
+                        centre2[listePseudos[j]] = centre2[j]; // On copie l'entrée dans l'objet centre2
+
+                        delete centre2[j]; // On supprime l'ancienne entrée
                 }
-            }
+            }}, 10);
         });
-    }
+    }*/
 
     io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
 }
