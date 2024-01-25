@@ -155,7 +155,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             
             if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
                 // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
-                socket.to('requestAction', {idJ: carteActuelle[0]});  // Dico vide : a priori pas de détails à envoyer ?
+                io.to(idPartie).emit('requestAction', {idJ: carteActuelle[0]});  // Dico vide : a priori pas de détails à envoyer ?
                 console.log("On requestAction avec " + JSON.stringify({idJ: carteActuelle[0]}));
                 clearInterval(intervalle);
             } else {  // Sinon : une ligne peut accueillir la carte
