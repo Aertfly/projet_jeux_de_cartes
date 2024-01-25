@@ -206,9 +206,9 @@ function Center() {
     console.log("Board", board);
     if (!board) return null;
 
-    const handleCardClick = (card) => {
+    const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
-        console.log("Carte cliquée :", card);
+        console.log("Carte cliquée :", card,rowIndex);
     };
 
     const centerRows = positions.map((row, rowIndex) => {
@@ -216,7 +216,7 @@ function Center() {
             const cardIndex = rowIndex * row.length + colIndex;
             const card = board[rowIndex] && board[rowIndex][colIndex];
             return card ? (
-                <Card key={colIndex} x={position.x} y={position.y} card={card} onClick={() => handleCardClick(card)} />
+                <Card key={colIndex} x={position.x} y={position.y} card={card} onClick={() => handleCardClick(card,rowIndex)} />
             ) : null;
         }).filter(Boolean); // Filtrer les éléments non définis
 
@@ -276,9 +276,9 @@ function SixQuiPrend() {
                     setIsMyTurn(true);
                 }
             });
-
+            
             socket.on('conveyAction', (data) => {
-                console.log("conveyAction reçu");
+                console.log("conveyAction reçu",data);
                 setOtherPlayerAction(data);
             });
 
