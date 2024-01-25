@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { SocketContext } from '../../socket.js';
 import { ConnexionContext, ConnexionProvider } from '../IC.js'; 
 import { useNavigate } from 'react-router-dom';
@@ -8,49 +8,56 @@ function Deco(props) {
   const { socket } = useContext(SocketContext);
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
-  const {idJ, setIdJ, pseudo } = usePlayer();
+  const { idJ, setIdJ, pseudo } = usePlayer();
 
   const handleDeconnection = () => {
     setIdJ(null); 
     setEstConnecte("Déconnecté");
     socket.emit('deconnexion');
     navigate('/');
-    socket.emit('playerLeaving',idJ);
+    socket.emit('playerLeaving', idJ);
   };
 
-  window.onload = function(e) {
-    e.preventDefault();
-    handleDeconnection();
-    e.returnValue = 'Déconnecté'; 
-  };
+  useEffect(() => {
+    window.onload = function (e) {
+      e.preventDefault();
+      handleDeconnection();
+      e.returnValue = 'Déconnecté'; 
+    };
 
-  socket.on('firstConnection', () => {
-    setEstConnecte("Déconnecté");
-    navigate('/');
-  })
+    socket.on('firstConnection', () => {
+      setEstConnecte("Déconnecté");
+      navigate('/');
+    });
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.onload = null;
+    };
+  }, [socket, setEstConnecte, navigate, handleDeconnection]);
 
   return (
     <div>
       {estConnecte === "Déconnecté" ? (
         null
-      ) : <>
-      <p>Vous êtes connecté sous le compte : {pseudo} d'id : {idJ}</p>
-      <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>Se déconnecter</button>
-      </>
-      }
-          
+      ) : (
+        <>
+          <p>Vous êtes connecté sous le compte : {pseudo} d'id : {idJ}</p>
+          <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>
+            Se déconnecter
+          </button>
+        </>
+      )}
     </div>
   );
 }
 
-
 export default function Deconnection(props) {
   return (
     <>
-    <ConnexionProvider>
-      <Deco disabled={props.disabled}/>
-    </ConnexionProvider>
+      <ConnexionProvider>
+        <Deco disabled={props.disabled} />
+      </ConnexionProvider>
     </>
   );
 }
-
