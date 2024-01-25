@@ -221,12 +221,16 @@ function Center() {
 }
 
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction, navigate } = useAppContext()
 
     useEffect(() => {
         const fetchInfoServ = async () => {
             console.log("fetchInfoServ")
 
+            socket.on('savePartyResult', () => {
+                navigate('/home');
+            })
+            
             socket.on("dealingCards", (data) => {
                 console.log("Cartes reçues via dealingCards",data);
                 setCards(data.Cards);
@@ -269,7 +273,7 @@ function SixQuiPrend() {
 
         const cleanup = () => {
             console.log("Nettoyage")
-            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards"];
+            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards",'savePartyResult'];
             for(const n of listNameSocket){socket.off(n)};
         }
         fetchInfoServ();
