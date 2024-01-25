@@ -191,7 +191,7 @@ io.on('connection', (socket) => {
             if (err) throw err;
 
             if (existResult[0].partyExists) {
-                db.query('SELECT count(idPartie)as nbPartie from joue where idJ = ?;', [idPlayer], (err, nbGames) => {
+                db.query('SELECT count(parties.idPartie) as nbPartie from joue,parties where joue.idPartie = parties.idPartie and parties.sauvegarde = 0 and joue.idJ = ?;', [idPlayer], (err, nbGames) => {
                     if (err) throw err;
                     console.log(nbGames);
                     if (nbGames[0].nbPartie == 0) {
