@@ -52,7 +52,7 @@ const gestionTours = function (io, socket, db) {
                 });
             } catch {
                 console.log("Erreur de lecture des cartes :");
-                console.log(cartesJoueurs.get(data.playerId));
+                console.log(cartesJoueurs.get(data.playerId)); // undefined
                 throw "finito";
             }
 
@@ -369,6 +369,7 @@ function annoncerJoueurs(io, socket, listeJoueurs, numeroTour, idPartie) {
 }
 
 function recupererMains(db, idPartie) {
+    console.log("Appel à récupererMains avec idPartie = " + idPartie);
     // Cette fonction retourne une promesse, qui lors de la résolution donnera l'ensemble des mains non vides des joueurs
 
     return new Promise((resolve, reject) => {
