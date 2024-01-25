@@ -363,7 +363,6 @@ function annoncerJoueurs(io, socket, listeJoueurs, numeroTour, idPartie) {
     // par la route 'newTurn' (numeroTour, numeroJoueur)
     console.log("On attend 5 secondes avant de passer au nouveau tour");
     setTimeout(() => {
-        // io.to('partie' + idPartie).emit('newTurn', {"numeroTour": numeroTour, "joueurs": listeJoueurs});
         socket.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
