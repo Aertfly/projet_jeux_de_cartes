@@ -9,7 +9,7 @@ const server = http.createServer(app);
 
 const gestionTours = require('./gestionTours.js');
 const startGame = require('./startGame.js');
-const scores = require('./scores.js');
+const {scores, scoreMoyenJoueur} = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
 const sauvegardePartie = require('./sauvegardePartie.js');
@@ -280,13 +280,16 @@ io.on('connection', (socket) => {
         db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
             if(err)throw(err);
             var infoPlayers=[];
-            for(i=0;i<result.length;i++){
-                infoPlayers.push({
-                    "nbCards":JSON.parse(result[i].main).length,
-                    "pseudo":result[i].pseudo,
-                    "score":result[i].score
-                })
-            }
+            scoreMoyenJoueur(io,db,idParty).then((scoreMoyenJoueur) => {
+                for(i=0;i<result.length;i++){
+                    infoPlayers.push({
+                        "nbCards":JSON.parse(result[i].main).length,
+                        "pseudo":result[i].pseudo,
+                        "score":result[i].score,
+                        'scoreMoyenJoueur': scoreMoyenJoueur
+                    })
+                }
+            });
             socket.emit('infoGameOut',{
                 'center' :JSON.parse(result[0].centre),
                 'archive' : JSON.parse(result[0].archive),
@@ -294,6 +297,7 @@ io.on('connection', (socket) => {
                 'infoPlayers' : infoPlayers,
                 'nbTurn' : result[0].tour
             });
+            
         });
     });
 
