@@ -194,6 +194,17 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
         infoPartie(db, idPartie).then((infoJoueurs) => {
             // On envoie les dernières infos sur la partie au joueur
             socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+
+            db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
+                if (err2) throw err2;
+                let joueurs = [];
+                result2.forEach((idJoueur) => {
+                    joueurs.push(idJoueur["idJ"]);
+                });
+
+                // On dit aux joueurs qu'on est dans un nouveau tour
+                socket.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": joueurs });
+            });
         });
     });
 }
@@ -246,15 +257,12 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
 }
 
 function trier(temp) {
-    // Créer une fonction de comparaison qui compare les valeurs des attributs "valeur" des deux objets
     const comparer = (a, b) => {
         return a[1].valeur - b[1].valeur;
     };
     
-    // Trier la liste `temp` en fonction de la fonction de comparaison
     temp.sort(comparer);
     
-    // Retourner la liste triée
     return temp;
 }
 
@@ -268,18 +276,11 @@ const ligneSQP = function(io, socket, db, data){
         carteActuelle = centre[data.idJoueur];
         
         // On enlève LA carte du centre
-        /*centre = Object.keys(centre).filter((clé) => clé !== carteActuelle[0])
-        .reduce((objet, clé) => {
-            objet[clé] = centre[clé];
-            return objet;
-        }, {});*/
-
         for (let c in centre) {
             if (centre[c] === carteActuelle) {
               delete centre[c];
             }
         }
-
         
         console.log("Le nouveau centre : " + JSON.stringify(centre) + "\n(on en a enlevé " + JSON.stringify(carteActuelle) + ")");
         // On met à jour le centre dans la bd
