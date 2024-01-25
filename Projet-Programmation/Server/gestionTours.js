@@ -186,7 +186,7 @@ function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
         });
 
         console.log(scores);
-        socket.to(idPartie).emit('updateScores', scores);
+        io.to(idPartie).emit('updateScores', scores);
     });
 }
 
@@ -323,8 +323,7 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
 
 function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs, idPartie) {
     // Envoie sur la route 'winner' le pseudo du gagnant
-    // socket.to
-    socket.to(idPartie).emit('winner', vainqueur);
+    io.to(idPartie).emit('winner', vainqueur);
 
     annoncerScores(io, socket, db, cartesJoueurs, idPartie);
 
@@ -363,7 +362,7 @@ function annoncerJoueurs(io, socket, listeJoueurs, numeroTour, idPartie) {
     // par la route 'newTurn' (numeroTour, numeroJoueur)
     console.log("On attend 5 secondes avant de passer au nouveau tour");
     setTimeout(() => {
-        socket.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
+        io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
     }, 5000);
@@ -415,7 +414,7 @@ async function reveal(io, socket, centre, db, idPartie) {
         const recuperer = await recupererPseudo(db, clé);
         centreAEnvoyer[recuperer] = centre[clé];
     }
-    socket.to(idPartie).emit('reveal', centreAEnvoyer);
+    io.to(idPartie).emit('reveal', centreAEnvoyer);
 }
 
 module.exports = gestionTours;
