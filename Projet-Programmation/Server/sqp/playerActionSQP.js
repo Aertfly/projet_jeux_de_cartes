@@ -76,10 +76,10 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
     // on suppose que le nombre de cartes au centre est égal au nombre de joueurs (assert ?)
     // pas forcément : possiblement reprise après ligne choisie
     
-    // on révèle les cartes : on envoie infoGameOut
+    // on révèle les cartes : on envoie les infos
     queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
         infoPartie(db, idPartie).then((infoJoueurs) => {
-            io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+            envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, nbTour);
         });
     });    
     
@@ -114,7 +114,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                 // On va chercher infoPlayers
                 infoPartie(db, idPartie).then((infoJoueurs) => {
                     // On envoie les dernières infos sur la partie au joueur
-                    io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+                    envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, nbTour);
 
                     db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
                         if (err2) throw err2;
@@ -199,15 +199,46 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                     });
                 }
             }
-            // On envoie les centres mis à jour : 'infoGameOut' (center, archive, draw (vide), infoPlayers, nbTurn)
+            // On envoie les infos mises à jour :
             queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
                 infoPartie(db, idPartie).then((infoJoueurs) => {
-                    console.log("On envoie infoGameOut sur la room d'id " + idPartie);
-                    io.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+                    console.log("On envoie les infos sur la room d'id " + idPartie);
+                    envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, nbTour);
                 });
             });
         }
     }, 1000);  // On attend 1 seconde
+}
+
+function recupererPseudo(db, idJoueur) {
+    return new Promise((resolve, reject) => {
+        db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(result[0]["pseudo"]);
+        });
+    });
+}
+
+var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTour){
+    // console.log("On envoie infoGameOut")
+    let centre2 = centre;
+    let listePseudos = {};
+    // On doit convertir le centre pour que les id des cartes soient le pseudo des joueurs et pas leur idJ
+    for(carte of centre2){
+        recupererPseudo(db, carte[0]).then((pseudo) => {
+            listePseudos[carte[0]] = pseudo;
+
+            if(Object.keys(listePseudos).length == Object.keys(centre).length){ // Si le pseudo récupéré est le dernier : on les a tous
+                for(carte2 of centre2){
+                    carte2[0] = listePseudos[carte2[0]];
+                }
+            }
+        });
+    }
+
+    io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
 }
 
 var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
