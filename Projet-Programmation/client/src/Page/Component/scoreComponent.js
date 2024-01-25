@@ -26,7 +26,7 @@ const Score = () => {
       socket.off('updateScores');
       socket.off('otherPlayerLeft');
     };
-  }, []);
+  }, [socket]);
 
   // On transforme l'objet en tableau pour faire l'affichage
   const scoresArray = Object.keys(scores).map(player => ({

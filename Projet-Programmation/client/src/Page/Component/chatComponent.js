@@ -12,7 +12,7 @@ function Chat({ data }) {
     const chatContainerRef = useRef();
 
     // Enregistrement des valeurs de la data
-    const {idJ,pseudo} = usePlayer();
+    const {pseudo} = usePlayer();
     const [party, setParty] = useState('');
 
     useEffect(() => {

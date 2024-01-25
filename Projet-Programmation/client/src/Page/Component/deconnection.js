@@ -1,6 +1,6 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import { SocketContext } from '../../socket.js';
-import { ConnexionContext, ConnexionProvider } from '../IC.js'; 
+import { ConnexionContext, ConnexionProvider } from '../IC.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../../index.js';
 
@@ -10,19 +10,19 @@ function Deco(props) {
   const navigate = useNavigate();
   const { idJ, setIdJ, pseudo } = usePlayer();
 
-  const handleDeconnection = () => {
-    setIdJ(null); 
+  const handleDeconnection = useCallback(() => {
+    setIdJ(null);
     setEstConnecte("Déconnecté");
     socket.emit('deconnexion');
     navigate('/');
     socket.emit('playerLeaving', idJ);
-  };
+  }, [socket, setIdJ, setEstConnecte, navigate, idJ]);
 
   useEffect(() => {
     window.onload = function (e) {
       e.preventDefault();
       handleDeconnection();
-      e.returnValue = 'Déconnecté'; 
+      e.returnValue = 'Déconnecté';
     };
 
     socket.on('firstConnection', () => {
