@@ -202,8 +202,9 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                     joueurs.push(idJoueur["idJ"]);
                 });
 
+                console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
                 // On dit aux joueurs qu'on est dans un nouveau tour
-                socket.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": joueurs });
+                socket.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
             });
         });
     });
@@ -238,8 +239,8 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
                 // Le joueur a perdu :
                 socket.to(idPartie).emit('looser', {idJ: idJ});
                 // On envoie sur la route 'looser' l'idJ
-                throw "partie terminée (message de test)";
-                //return false;
+                // throw "partie terminée (message de test)";
+                return false;
                 // On retourne false
             }
             
