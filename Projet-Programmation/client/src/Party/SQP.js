@@ -8,26 +8,6 @@ import Chat from '../Page/Component/chatComponent.js';
 import Save from '../Page/Component/saveComponent.js';
 import Score from '../Page/Component/scoreComponent.js';
 
-function Test() {
-    const { idJ, idParty, socket } = useAppContext();
-
-    const handleCardChoisie = () => {
-        socket.emit('playerAction', {carte: {valeur: 2, enseigne: "SQP", nbBoeufs: 3},playerId: idJ, idPartie: idParty, "action": "joue"});
-    }
-
-
-    const handleLigneChoisie = () => {
-        socket.emit('ligne', {ligne: 2, idJoueur: idJ, idPartie: idParty});
-    }
-
-    return (
-      <div>
-          <br />
-          <button type="button" onClick={handleCardChoisie}>{'Jouer cette carte'}</button>
-          <button type="submit" onClick={handleLigneChoisie}>{'Jouer cette ligne'}</button>
-      </div>
-    );
-  }
 
 const AppContext = createContext();
 const AppProvider = ({ children }) => {
@@ -37,15 +17,15 @@ const AppProvider = ({ children }) => {
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
-    const [isMyTurn, setIsMyTurn] = useState(null);
+    const [MyAction, setMyAction] = useState(null);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
     const contextValue = {
         setInfo,
-        setIsMyTurn,
+        setMyAction,
         setOtherPlayerAction,
         OtherPlayerAction,
-        isMyTurn,
+        MyAction,
         Info,
         cards,
         setCards,
@@ -147,14 +127,14 @@ function Card(props) {
 };
 
 function CardHand(props) {
-    const {cards,setCards, idJ, isMyTurn, socket, idParty , setIsMyTurn } = useAppContext();
+    const {cards,setCards, idJ, MyAction, socket, idParty , setMyAction } = useAppContext();
 
     function onCardClick() {
         console.log("Je clique sur",props.value)
-        if (isMyTurn) {
+        if (MyAction == "joueCarte") {
             console.log("Moi le joueur d'id :", idJ, "joue la carte", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ ,"idPartie": idParty});
-            setIsMyTurn(false);
+            setMyAction(null);
             cards.splice(cards.indexOf(props.value),1)
             setCards(cards);
         }
@@ -173,7 +153,7 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const {cards,isMyTurn} = useAppContext();
+    const {cards,MyAction} = useAppContext();
     const [pointsCards,setPointCards] = useState(generatePointCards(cards.length,100,150));
     var nbCards = cards ? cards.length : 0; 
 
@@ -190,7 +170,8 @@ function CardsHand() {
 
     return (
         <div>
-            <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
+            <p style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 75}px`,position:'absolute',fontSize: '25px'}}>{
+            MyAction="jouerCarte"? "A vous de jouer !" : MyAction=="choisirLigne" ? "Choissisez une ligne à récupérer":"Veuillez patienter..."}</p>
             {cards.map((card,index) => 
                 <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
@@ -209,6 +190,7 @@ function Center() {
     const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
         console.log("Carte cliquée :", card,rowIndex);
+        //socket.emit('ligne', {ligne: 2, idJoueur: idJ, idPartie: idParty});
     };
 
     const centerRows = positions.map((row, rowIndex) => {
@@ -249,7 +231,7 @@ function quadrillagePoints() {
 }
 
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn, setOtherPlayerAction, navigate } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction, setOtherPlayerAction, navigate } = useAppContext()
 
     useEffect(() => {
         const fetchInfoServ = async () => {
@@ -273,7 +255,7 @@ function SixQuiPrend() {
                 console.log("NOUVEAU TOUR");
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    setIsMyTurn(true);
+                    setMyAction("jouerCarte");
                 }
             });
             
@@ -294,7 +276,8 @@ function SixQuiPrend() {
             socket.on('requestAction',(data)=>{
                 console.log("Cette personne doit faire un truc",data);
                 if(data.idJ = idJ){
-                    console.log("Je dois faire un truc")
+                    console.log("Je dois faire un truc");
+                    setMyAction("choisirLigne");
                 }
             });
 
@@ -313,9 +296,9 @@ function SixQuiPrend() {
 
     return (
         <>  
-            <Save data={{party: idParty}} />
             <Chat data={{party: idParty}} />
             <Deconnection />
+            <Save data={{party: idParty}} />
             <Leave />
             <Score />
             <Center />
@@ -329,7 +312,6 @@ function App2() {
         <AppProvider>
             <CardsHand />
             <SixQuiPrend />
-            <Test />
         </AppProvider>
     );
 };
