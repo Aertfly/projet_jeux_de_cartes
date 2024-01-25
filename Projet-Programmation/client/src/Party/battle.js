@@ -235,7 +235,7 @@ function Center() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    });
 
     return (
         <div>
@@ -317,13 +317,13 @@ function Battle() {
         }
         fetchInfoServ();
         return cleanup;
-    }, []);
+    });
 
 
 
     return (
         <div className='BattleBody'>
-            {Info == undefined ? (
+            {Info === undefined ? (
                 "CHARGEMENT..."
             ) : (
                 <>

@@ -293,7 +293,7 @@ function SixQuiPrend() {
 
             socket.on('requestAction',(data)=>{
                 console.log("Cette personne doit faire un truc",data);
-                if(data.idJ = idJ){
+                if(data.idJ === idJ){
                     console.log("Je dois faire un truc")
                 }
             });
@@ -309,7 +309,7 @@ function SixQuiPrend() {
         }
         fetchInfoServ();
         return cleanup;
-    }, []);
+    });
 
     return (
         <>  
