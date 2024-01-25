@@ -2,10 +2,10 @@
 
 const startGame = function(io,socket,db){
     socket.on('start', data => {
-        console.log("Partie ", data.idParty, " lancée par : ", data.idPlayer);
+        console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
         db.query("SELECT idJ, type, sauvegarde, tour, proprietaire,joueursMin FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
-            let msg = test(rawResult,data.idPlayer);
+            let msg = testPreCond(rawResult,data.idPlayer);
             if (msg)socket.emit('gameStart',{'message':msg});
             else {
                 const IdPlayerList = rawResult.map(object => object.idJ);
@@ -75,7 +75,7 @@ const startGame = function(io,socket,db){
 }   
 
 
-function test(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
+function testPreCond(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
     if (rawResult.length===0)return "Erreur 404 : Partie non trouvé";
     if(rawResult[0].tour>=0)return "Partie déja en cours";
     let isNotInParty = true;

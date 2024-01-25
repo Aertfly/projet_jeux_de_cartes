@@ -17,7 +17,7 @@ const AppProvider = ({ children }) => {
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
-    const [MyAction, setMyAction] = useState(null);
+    const [myAction, setMyAction] = useState(null);
     const [OtherPlayerAction, setOtherPlayerAction] = useState()
 
     const contextValue = {
@@ -25,7 +25,7 @@ const AppProvider = ({ children }) => {
         setMyAction,
         setOtherPlayerAction,
         OtherPlayerAction,
-        MyAction,
+        myAction,
         Info,
         cards,
         setCards,
@@ -127,15 +127,15 @@ function Card(props) {
 };
 
 function CardHand(props) {
-    const {cards,setCards, idJ, MyAction, socket, idParty , setMyAction } = useAppContext();
+    const {cards,setCards, idJ, myAction, socket, idParty , setMyAction } = useAppContext();
 
     function onCardClick() {
-        console.log("Je clique sur",props.value)
-        if (MyAction == "joueCarte") {
+        console.log("Je clique sur",props.value);
+        if (myAction === "jouerCarte") {
             console.log("Moi le joueur d'id :", idJ, "joue la carte", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ ,"idPartie": idParty});
             setMyAction(null);
-            cards.splice(cards.indexOf(props.value),1)
+            cards.splice(cards.indexOf(props.value),1);
             setCards(cards);
         }
     }
@@ -153,7 +153,7 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const {cards,MyAction} = useAppContext();
+    const {cards,myAction} = useAppContext();
     const [pointsCards,setPointCards] = useState(generatePointCards(cards.length,100,150));
     var nbCards = cards ? cards.length : 0; 
 
@@ -170,8 +170,9 @@ function CardsHand() {
 
     return (
         <div>
+            <Countdown style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 100}px`,position:'absolute',fontSize: '25px'}}/>
             <p style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 75}px`,position:'absolute',fontSize: '25px'}}>{
-            MyAction="jouerCarte"? "A vous de jouer !" : MyAction=="choisirLigne" ? "Choissisez une ligne à récupérer":"Veuillez patienter..."}</p>
+            myAction==="jouerCarte"? "A vous de jouer !" : myAction==="choisirLigne" ? "Choissisez une ligne à récupérer":"Veuillez patienter..."}</p>
             {cards.map((card,index) => 
                 <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
@@ -179,8 +180,36 @@ function CardsHand() {
     );
 }
 
+function Countdown(props){
+    const {myAction} = useAppContext();
+    const [number,setNumber] = useState(30);
+
+    useEffect(() => {
+        let interval;
+        const decreaseNumber = () => {
+            setNumber(number-1);
+        }
+
+        const cleanup = () => {
+            clearInterval(interval);
+        }
+
+        if(myAction){
+            interval = setInterval(decreaseNumber,1000)
+        }else{
+            setNumber(30);
+        }
+
+        return cleanup
+    },[myAction])
+
+    return (
+        myAction ? <p style={props.style}>{number}</p> : <></>
+    )
+}
+
 function Center() {
-    const { Info } = useAppContext();
+    const { Info, myAction, idJ , idParty } = useAppContext();
     const positions = quadrillagePoints();
     const board = Info.archive;
 
@@ -189,7 +218,11 @@ function Center() {
 
     const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
-        console.log("Carte cliquée :", card,rowIndex);
+        console.log("Carte du centre cliquée :", card,rowIndex);
+        if (myAction === "choisirLigne" ){
+            console.log("Envoie ligne selectionnée serveur  :",rowIndex);
+            socket.emit('ligne', {'ligne': rowIndex, 'idJoueur': idJ, 'idPartie': idParty})
+        }
         //socket.emit('ligne', {ligne: 2, idJoueur: idJ, idPartie: idParty});
     };
 
@@ -276,6 +309,7 @@ function SixQuiPrend() {
             socket.on('requestAction',(data)=>{
                 console.log("Cette personne doit faire un truc",data);
                 if(data.idJ === idJ){
+                    setMyAction("choisirLigne")
                     console.log("Je dois faire un truc")
                 }
             });
