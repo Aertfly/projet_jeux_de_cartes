@@ -157,20 +157,21 @@ function CardHand(props) {
 
 function CardsHand() {
     const { cards, isMyTurn } = useAppContext();
-    const [pointsCards, setPointCards] = useState(generatePointCards(cards.length, 75, 100));
-
+    const [pointsCards, setPointCards] = useState([]);
+    var nbCards = cards ? cards.length : 0; 
 
     useEffect(() => {
         const handleResize = () => {
-            setPointCards(generatePointCards(cards.length, 75, 100));
+            setPointCards(generatePointCards(nbCards, 75, 100));
         };
         window.addEventListener('resize', handleResize);
         handleResize();
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
-    console.log(pointsCards);
+    }, [nbCards]);
+
+    //console.log(pointsCards);
 
     return (
         <div>

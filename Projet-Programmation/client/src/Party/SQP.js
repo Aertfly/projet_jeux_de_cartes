@@ -124,14 +124,15 @@ function Card(props) {
         border: '1px solid black', // Bordure pour visualiser le rectangle
         textAlign: 'center',
         padding: '10px',
+        backgroundColor: "#D3D3D3"
     };
 
     const textStyles = {
         position: 'absolute',
-        bottom: '10px', // Ajustez la position verticale du texte
+        bottom: '35px', // Ajustez la position verticale du texte
         left: '50%', // Centre le texte horizontalement
         transform: 'translateX(-50%)', // Centre le texte horizontalement
-        color: 'black', // Couleur du texte (à ajuster selon vos besoins)
+        color: 'white', // Couleur du texte (à ajuster selon vos besoins)
         fontSize: '50px'
     };
 
@@ -140,7 +141,7 @@ function Card(props) {
             <p style={textStyles}>{props.card.valeur} </p>
             <img src={image} alt="Fond de boeuf" style={{display:'inline', width: '100px', height: '100px'}}/>
                 {boeufs.map(() => (
-                    <img src={image} alt="tête de boeuf" style={{display:'inline', width: '25px', height: '40px'}}/>
+                    <img src={image} alt="tête de boeuf" style={{display:'inline', width: '25px', height: '25px'}}/>
                 ))}
         </div>
     );
@@ -172,18 +173,19 @@ function CardHand(props) {
 function CardsHand() {
     const {cards,isMyTurn} = useAppContext();
     const [pointsCards,setPointCards] = useState(generatePointCards(cards.length,100,150));
+    var nbCards = cards ? cards.length : 0; 
 
     useEffect(() => {
         const handleResize = () => {
-            setPointCards(generatePointCards(cards.length,100,150));
+            setPointCards(generatePointCards(nbCards,100,150));
         };
         window.addEventListener('resize', handleResize);
         handleResize();
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []); 
-    console.log(pointsCards);
+    }, [nbCards]); 
+
     return (
         <div>
             <p>{isMyTurn ? "A vous de jouer !" : "Veuillez patienter..."}</p>
@@ -194,30 +196,39 @@ function CardsHand() {
     );
 }
 
-function Center() {
-    const { Info } = useAppContext()
-    const [cardsPositions, setCardsPositions] = useState([]);
-    const center = Info.center;
-    if (center)var numberOfCards = center.length;
-    else var numberOfCards = 0;
-    useEffect(() => {
-        const handleResize = () => {
-            setCardsPositions(circlePoints(100, numberOfCards));
-        };
-        window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    },[]);
+function Center() { // Le plateau de cartes de 4x5
+    const { Info } = useAppContext();
+    const positionCards = quadrillagePoints();
+    const board = Info.archive;
+    //board[0].push({ "valeur": 25, "nbBoeufs": 8 });
 
-    return (
-        <div className="center-container">
-            {cardsPositions.map((position, index) => (
-                <Card x={position.x} y={position.y} value={center[index]} />
-            ))}
-        </div>
-    );
+    console.log("Board", board);
+    if (!board) return null;
+
+    const cardComponents = positionCards
+      .filter((_, index) => board[index]) // Filtrer les éléments non définis
+      .map((position, index) => (
+        <Card key={index} x={position.x} y={position.y} card={board[index]} />
+      ));
+
+    return <div className="center-container">{cardComponents}</div>;
+}
+
+function quadrillagePoints() {
+    const itemsCount = 20;
+    const itemsPerColumn = 4;
+    const cardSpacing = 175;
+    const positions = [];
+
+    for (let index = 0; index < itemsCount; index++) {
+        const col = Math.floor(index / itemsPerColumn);
+        const row = index % itemsPerColumn;
+        const x = (col * cardSpacing)-350;
+        const y = (row * cardSpacing)-450;
+        positions.push({ x, y });
+    }
+
+    return positions;
 }
 
 function SixQuiPrend() {
