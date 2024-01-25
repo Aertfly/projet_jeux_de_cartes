@@ -102,9 +102,33 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
     
     // tant que le centre n'est pas vide
     let intervalle = setInterval( () => {
-        if(triees.length == 0){
+        if(triees.length == 0){ // Toutes les cartes ont été jouées, on passe au tour suivant
             console.log("Le centre est vide, on clear l'intervalle");
             clearInterval(intervalle);
+
+            // On récupère le numéro de tour
+            queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
+                nbTour++; // On passe à un nouveau tour
+                db.query("UPDATE parties SET tour=?", [nbTour], (err, result) => { if (err) throw err; }) // On met à jour le nouveau tour dans la BD
+                
+                // On va chercher infoPlayers
+                infoPartie(db, idPartie).then((infoJoueurs) => {
+                    // On envoie les dernières infos sur la partie au joueur
+                    socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+
+                    db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
+                        if (err2) throw err2;
+                        let joueurs = [];
+                        result2.forEach((idJoueur) => {
+                            joueurs.push(idJoueur["idJ"]);
+                        });
+
+                        console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
+                        // On dit aux joueurs qu'on est dans un nouveau tour
+                        socket.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
+                    });
+                });
+            });
         } else {
             console.log("On fait un tour de boucle avec un centre de longueur " + triees.length);
             // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
@@ -179,35 +203,12 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             // On envoie les centres mis à jour : 'infoGameOut' (center, archive, draw (vide), infoPlayers, nbTurn)
             queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
                 infoPartie(db, idPartie).then((infoJoueurs) => {
+                    console.log("On envoie infoGameOut sur la room d'id " + idPartie);
                     socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
                 });
             });
         }
     }, 1000);  // On attend 1 seconde
-    
-    // On récupère le numéro de tour
-    queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
-        nbTour++; // On passe à un nouveau tour
-        db.query("UPDATE parties SET tour=?", [nbTour], (err, result) => { if (err) throw err; }) // On met à jour le nouveau tour dans la BD
-        
-        // On va chercher infoPlayers
-        infoPartie(db, idPartie).then((infoJoueurs) => {
-            // On envoie les dernières infos sur la partie au joueur
-            socket.to(idPartie).emit('infoGameOut', {center: centre, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
-
-            db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
-                if (err2) throw err2;
-                let joueurs = [];
-                result2.forEach((idJoueur) => {
-                    joueurs.push(idJoueur["idJ"]);
-                });
-
-                console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
-                // On dit aux joueurs qu'on est dans un nouveau tour
-                socket.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
-            });
-        });
-    });
 }
 
 var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
