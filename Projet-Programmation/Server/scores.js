@@ -14,4 +14,19 @@ const scores = function(io, socket, db) {
     })
 }
 
-module.exports = scores;
+function scoreMoyenJoueur(io,db,idParty){
+    return new Promise((resolve, reject) => {
+        const query = "SELECT statistiques.nombreParties, statistiques.totalPoints FROM statistiques,joue,parties WHERE statistiques.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?" ;
+        
+        db.query(query, [idParty], (error, results) => {
+            if (error) {
+                console.error('Erreur lors de l\'exécution de la requête :', error);
+                reject(error);
+            } else {
+                resolve(JSON.stringify(results));
+            }
+        });
+    });
+}
+
+module.exports = { scores, scoreMoyenJoueur};
