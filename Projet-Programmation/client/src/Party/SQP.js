@@ -136,7 +136,7 @@ function Card(props) {
     };
 
     return (
-        <div style={cardStyles} onClick={props.onClick} className='CardHand'>
+        <div style={cardStyles} onClick={props.onClick} className='CardHand' hidden={props.played}>
             <p style={textStyles}>{props.card.valeur} </p>
             <img src={image} alt="Fond de boeuf" style={{display:'inline', width: '100px', height: '100px'}}/>
                 {boeufs.map(() => (
@@ -147,19 +147,22 @@ function Card(props) {
 };
 
 function CardHand(props) {
-    const { idJ, isMyTurn, socket } = useAppContext();
+    const { idJ, isMyTurn, socket, idParty , setIsMyTurn } = useAppContext();
+    const [played,isPlayed] = useState(false);
 
     function onCardClick() {
         console.log("Je clique sur",props.value)
         if (isMyTurn) {
             console.log("le Joueur", idJ, "joue la carte", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
+            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ ,"idPartie": idParty});
+            setIsMyTurn(false);
         }
     }
 
     return (
         <div>
             <Card
+                played={played}
                 x={props.x}
                 y={props.y}
                 card={props.value}
@@ -195,36 +198,51 @@ function CardsHand() {
     );
 }
 
-function Center() { // Le plateau de cartes de 4x5
+function Center() {
     const { Info } = useAppContext();
-    const positionCards = quadrillagePoints();
+    const positions = quadrillagePoints();
     const board = Info.archive;
-    //board[0].push({ "valeur": 25, "nbBoeufs": 8 });
 
     console.log("Board", board);
     if (!board) return null;
 
-    const cardComponents = positionCards
-      .filter((_, index) => board[index]) // Filtrer les éléments non définis
-      .map((position, index) => (
-        <Card key={index} x={position.x} y={position.y} card={board[index]} />
-      ));
+    const handleCardClick = (card) => {
+        // Gérez le clic sur la carte ici
+        console.log("Carte cliquée :", card);
+    };
 
-    return <div className="center-container">{cardComponents}</div>;
+    const centerRows = positions.map((row, rowIndex) => {
+        const rowCards = row.map((position, colIndex) => {
+            const cardIndex = rowIndex * row.length + colIndex;
+            const card = board[rowIndex] && board[rowIndex][colIndex];
+            return card ? (
+                <Card key={colIndex} x={position.x} y={position.y} card={card} onClick={() => handleCardClick(card)} />
+            ) : null;
+        }).filter(Boolean); // Filtrer les éléments non définis
+
+        return <div key={rowIndex} className="row-container">{rowCards}</div>;
+    });
+
+    return <div className="center-container">{centerRows}</div>;
 }
+
 
 function quadrillagePoints() {
     const itemsCount = 20;
-    const itemsPerColumn = 4;
-    const cardSpacing = 175;
+    const itemsPerRow = 5; // Nombre d'items par ligne
+    const cardSpacing = 130;
     const positions = [];
 
     for (let index = 0; index < itemsCount; index++) {
-        const col = Math.floor(index / itemsPerColumn);
-        const row = index % itemsPerColumn;
-        const x = (col * cardSpacing)-350;
-        const y = (row * cardSpacing)-450;
-        positions.push({ x, y });
+        const row = Math.floor(index / itemsPerRow);
+        const col = index % itemsPerRow;
+        const x = (col * cardSpacing)-400;
+        const y = (row * cardSpacing)-400;
+        if (positions[row] === undefined) {
+            // Si la ligne n'existe pas encore, créez-la
+            positions[row] = [];
+        }
+        positions[row].push({ x, y });
     }
 
     return positions;
@@ -247,7 +265,7 @@ function SixQuiPrend() {
             });
 
             socket.on('infoGameOut', (data) => {
-                console.log("Info other", data);
+                console.log("Info de la partie", data);
                 setInfo(data);
             });
             
@@ -256,7 +274,6 @@ function SixQuiPrend() {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setIsMyTurn(true);
-                    setInfo({ 'Center': Info.center, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': data.numeroTour });
                 }
             });
 
@@ -315,3 +332,4 @@ function App2() {
 };
 
 export default App2;
+
