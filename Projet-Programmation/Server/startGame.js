@@ -58,6 +58,15 @@ const startGame = function(io,socket,db){
                 //console.log(result);
                 //console.log(result[0].main);
                 socket.emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
+                db.query("SELECT idJ FROM joue WHERE idPartie=?", [data.idParty], async (err2, result2) => {
+                    if (err2) throw err2;
+                    let joueurs = [];
+                    result2.forEach((idJoueur) => {
+                        joueurs.push(idJoueur["idJ"]);
+                    });
+                    console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": 0, "joueurs": joueurs }));
+                    socket.emit('newTurn', { "numeroTour": 0, "joueurs": joueurs });
+                });
             }else{
                 console.log("Erreur envoie cartes :",result,data.idParty,data.idJ)
             }

@@ -153,7 +153,7 @@ function CardHand(props) {
         console.log("Je clique sur",props.value)
         if (isMyTurn) {
             console.log("le Joueur", idJ, "joue la carte", props.value);
-            socket.emit('playerActionSQP', { "carte": props.value, "action": "joue", "playerId": idJ });
+            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
         }
     }
 
