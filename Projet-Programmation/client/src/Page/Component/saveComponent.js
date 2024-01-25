@@ -20,7 +20,7 @@ function Save({ data }) {
 
   return (
     <div>
-      <button style={Style} onClick={handleSave}>Mettre en pause et sauvegarder la partie</button>
+      <button style={Style} onClick={handleSave}>Sauvegarder</button>
     </div>
   );
 };

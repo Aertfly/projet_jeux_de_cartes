@@ -113,7 +113,6 @@ function Leave() {
 function Card(props) {
     const image = require('../img/SQP/boeuf.png');
     const boeufs = [];for(let i=0;i<props.card.nbBoeufs;i++){boeufs.push(0)}//pour la parcourir ensuite autant de fois qu'il y a de têtes
-    console.log(boeufs); 
     
     const cardStyles = {
         position: 'absolute',
@@ -253,6 +252,7 @@ function SixQuiPrend() {
             });
             
             socket.on('newTurn', (data) => {
+                console.log("NOUVEAU TOUR");
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setIsMyTurn(true);
