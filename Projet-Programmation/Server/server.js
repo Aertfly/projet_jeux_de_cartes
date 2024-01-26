@@ -91,12 +91,13 @@ io.on('connection', (socket) => {
                             console.log('Connexion réussie');
                             idJPlayers.push(result[0].idJ);
                             connectedUsers[socket.id] = true;
+                            console.log(asso);
                             console.log(connectedUsers);
                             console.log(idJPlayers);
                         } else {
                             const flemme = (idJPlayers.includes(result[0].idJ)) ? "Déjà connecté" : "Mot de passe incorrect";
                             socket.emit('resultatConnexion', flemme);
-                            console.log('Mot de passe incorrect ou déjà connecté');
+                            console.log(flemme);
                         }
                     } else {
                         socket.emit('resultatConnexion', "pseudo incorrect");
@@ -261,6 +262,10 @@ io.on('connection', (socket) => {
 
         if (socket.id in connectedUsers) {
             delete connectedUsers[socket.id];
+            const index = idJPlayers.indexOf(asso.get(socket.id));
+            if (index !== -1) {
+                idJPlayers.splice(index, 1);
+            }
             console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
         }
     });
@@ -269,9 +274,17 @@ io.on('connection', (socket) => {
         if (reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
             abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
             delete connectedUsers[socket.id];
+            const index = idJPlayers.indexOf(asso.get(socket.id));
+            if (index !== -1) {
+                idJPlayers.splice(index, 1);
+            }
         } else {
             abandon(db, socket, 'playerLeaving', asso.get(socket.id));
             delete connectedUsers[socket.id];
+            const index = idJPlayers.indexOf(asso.get(socket.id));
+            if (index !== -1) {
+                idJPlayers.splice(index, 1);
+            }
         }
     });
 
