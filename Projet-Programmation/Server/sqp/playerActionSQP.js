@@ -224,28 +224,23 @@ function recupererPseudo(db, idJoueur) {
 
 var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTour){
     // console.log("On envoie infoGameOut")
-    let centre2 = centre;
-    let listePseudos = {};
-    console.log("Centre2 : " + JSON.stringify(centre2));
+    //console.log("Centre (restera intact) : " + JSON.stringify(centre));
+    let centre2 = Object.assign({},centre);
+    //console.log("Centre2 avant : " + JSON.stringify(centre2));
     
-    // On doit convertir le centre pour que les id des cartes soient le pseudo des joueurs et pas leur idJ
-    /*for(i of Object.keys(centre2)){
-        // i vaut un idJ
-        recupererPseudo(db, i).then((pseudo) => {
-            listePseudos[i] = pseudo; // listePseudos[idJ] = pseudo
+    db.query("SELECT pseudo, joue.idJ FROM joueurs, joue, parties WHERE joue.idPartie = parties.idPartie AND joue.idJ = joueurs.idJ AND parties.idPartie = ?;", [idPartie], (err, result) => {
+        if(err) throw err;
+        //console.log("Le résultat vaut " + JSON.stringify(result));
 
-            setTimeout(() => {
-                if(Object.keys(listePseudos).length == Object.keys(centre).length){ // Si le pseudo récupéré est le dernier : on les a tous
-                    for(j of Object.keys(centre2)){
-                        centre2[listePseudos[j]] = centre2[j]; // On copie l'entrée dans l'objet centre2
+        for(ligne of result){
+            centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
+            delete centre2[ligne["idJ"]];
+        }
 
-                        delete centre2[j]; // On supprime l'ancienne entrée
-                }
-            }}, 10);
-        });
-    }*/
+        //console.log("Centre2 après : " + JSON.stringify(centre2));
 
-    io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+    });
 }
 
 var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
