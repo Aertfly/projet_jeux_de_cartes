@@ -182,7 +182,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
 }
 
 function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList){
-    dealCardsSQP(nbPlayers,db,idParty);
+    const playerHands = dealCardsSQP(nbPlayers,db,idParty);
     giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty);
 }
 
