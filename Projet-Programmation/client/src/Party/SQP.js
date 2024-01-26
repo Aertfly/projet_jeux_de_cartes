@@ -270,12 +270,21 @@ function quadrillagePoints() {
 
 function Player(props) {
     const img = require('../img/SQP/bonhomme.png');
+    const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
+
+    const playerColor = colors[props.index % colors.length];
+
     const playerContainerStyle = {
         display: 'flex',
         flexDirection: 'column', // Afficher les informations verticalement
         alignItems: 'center',
         marginBottom: '20px',
-        marginRight: '20px', // Ajouter une marge à droite pour séparer les joueurs
+        marginRight: '5px', // Ajouter une marge à droite pour séparer les joueurs
+        borderColor: playerColor, // Utilisez la couleur sélectionnée comme bordure
+        borderWidth: '2px',
+        borderStyle: 'solid',
+        padding: '10px',
+        borderRadius: '5px',
     };
 
     const imageStyle = {
@@ -290,13 +299,14 @@ function Player(props) {
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
             <p>{props.nbCards} cartes</p>
-            <p>{props.scoreMoyenJoueur}</p>
         </div>
     );
 }
 
+
 function GameBoard() {
     const { Info } = useAppContext();
+    console.log("center :", Info.center);
 
     const boardStyle = {
         position: 'absolute',
@@ -320,6 +330,7 @@ function GameBoard() {
                     Info.infoPlayers.map((player, index) => (
                         <Player
                             key={index}
+                            index={index}
                             pseudo={player.pseudo}
                             nbCards={player.nbCards}
                             score={player.score}
