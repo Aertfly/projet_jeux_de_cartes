@@ -239,7 +239,7 @@ var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTo
 
         //console.log("Centre2 après : " + JSON.stringify(centre2));
 
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(archive), draw: 0, infoPlayers: infoJoueurs, nbTour});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: 0, infoPlayers: infoJoueurs, nbTour});
     });
 }
 
@@ -248,46 +248,57 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
     // Prend une connexion à une base de données, un idJ, un idPartie, un numéro de ligne (de 0 à 3) et la carte qui viendra remplacer la ligne
     // Renvoie un booléen qui dit si on peut continuer ou non
     
-    // On récupère l'archive depuis la base de données
-    queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive) => {
-        archive = JSON.parse(archive);
-        // sommeTetes = on récupère le score du joueur dans la table joue
-        db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
-            if(err) throw err;
-            sommeTetes = result[0]["score"]; // A tester 
-            
-            // Pour chaque carte dans la ligne :
-            for(let carte2 of archive[ligne]){
-                console.log("On traite la carte " + JSON.stringify(carte2));
-                sommeTetes += carte2.nbBoeufs;
-                console.log("On ajoute " + carte2.nbBoeufs + " têtes au score");
-            }
-            // On met à jour le score du joueur dans la BD
-            db.query("UPDATE joue, parties SET score=? WHERE joue.idPartie = parties.idPartie AND joue.idJ=? AND parties.idPartie=?", [sommeTetes, idJ, idPartie], (err2, result2) => {
-                if(err2) throw err2;
-            });
-            
-            // Si le nombre de tetes du joueur est supérieur ou égal à 66
-            if(sommeTetes >= 66){
-                // Le joueur a perdu :
-                io.to(idPartie).emit('looser', {idJ: idJ});
-                // On envoie sur la route 'looser' l'idJ
-                // throw "partie terminée (message de test)";
-                return false;
-                // On retourne false
-            }
-            
-            // Dans la variable qui correspond à l'archive, on remplace la ligne correspondante par juste la carte passée en paramètre
-            archive[ligne] = [carte];
 
-            // On met à jour la db à partir de la variable de l'archive
-            db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err2, result2) => {
-                if(err2) throw err2;
-                console.log("On a mis à jour l'archive après qu'un joueur a ramassé une ligne");
-                return true;
+    return new Promise((resolve, reject) => {
+        // On récupère l'archive depuis la base de données
+        queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive) => {
+            archive = JSON.parse(archive);
+            // sommeTetes = on récupère le score du joueur dans la table joue
+            db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
+                if(err) throw err;
+                sommeTetes = result[0]["score"]; // A tester 
+                
+                // Pour chaque carte dans la ligne :
+                for(let carte2 of archive[ligne]){
+                    console.log("On traite la carte " + JSON.stringify(carte2));
+                    sommeTetes += carte2.nbBoeufs;
+                    console.log("On ajoute " + carte2.nbBoeufs + " têtes au score");
+                }
+                // On met à jour le score du joueur dans la BD
+                db.query("UPDATE joue, parties SET score=? WHERE joue.idPartie = parties.idPartie AND joue.idJ=? AND parties.idPartie=?", [sommeTetes, idJ, idPartie], (err2, result2) => {
+                    if(err2) throw err2;
+                });
+                
+                // Si le nombre de tetes du joueur est supérieur ou égal à 66
+                if(sommeTetes >= 66){
+                    // Le joueur a perdu :
+                    io.to(idPartie).emit('looser', {idJ: idJ});
+                    // On envoie sur la route 'looser' l'idJ
+                    // throw "partie terminée (message de test)";
+                    return false;
+                    // On retourne false
+                }
+                
+                console.log("La ligne avant remplacement vaut " + JSON.stringify(archive[ligne]));
+                // Dans la variable qui correspond à l'archive, on remplace la ligne correspondante par juste la carte passée en paramètre
+                archive[ligne] = [carte];
+                console.log("La ligne après remplacement vaut " + JSON.stringify(archive[ligne]));
+                console.log("L'ensemble vaut " + JSON.stringify(archive));
+
+                // On met à jour la db à partir de la variable de l'archive
+                db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err2, result2) => {
+                    if(err2) throw err2;
+                    console.log("On a mis à jour l'archive après qu'un joueur a ramassé une ligne :" + JSON.stringify(result2));
+                    console.log("On a dit que l'archive dans la partie " + idPartie + " valait bien " + JSON.stringify(archive));
+                    // return true;
+                    // throw "arrêt de test";
+                    resolve();
+                })
             })
-        })
+        });
     });
+    
+
 }
 
 function trier(temp) {
@@ -323,11 +334,11 @@ const ligneSQP = function(io, socket, db, data){
             console.log("BDD mise à jour" + result);
         });
         
-        remplacerLigne(db, data.idJoueur, data.idPartie, data.ligne, carteActuelle);
-        
-        queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {
-            declencherLogique(io, socket, db, data.idPartie, centre, JSON.parse(archive));
-        })
+        remplacerLigne(db, data.idJoueur, data.idPartie, data.ligne, carteActuelle).then( () => {
+            queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {
+                declencherLogique(io, socket, db, data.idPartie, centre, JSON.parse(archive));
+            })
+        });
     });
 }
 

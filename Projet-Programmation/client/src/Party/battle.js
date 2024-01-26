@@ -235,7 +235,7 @@ function Center() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    });
+    },[]);
 
     return (
         <div>
@@ -289,10 +289,10 @@ function Battle() {
             });
 
             socket.on('newTurn', (data) => {
+                console.log("NOUVEAU TOUR");
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setIsMyTurn(true);
-                    setInfo({ 'Center': Info.center, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': data.numeroTour });
                 }
             });
 
@@ -317,7 +317,7 @@ function Battle() {
         }
         fetchInfoServ();
         return cleanup;
-    });
+    },[]);
 
 
 
