@@ -92,7 +92,7 @@ function Leave() {
 
 function Card(props) {
     const image = require('../img/SQP/boeuf.png');
-    const boeufs = [];for(let i=0;i<props.card.nbBoeufs;i++){boeufs.push(0)}//pour la parcourir ensuite autant de fois qu'il y a de têtes
+    const boeufs = [];for(let i=0;i<props.card.nbBoeufs;i++){boeufs.push(i)}//pour la parcourir ensuite autant de fois qu'il y a de têtes
     
     const cardStyles = {
         position: 'absolute',
@@ -119,8 +119,8 @@ function Card(props) {
         <div style={cardStyles} onClick={props.onClick} className='CardHand' hidden={props.played}>
             <p style={textStyles}>{props.card.valeur} </p>
             <img src={image} alt="Fond de boeuf" style={{display:'inline', width: '100px', height: '100px'}}/>
-                {boeufs.map(() => (
-                    <img src={image} alt="tête de boeuf" style={{display:'inline', width: '25px', height: '25px'}}/>
+                {boeufs.map((index) => (
+                    <img key={index} src={image} alt="tête de boeuf" style={{display:'inline', width: '25px', height: '25px'}}/>
                 ))}
         </div>
     );
