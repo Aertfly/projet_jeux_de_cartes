@@ -187,7 +187,12 @@ function Countdown(props){
     useEffect(() => {
         let interval;
         const decreaseNumber = () => {
-            setNumber(number-1);
+            if (number <= 0){
+                clearInterval(interval);
+                setNumber(0)
+            }else {
+                setNumber(number-1);
+            }
         }
 
         const cleanup = () => {
@@ -209,7 +214,7 @@ function Countdown(props){
 }
 
 function Center() {
-    const { Info, myAction, idJ , idParty } = useAppContext();
+    const { Info, myAction, idJ , idParty, socket } = useAppContext();
     const positions = quadrillagePoints();
     const board = Info.archive;
 
