@@ -31,6 +31,7 @@ function Chat({ data }) {
         })
         return () => {
             socket.off('newMessage'); // Nettoie l'écouteur d'événements lorsque le composant est démonté
+            socket.off('otherPlayerLeft');
         };
     }, [socket, data.party]);
 
@@ -46,7 +47,9 @@ function Chat({ data }) {
     }
   };
   const scrollToBottom = () => {
-    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   const styles = {
