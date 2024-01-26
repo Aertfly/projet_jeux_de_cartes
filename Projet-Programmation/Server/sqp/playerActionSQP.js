@@ -86,10 +86,6 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
     
     // on trie les cartes par ordre croissant
     let temp = [];
-    console.log("----\nCentre :");
-    console.log(centre);
-    console.log("----\nArchive :");
-    console.log(archive);
     
     
     for (let clé of Object.keys(centre)){
@@ -136,7 +132,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                 });
             });
         } else { // Il reste encore des cartes à traiter, on continue
-            console.log("On fait un tour de boucle avec un centre de longueur " + triees.length);
+            // console.log("On fait un tour de boucle avec un centre de longueur " + triees.length);
             // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
             let carteActuelle = triees.shift();
             
@@ -157,7 +153,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                 }
             }
             
-            console.log("Ligne déterminée : " + ligne);
+            // console.log("Ligne déterminée : " + ligne);
             
             if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
                 // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
@@ -177,7 +173,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                     // On met à jour le centre dans la bd
                     db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), idPartie], (err, result) => {
                         if(err) throw err;
-                        console.log("BDD mise à jour" + result);
+                        // console.log("BDD mise à jour" + result);
                     });
                     
                     // 6 qui prend : le joueur remplace la ligne par sa carte
@@ -287,6 +283,7 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
                 
                 // Si le nombre de tetes du joueur est supérieur ou égal à 66
                 if(sommeTetes >= 10){
+                    console.log("Un joueur a perdu en ayant sommeTetes=" + sommeTetes);
                     // Le joueur a perdu :
                     db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [idPartie], (err3, result3) => {
                         if(err3) throw err3;
