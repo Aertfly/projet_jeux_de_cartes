@@ -10,7 +10,7 @@ import Chat from './Component/chatComponent.js';
 function Quitter(props){
     function clicked(){
         props.socket.emit('playerLeaving',props.idJ);
-        //props.navigate('/home');
+        props.navigate('/home');
     }
     return(
         <button type='button' onClick={clicked}>Quitter ?</button>
