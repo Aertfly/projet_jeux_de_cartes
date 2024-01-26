@@ -40,6 +40,7 @@ db.connect((err) => {
 });
 
 const connectedUsers = {};
+const idJPlayers = [];
 const asso = new Map();
 const rooms = [];
 
@@ -67,6 +68,7 @@ io.on('connection', (socket) => {
 
     socket.on('connexion', async (data) => {
         const { pseudo, password } = data;
+
         if (connectedUsers[socket.id]) {
             socket.emit('resultatConnexion', "Déjà connecté");
             console.log('Déjà connecté');
@@ -81,19 +83,20 @@ io.on('connection', (socket) => {
                     console.log('Erreur lors de la connexion');
                 } else {
                     if (result.length > 0) {
-                        const user = result[0];
-                        const match = await bcrypt.compare(password, user.motdepasse);
-
-                        if (match) {
+                        const match = await bcrypt.compare(password, result[0].motdepasse);
+                        if (match && !idJPlayers.includes(result[0].idJ) ) {
                             asso.set(socket.id, result[0].idJ);
                             socket.emit('infoPlayer', { 'idJ': result[0].idJ, 'pseudo': result[0].pseudo });
                             socket.emit('resultatConnexion', "Connexion réussie");
                             console.log('Connexion réussie');
+                            idJPlayers.push(result[0].idJ);
                             connectedUsers[socket.id] = true;
                             console.log(connectedUsers);
+                            console.log(idJPlayers);
                         } else {
-                            socket.emit('resultatConnexion', "Mot de passe incorrect");
-                            console.log('Mot de passe incorrect');
+                            const flemme = (idJPlayers.includes(result[0].idJ)) ? "Déjà connecté" : "Mot de passe incorrect";
+                            socket.emit('resultatConnexion', flemme);
+                            console.log('Mot de passe incorrect ou déjà connecté');
                         }
                     } else {
                         socket.emit('resultatConnexion', "pseudo incorrect");
