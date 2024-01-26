@@ -181,7 +181,14 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                     });
                     
                     // 6 qui prend : le joueur remplace la ligne par sa carte
-                    remplacerLigne(db, idJ, idPartie, ligne, carteActuelle, centre);
+                    remplacerLigne(io, db, parseInt(carteActuelle[0]), idPartie, ligne, {valeur: carteActuelle[1].valeur, nbBoeufs: carteActuelle[1].nbBoeufs}, centre).then(() => {
+                        queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
+                            infoPartie(db, idPartie).then((infoJoueurs) => {
+                                console.log("On envoie les infos sur la room d'id " + idPartie);
+                                envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, nbTour);
+                            });
+                        });
+                    });
                 } else {  // Sinon : le joueur place simplement sa carte
                     // On ajoute LA carte à la ligne dans archive
                     archive[ligne].push({valeur: carteActuelle[1].valeur, nbBoeufs: carteActuelle[1].nbBoeufs});
@@ -252,8 +259,8 @@ function trierArchive(archive) {
     });
 }
 
-var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
-    console.log("Appel de la fonction remplacerLigne avec idPartie = " + idPartie + ", ligne = " + ligne, ", carte = " + carte);
+var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
+    console.log("Appel de la fonction remplacerLigne avec idPartie = " + idPartie + ", ligne = " + ligne, ", carte = " + JSON.stringify(carte));
     // Prend une connexion à une base de données, un idJ, un idPartie, un numéro de ligne (de 0 à 3) et la carte qui viendra remplacer la ligne
     // Renvoie un booléen qui dit si on peut continuer ou non
     
@@ -292,17 +299,17 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
                     });
                 }
                 
-                console.log("La ligne avant remplacement vaut " + JSON.stringify(archive[ligne]));
+                //console.log("La ligne avant remplacement vaut " + JSON.stringify(archive[ligne]));
                 // Dans la variable qui correspond à l'archive, on remplace la ligne correspondante par juste la carte passée en paramètre
                 archive[ligne] = [carte];
-                console.log("La ligne après remplacement vaut " + JSON.stringify(archive[ligne]));
-                console.log("L'ensemble vaut " + JSON.stringify(archive));
+                //console.log("La ligne après remplacement vaut " + JSON.stringify(archive[ligne]));
+                //console.log("L'ensemble vaut " + JSON.stringify(archive));
 
                 // On met à jour la db à partir de la variable de l'archive
                 db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(trierArchive(archive)), idPartie], (err2, result2) => {
                     if(err2) throw err2;
-                    console.log("On a mis à jour l'archive après qu'un joueur a ramassé une ligne :" + JSON.stringify(result2));
-                    console.log("On a dit que l'archive dans la partie " + idPartie + " valait bien " + JSON.stringify(archive));
+                    //console.log("On a mis à jour l'archive après qu'un joueur a ramassé une ligne :" + JSON.stringify(result2));
+                    //console.log("On a dit que l'archive dans la partie " + idPartie + " valait bien " + JSON.stringify(archive));
                     // return true;
                     // throw "arrêt de test";
                     resolve();
@@ -347,7 +354,7 @@ const ligneSQP = function(io, socket, db, data){
             console.log("BDD mise à jour" + result);
         });
         
-        remplacerLigne(db, data.idJoueur, data.idPartie, data.ligne, carteActuelle).then( () => {
+        remplacerLigne(io, db, data.idJoueur, data.idPartie, data.ligne, carteActuelle).then( () => {
             queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {
                 declencherLogique(io, socket, db, data.idPartie, centre, JSON.parse(archive));
             })
