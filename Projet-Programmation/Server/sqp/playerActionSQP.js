@@ -126,7 +126,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
 
                         if(infoJoueurs[Object.keys(infoJoueurs)[0]]["nbCards"] == 0){ // Si un joueur (donc tous) n'a plus de cartes, on passe à une nouvelle manche
                             console.log("Un joueur n'a plus de carte : appel à reDealCardsSQP");
-                            reDealCardsSQP(joueurs.length, db, idPartie, joueurs);
+                            reDealCardsSQP(io, joueurs.length, db, idPartie, joueurs);
                         } else {
                             console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
                             // On dit aux joueurs qu'on est dans un nouveau tour
