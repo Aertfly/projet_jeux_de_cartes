@@ -458,6 +458,7 @@ function SixQuiPrend() {
                     //navigate('/')
                 }
                 else{
+                    socket.emit('infoGame', idParty);
                     socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
                 }
             });
