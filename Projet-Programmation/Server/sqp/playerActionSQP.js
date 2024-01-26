@@ -279,13 +279,17 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
                 });
                 
                 // Si le nombre de tetes du joueur est supérieur ou égal à 66
-                if(sommeTetes >= 66){
+                if(sommeTetes >= 10){
                     // Le joueur a perdu :
-                    io.to(idPartie).emit('endGame', {looser: "perdant", winner: "gagnant"});
-                    // On envoie sur la route 'looser' l'idJ
-                    // throw "partie terminée (message de test)";
-                    return false;
-                    // On retourne false
+                    db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [idPartie], (err3, result3) => {
+                        if(err3) throw err3;
+                        let perdant = {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]};
+                        db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score ASC LIMIT 1; ", [idPartie], (err4, result4) => {
+                            if(err4) throw err4;
+                            let gagnant = {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]};
+                            io.to(idPartie).emit('endGame', {looser: perdant, winner: gagnant});
+                        });
+                    });
                 }
                 
                 console.log("La ligne avant remplacement vaut " + JSON.stringify(archive[ligne]));
