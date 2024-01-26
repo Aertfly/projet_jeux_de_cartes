@@ -270,7 +270,6 @@ function quadrillagePoints() {
 
 function Player(props) {
     const img = require('../img/SQP/bonhomme.png');
-    console.log(img);
     const playerContainerStyle = {
         display: 'flex',
         flexDirection: 'column', // Afficher les informations verticalement
