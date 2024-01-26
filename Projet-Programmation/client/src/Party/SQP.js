@@ -253,18 +253,39 @@ function quadrillagePoints() {
 }
 
 function Player(props) {
+    const { Info, OtherPlayerAction, socket } = useAppContext();
     const img = require('../img/SQP/bonhomme.png');
+    const dosImg = require('../img/SQP/dos.png');
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
 
     const playerColor = colors[props.index % colors.length];
+    var isCardPlayed = OtherPlayerAction && OtherPlayerAction.natureAction === 'joue' && OtherPlayerAction.pseudoJoueur === props.pseudo;
+    const revealCard = false;
+    const playerCard = Info.center[props.index];
+
+    console.log(Info.center);
+    console.log("test :", OtherPlayerAction);
+
+    useEffect(() => {
+        const reset = () => {
+            socket.on('newTurn', (data) => {
+                isCardPlayed = false;
+                console.log("reset fais");
+            });
+        }
+        reset();
+    },[socket]);
+
+    console.log("carte :", Info.center);
+    console.log("reveal :", revealCard);
 
     const playerContainerStyle = {
         display: 'flex',
-        flexDirection: 'column', // Afficher les informations verticalement
+        flexDirection: 'column',
         alignItems: 'center',
         marginBottom: '20px',
-        marginRight: '5px', // Ajouter une marge à droite pour séparer les joueurs
-        borderColor: playerColor, // Utilisez la couleur sélectionnée comme bordure
+        marginRight: '5px',
+        borderColor: playerColor,
         borderWidth: '2px',
         borderStyle: 'solid',
         padding: '10px',
@@ -277,20 +298,35 @@ function Player(props) {
         marginBottom: '10px',
     };
 
+    const cardStyle = {
+        width: '50px',
+        height: '75px',
+        marginBottom: '10px',
+    };
+
     return (
+        <>
+        {console.log(isCardPlayed)}
         <div style={playerContainerStyle}>
             <img src={img} alt="Bonhomme" style={imageStyle} />
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
-            <p>{props.nbCards} cartes</p>
-        </div>
+            {revealCard ? (
+                <Card card={playerCard} />
+            ) : isCardPlayed ? (
+                <img src={dosImg} alt="Dos de carte" style={cardStyle} />
+            ) : (
+                
+                <img src={img} alt="Bonhomme" style={imageStyle} />
+            )}
+        </div></>
     );
 }
 
 
+
 function GameBoard() {
-    const { Info } = useAppContext();
-    console.log("center :", Info.center);
+    const { Info, OtherPlayerAction } = useAppContext();
 
     const boardStyle = {
         position: 'absolute',
@@ -318,6 +354,8 @@ function GameBoard() {
                             pseudo={player.pseudo}
                             nbCards={player.nbCards}
                             score={player.score}
+                            action={OtherPlayerAction}
+                            isCardPlayed={false}
                         />
                     ))}
             </div>
