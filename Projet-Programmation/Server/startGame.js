@@ -170,6 +170,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     const archives = [];
     for(let c=1;c<=4;c++){archives.push([draw[104-c]])}
     archives.sort((a, b) => a[0].valeur - b[0].valeur);
+    console.log("Test Pierre : db vaut " + db);
     // console.log("Archives",archives);
     db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);
@@ -181,12 +182,13 @@ function dealCardsSQP(nbPlayers,db,idParty){
     return playerHands;
 }
 
-function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList,io){
+function reDealCardsSQP(io, nbPlayers,db,idParty,IdPlayerList){
     const playerHands = dealCardsSQP(nbPlayers,db,idParty);
     if (!(giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, idParty))) {
         io.to(idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});
     }else{
-    io.to(idParty).emit('gameStart', {})}
+        io.to(idParty).emit('gameStart', {});
+    };
 }
 
 function dealCardsWar(nbPlayers){
