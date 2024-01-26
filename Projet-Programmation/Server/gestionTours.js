@@ -208,7 +208,7 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
         }
 
         let valeurs = Object.keys(compterValeurs); // valeurs comptient la liste des valeurs jouées
-        valeurs.sodansrt();
+        valeurs.sort();
         let valeurLaPlusGrande = valeurs[valeurs.length - 1];
 
         if (compterValeurs[valeurLaPlusGrande] == '1') { // si la valeur de carte la plus grande est unique

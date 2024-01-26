@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 
 const gestionTours = require('./gestionTours.js');
-const startGame = require('./startGame.js');
+const {startGame} = require('./startGame.js');
 const {scores, scoreMoyenJoueur} = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');
@@ -95,9 +95,9 @@ io.on('connection', (socket) => {
                             console.log(connectedUsers);
                             console.log(idJPlayers);
                         } else {
-                            const flemme = (idJPlayers.includes(result[0].idJ)) ? "Déjà connecté" : "Mot de passe incorrect";
-                            socket.emit('resultatConnexion', flemme);
-                            console.log(flemme);
+                            const r = (idJPlayers.includes(result[0].idJ)) ? "Déjà connecté" : "Mot de passe incorrect";
+                            socket.emit('resultatConnexion', r);
+                            console.log(r);
                         }
                     } else {
                         socket.emit('resultatConnexion', "pseudo incorrect");
