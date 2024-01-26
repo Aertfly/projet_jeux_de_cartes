@@ -10,7 +10,7 @@ import Chat from './Component/chatComponent.js';
 function Quitter(props){
     function clicked(){
         props.socket.emit('playerLeaving',props.idJ);
-        props.navigate('/home');
+        //props.navigate('/home');
     }
     return(
         <button type='button' onClick={clicked}>Quitter ?</button>
@@ -84,12 +84,12 @@ const WaitingRoom = ()=>{
             <p style={{color:'red'}}>{msg}</p>
             <ul>
                 Liste des joueurs :
-                {playerList.length === 0?"En attente des données du serveur":playerList.map(name => (
-                    <Player pseudo={name} />
+                {playerList.length === 0?"En attente des données du serveur":playerList.map((name,index) => (
+                    <Player pseudo={name} key={index} />
                 ))}
             </ul>
 
-            <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
+
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
             <Chat data={{party : idParty}} />

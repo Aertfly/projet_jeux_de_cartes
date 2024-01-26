@@ -174,7 +174,7 @@ function CardsHand() {
             <p style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 75}px`,position:'absolute',fontSize: '25px'}}>{
             myAction==="jouerCarte"? "A vous de jouer !" : myAction==="choisirLigne" ? "Choissisez une ligne à récupérer":"Veuillez patienter..."}</p>
             {cards.map((card,index) => 
-                <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
+                <CardHand key={index} value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
         </div>
     );
@@ -206,7 +206,7 @@ function Countdown(props){
         }
 
         return cleanup
-    },[myAction])
+    },[myAction,number])
 
     return (
         myAction ? <p style={props.style}>{number}</p> : <></>

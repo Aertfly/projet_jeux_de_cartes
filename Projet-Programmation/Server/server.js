@@ -296,7 +296,9 @@ io.on('connection', (socket) => {
         db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
             if(err)throw(err);
             var infoPlayers=[];
-            scoreMoyenJoueur(io,db,idParty).then((scoreMoyenJoueur) => {
+            console.log("res : ",result);
+            await scoreMoyenJoueur(io,db,idParty).then((scoreMoyenJoueur) => {
+                console.log("Score moy",scoreMoyenJoueur);
                 for(i=0;i<result.length;i++){
                     infoPlayers.push({
                         "nbCards":JSON.parse(result[i].main).length,
@@ -305,7 +307,7 @@ io.on('connection', (socket) => {
                         'scoreMoyenJoueur': scoreMoyenJoueur
                     })
                 }
-            });
+            }); 
             socket.emit('infoGameOut',{
                 'center' :JSON.parse(result[0].centre),
                 'archive' : JSON.parse(result[0].archive),
