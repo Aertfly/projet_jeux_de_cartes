@@ -156,7 +156,7 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const { cards, isMyTurn } = useAppContext();
+    const { cards } = useAppContext();
     const [pointsCards, setPointCards] = useState([]);
     var nbCards = cards ? cards.length : 0; 
 
@@ -224,8 +224,7 @@ function Center() {
     const { Info } = useAppContext()
     const [cardsPositions, setCardsPositions] = useState([]);
     const center = Info.center;
-    if (center) var numberOfCards = center.length;
-    else var numberOfCards = 0;
+    var numberOfCards = center ? center.length : 0;
     useEffect(() => {
         const handleResize = () => {
             setCardsPositions(circlePoints(100, numberOfCards));
@@ -235,7 +234,7 @@ function Center() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    },[]);
+    },[numberOfCards]);
 
     return (
         <div>
@@ -247,8 +246,7 @@ function Center() {
 }
 
 
-
-function Draw() {
+/*function Draw() {
     const { Info, images } = useAppContext()
     const draw = Info.draw ? Info.draw : 0;
     const [midX, setMidX] = useState(window.innerWidth / 2);
@@ -270,7 +268,7 @@ function Draw() {
             <Card x={midX} y={midY} />
         </div>
     );
-}
+}*/
 
 function Battle() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn,OtherPlayerAction, setOtherPlayerAction } = useAppContext()
@@ -301,11 +299,6 @@ function Battle() {
                 setOtherPlayerAction(OtherPlayerAction.push(data.pseudo));
             });
 
-            socket.on('reveal', (data) => {
-                console.log("reveal reçu");
-                setInfo({ 'Center': data, 'draw': Info.draw, 'infoPlayers': Info.infoPlayer, 'nbTurn': Info.nbTurn });
-            });
-
             socket.emit('infoGame', idParty);
             socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
         }
@@ -317,7 +310,7 @@ function Battle() {
         }
         fetchInfoServ();
         return cleanup;
-    },[]);
+    },[OtherPlayerAction, idJ, idParty, setCards, setInfo, setIsMyTurn, setOtherPlayerAction, socket]);
 
 
 
