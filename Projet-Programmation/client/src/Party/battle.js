@@ -194,6 +194,7 @@ function Player(props) {
     if ((action) && (action.pseudoJoueur === pseudo)) {
         setMsg("A " + action.natureAction + " une carte")
     }
+    console.log("Action autres",OtherPlayerAction);
     return (
         <div className="battle-player" style={playerStyle}>
             {(props.pseudo === pseudo)? <p>{isMyTurn  ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}

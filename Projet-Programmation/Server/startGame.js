@@ -181,7 +181,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     return playerHands;
 }
 
-function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList){
+function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList,io){
     const playerHands = dealCardsSQP(nbPlayers,db,idParty);
     if (!(giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, idParty))) {
         io.to(idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});
