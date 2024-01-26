@@ -12,15 +12,9 @@ function Save({ data }) {
     socket.emit('saveParty', { 'partie': party });
   };
 
-  const Style = {
-    position: 'fixed',
-    top: '143px',
-    left: '110px',
-  };
-
   return (
     <div>
-      <button style={Style} onClick={handleSave}>Sauvegarder</button>
+      <button onClick={handleSave}>Sauvegarder</button>
     </div>
   );
 };

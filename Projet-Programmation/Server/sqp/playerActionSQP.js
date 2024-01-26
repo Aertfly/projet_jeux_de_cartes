@@ -239,7 +239,7 @@ var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTo
 
         //console.log("Centre2 après : " + JSON.stringify(centre2));
 
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: 0, infoPlayers: infoJoueurs, nbTour});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(archive), draw: 0, infoPlayers: infoJoueurs, nbTour});
     });
 }
 
@@ -326,7 +326,7 @@ const ligneSQP = function(io, socket, db, data){
         remplacerLigne(db, data.idJoueur, data.idPartie, data.ligne, carteActuelle);
         
         queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {
-            declencherLogique(io, socket, db, data.idPartie, centre, archive);
+            declencherLogique(io, socket, db, data.idPartie, centre, JSON.parse(archive));
         })
     });
 }

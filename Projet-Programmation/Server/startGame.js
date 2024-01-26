@@ -11,6 +11,7 @@ const startGame = function(io,socket,db){
                 const IdPlayerList = rawResult.map(object => object.idJ);
                 if (rawResult[0].sauvegarde) {
                     // Si la partie est sauvegardée
+                    
                     db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
                         (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', {'idParty':data.idParty}): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
