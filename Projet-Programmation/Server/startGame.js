@@ -57,6 +57,7 @@ const startGame = function(io,socket,db){
             if (result.length != 0){
                 //console.log(result);
                 //console.log(result[0].main);
+                console.log("On envoie les cartes au joueur",data.idJ)
                 socket.emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
                 db.query("SELECT idJ FROM joue WHERE idPartie=?", [data.idParty], async (err2, result2) => {
                     if (err2) throw err2;

@@ -330,7 +330,7 @@ function SixQuiPrend() {
         }
         fetchInfoServ();
         return cleanup;
-    });
+    },[]);
 
     return (
         <>  
@@ -340,6 +340,7 @@ function SixQuiPrend() {
             <Leave />
             <Score />
             <Center />
+            <CardsHand />
         </>
     )
 }
@@ -348,7 +349,6 @@ function App2() {
     
     return (
         <AppProvider>
-            <CardsHand />
             <SixQuiPrend />
         </AppProvider>
     );
