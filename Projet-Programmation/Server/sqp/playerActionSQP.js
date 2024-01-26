@@ -1,4 +1,5 @@
 const { query } = require("express");
+const { reDealCardsSQP } = require("../startGame.js");
 
 function queryLine(db, lineName, tableName, condition, value) {
     if (!db || !tableName || !lineName || !condition || !value) {
@@ -110,7 +111,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
                 nbTour++; // On passe à un nouveau tour
                 db.query("UPDATE parties SET tour=?", [nbTour], (err, result) => { if (err) throw err; }) // On met à jour le nouveau tour dans la BD
-                
+
                 // On va chercher infoPlayers
                 infoPartie(db, idPartie).then((infoJoueurs) => {
                     // On envoie les dernières infos sur la partie au joueur
@@ -123,9 +124,14 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                             joueurs.push(idJoueur["idJ"]);
                         });
 
-                        console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
-                        // On dit aux joueurs qu'on est dans un nouveau tour
-                        io.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
+                        if(infoJoueurs[Object.keys(infoJoueurs)[0]]["nbCards"] == 0){ // Si un joueur (donc tous) n'a plus de cartes, on passe à une nouvelle manche
+                            console.log("Un joueur n'a plus de carte : appel à reDealCardsSQP");
+                            reDealCardsSQP(joueurs.length, db, idPartie, joueurs);
+                        } else {
+                            console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": nbTour, "joueurs": joueurs }));
+                            // On dit aux joueurs qu'on est dans un nouveau tour
+                            io.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
+                        }
                     });
                 });
             });
@@ -208,18 +214,6 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
             });
         }
     }, 1000);  // On attend 1 seconde
-}
-
-function recupererPseudo(db, idJoueur) {
-    console.log("Appel de recupererPseudo avec idJoueur="+idJoueur);
-    return new Promise((resolve, reject) => {
-        db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
-            if (err) {
-                reject(err);
-            }
-            resolve(result[0]["pseudo"]);
-        });
-    });
 }
 
 var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTour){
