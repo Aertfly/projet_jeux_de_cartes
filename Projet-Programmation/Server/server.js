@@ -193,37 +193,40 @@ io.on('connection', (socket) => {
         console.log("Ce joueur ", idPlayer, "a demandé à rejoindre", idParty);
         
         
-        db.query('SELECT COUNT(joue.idJ) as playerCount, joueursMax, sauvegarde, pseudo from joueurs,joue,parties where joueurs.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?', [idParty], (err, resultats) => {
+        db.query('SELECT COUNT(joue.idJ) as playerCount, joueursMax, sauvegarde, tour, pseudo from joueurs,joue,parties where joueurs.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?', [idParty], (err, resultats) => {
             if (err) throw err;
-            if (!(resultats[0].sauvegarde)){
-                if (resultats[0].playerCount < resultats[0].joueursMax) {
-                    
-                    db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
-                    socket.join(idParty);
-                    console.log("Le joueur a rejoint la room");
+            if ((resultats[0].tour == -1)){
+                if (!(resultats[0].sauvegarde)){
+                    if (resultats[0].playerCount < resultats[0].joueursMax) {
+                        
+                        db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
+                        socket.join(idParty);
+                        console.log("Le joueur a rejoint la room");
+                        db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                            if (err) throw err;
+                            const playerList = result.map(object => object.pseudo);
+                            io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
+                            socket.emit('joinGame2', { "playerList": playerList, "idParty": idParty });
+                            socket.join(idParty);
+                            if (!rooms.includes(idParty)) {
+                                rooms.push(idParty);
+                            }; console.log(rooms);
+                        });
+                    } else {
+                        console.log('La partie est pleine');
+                        socket.emit('joinGame2', { 'message': "La partie est pleine'" });
+                    }
+                } else {
                     db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                         if (err) throw err;
                         const playerList = result.map(object => object.pseudo);
-                        io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
-                        socket.emit('joinGame2', { "playerList": playerList, "idParty": idParty });
                         socket.join(idParty);
-                        if (!rooms.includes(idParty)) {
-                            rooms.push(idParty);
-                        }; console.log(rooms);
+                        socket.emit('joinGame2', { "playerList": playerList, "idParty": idParty });
                     });
-                } else {
-                    console.log('La partie est pleine');
-                    socket.emit('joinGame2', { 'message': "La partie est pleine'" });
                 }
             } else {
-                db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
-                    if (err) throw err;
-                    const playerList = result.map(object => object.pseudo);
-                    socket.join(idParty);
-                    socket.emit('joinGame2', { "playerList": playerList, "idParty": idParty });
-                });
-            }
-            
+                socket.emit('joinGame2', { 'message': "La partie est déjà lancée" });
+            }  
         });
     });
     
