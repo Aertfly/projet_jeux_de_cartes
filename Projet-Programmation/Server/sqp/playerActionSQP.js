@@ -326,7 +326,7 @@ const ligneSQP = function(io, socket, db, data){
         remplacerLigne(db, data.idJoueur, data.idPartie, data.ligne, carteActuelle);
         
         queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {
-            declencherLogique(io, socket, db, data.idPartie, centre, archive);
+            declencherLogique(io, socket, db, data.idPartie, centre, JSON.parse(archive));
         })
     });
 }
