@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 
 const gestionTours = require('./gestionTours.js');
-const startGame = require('./startGame.js');
+const {startGame} = require('./startGame.js');
 const {scores, scoreMoyenJoueur} = require('./scores.js');
 const abandon = require('./abandon.js');
 const chat = require('./chat.js');

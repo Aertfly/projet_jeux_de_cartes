@@ -39,7 +39,7 @@ const startGame = function(io,socket,db){
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
                             return;
                     }
-                    if (!(giveCardsDb(io, db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
+                    if (!(giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
                         io.to(data.idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});
                     }
                     db.query("UPDATE parties SET tour=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
@@ -94,7 +94,7 @@ function testPreCond(rawResult,id){//vérifie la conformité des informations de
     return null;
 }
 
-function giveCardsDb(io,db,playerHands,IdPlayerList,nbPlayers,idParty){
+function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
     for (i=0;i<nbPlayers;i++){
         var hand = JSON.stringify(playerHands[i]);
         var idJ = IdPlayerList[i];
@@ -175,10 +175,15 @@ function dealCardsSQP(nbPlayers,db,idParty){
         if(err)throw(err);
         if (!(result.changedRows ==1)) {
             console.log("Update archive raté",archives,idParty);
-            return [];
+            return null;
         }
     });
     return playerHands;
+}
+
+function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList){
+    dealCardsSQP(nbPlayers,db,idParty);
+    giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty);
 }
 
 function dealCardsWar(nbPlayers){
@@ -196,7 +201,7 @@ function dealCardsWar(nbPlayers){
     return playerHands;
 }
 
-module.exports = startGame;
+module.exports = {startGame,reDealCardsSQP};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 10 millions : {

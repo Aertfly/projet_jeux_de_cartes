@@ -131,7 +131,7 @@ function GameBoard() {
 };
 
 function CardHand(props) {
-    const { socket, idJ, images, isMyTurn } = useAppContext();
+    const { socket, idJ, images, isMyTurn, idParty } = useAppContext();
     const cardStyle = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -145,7 +145,7 @@ function CardHand(props) {
         console.log("Je clique sur la carte :", props.value)
         if (isMyTurn) {
             console.log("On joue la carte :", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ });
+            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ, "idPartie" : idParty });
         }
     }
     return (
