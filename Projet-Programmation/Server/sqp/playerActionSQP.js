@@ -166,7 +166,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre, archive){
                 clearInterval(intervalle);
             } else {  // Sinon : une ligne peut accueillir la carte
                 // Si la ligne a une longueur de 5 : le joueur remplace la ligne
-                if(archive[ligne] == 5){  // 6 qui prend :
+                if(archive[ligne].length == 5){  // 6 qui prend :
                     // On enlève LA carte du centre
                     centre = Object.keys(centre).filter((clé) => clé !== carteActuelle[0])
                     .reduce((objet, clé) => {
@@ -237,6 +237,21 @@ var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTo
     });
 }
 
+function trierArchive(archive) {
+    return archive.sort((ligneA, ligneB) => {
+        const derniereCarteA = ligneA[ligneA.length - 1];
+        const derniereCarteB = ligneB[ligneB.length - 1];
+
+        if (derniereCarteA.valeur < derniereCarteB.valeur) {
+            return -1;
+        } else if (derniereCarteA.valeur > derniereCarteB.valeur) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+}
+
 var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
     console.log("Appel de la fonction remplacerLigne avec idPartie = " + idPartie + ", ligne = " + ligne, ", carte = " + carte);
     // Prend une connexion à une base de données, un idJ, un idPartie, un numéro de ligne (de 0 à 3) et la carte qui viendra remplacer la ligne
@@ -266,7 +281,7 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
                 // Si le nombre de tetes du joueur est supérieur ou égal à 66
                 if(sommeTetes >= 66){
                     // Le joueur a perdu :
-                    io.to(idPartie).emit('looser', {idJ: idJ});
+                    io.to(idPartie).emit('endGame', {looser: "perdant", winner: "gagnant"});
                     // On envoie sur la route 'looser' l'idJ
                     // throw "partie terminée (message de test)";
                     return false;
@@ -280,7 +295,7 @@ var remplacerLigne = function(db, idJ, idPartie, ligne, carte){
                 console.log("L'ensemble vaut " + JSON.stringify(archive));
 
                 // On met à jour la db à partir de la variable de l'archive
-                db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err2, result2) => {
+                db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(trierArchive(archive)), idPartie], (err2, result2) => {
                     if(err2) throw err2;
                     console.log("On a mis à jour l'archive après qu'un joueur a ramassé une ligne :" + JSON.stringify(result2));
                     console.log("On a dit que l'archive dans la partie " + idPartie + " valait bien " + JSON.stringify(archive));
