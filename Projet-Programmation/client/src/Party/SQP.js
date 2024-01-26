@@ -268,6 +268,68 @@ function quadrillagePoints() {
     return positions;
 }
 
+function Player(props) {
+    const img = require('../img/SQP/bonhomme.png');
+    console.log(img);
+    const playerContainerStyle = {
+        display: 'flex',
+        flexDirection: 'column', // Afficher les informations verticalement
+        alignItems: 'center',
+        marginBottom: '20px',
+        marginRight: '20px', // Ajouter une marge à droite pour séparer les joueurs
+    };
+
+    const imageStyle = {
+        width: '50px',
+        height: '50px',
+        marginBottom: '10px',
+    };
+
+    return (
+        <div style={playerContainerStyle}>
+            <img src={img} alt="Bonhomme" style={imageStyle} />
+            <p>{props.pseudo}</p>
+            <p>{props.score} Points</p>
+            <p>{props.nbCards} cartes</p>
+        </div>
+    );
+}
+
+function GameBoard() {
+    const { Info } = useAppContext();
+
+    const boardStyle = {
+        position: 'absolute',
+        top: '10px',
+        right: '1%',
+        transform: 'translateX(-50%)',
+        border: '1px solid black',
+        borderRadius: '5px',
+        padding: '10px',
+        backgroundColor: '#FFF',
+    };
+
+    const playersListStyle = {
+        display: 'flex', // Aligner les joueurs horizontalement
+    };
+
+    return (
+        <div style={boardStyle}>
+            <div className="players-list" style={playersListStyle}>
+                {Info.infoPlayers &&
+                    Info.infoPlayers.map((player, index) => (
+                        <Player
+                            key={index}
+                            pseudo={player.pseudo}
+                            nbCards={player.nbCards}
+                            score={player.score}
+                        />
+                    ))}
+            </div>
+        </div>
+    );
+}
+
 function SixQuiPrend() {
     const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction, setOtherPlayerAction, navigate } = useAppContext()
 
@@ -338,7 +400,6 @@ function SixQuiPrend() {
             <Deconnection />
             <Save data={{party: idParty}} />
             <Leave />
-            <Score />
             <Center />
             <CardsHand />
         </>
