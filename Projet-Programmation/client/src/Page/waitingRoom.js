@@ -89,7 +89,7 @@ const WaitingRoom = ()=>{
                 ))}
             </ul>
 
-
+            <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
             <Chat data={{party : idParty}} />
