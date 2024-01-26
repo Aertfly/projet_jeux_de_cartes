@@ -10,13 +10,13 @@ var abandon = function(db,socket, motif, player) {
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log(results[0].idPartie);
-                socket.to(results[0].idPartie).emit("otherPlayerLeft", results[0]); 
                 const resultatSuppression = await removePlayer(db, player, party)
                 if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
                             throw err;
                         }
+                        socket.to(party).emit("otherPlayerLeft", player);
                         console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", party);
                     });
                 } else {
