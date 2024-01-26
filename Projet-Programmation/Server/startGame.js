@@ -186,7 +186,7 @@ function reDealCardsSQP(nbPlayers,db,idParty,IdPlayerList,io){
     if (!(giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, idParty))) {
         io.to(idParty).emit('gameStart', {'message':"Problémes lors de la distributions des cartes"});
     }else{
-    io.to(idParty).emit('gameStart', {'idParty':idParty,'type':'6 Qui Prend'})}
+    io.to(idParty).emit('gameStart', {})}
 }
 
 function dealCardsWar(nbPlayers){

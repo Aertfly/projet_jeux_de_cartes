@@ -377,4 +377,4 @@ function infoPartie(db, idParty){
     
 };
 
-module.exports = { playerActionSQP, ligneSQP};
+module.exports = { playerActionSQP, ligneSQP, envoyerInfos, infoPartie};

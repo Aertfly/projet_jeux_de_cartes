@@ -452,13 +452,23 @@ function SixQuiPrend() {
                 }
             });
 
+            socket.on('gameStart',(data)=>{
+                if(data.message){
+                    console.log("Erreur :",data.message);
+                    //navigate('/')
+                }
+                else{
+                    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
+                }
+            });
+
             socket.emit('infoGame', idParty);
             socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
         }
 
         const cleanup = () => {
             console.log("Nettoyage")
-            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards",'savePartyResult'];
+            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards",'savePartyResult','gameStart'];
             for(const n of listNameSocket){socket.off(n)};
         }
         fetchInfoServ();

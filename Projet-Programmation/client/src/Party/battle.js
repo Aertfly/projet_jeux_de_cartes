@@ -92,6 +92,7 @@ function generatePointCards(nb, widthCards, heightCards) {
 }
 
 
+
 function Leave() {
     const { socket, idJ, navigate } = useAppContext();
     function clicked() {
@@ -160,8 +161,8 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const { cards , setIsMyTurn , isMyTurn } = useAppContext();
-    const [pointsCards, setPointCards] = useState([]);
+    const { cards   } = useAppContext();
+    const [pointsCards, setPointCards] = useState(generatePointCards(nbCards, 75, 100));
     var nbCards = cards ? cards.length : 0; 
 
 
@@ -189,7 +190,7 @@ function CardsHand() {
 
 
 function Player(props) {
-    const { pseudo, action,OtherPlayerAction, isMyTurn} = useAppContext();
+    const { pseudo, action,OtherPlayerAction, isMyTurn, Info} = useAppContext();
     const [msg, setMsg] = useState("");
     const playerStyle = {
         position: 'absolute',
@@ -206,12 +207,14 @@ function Player(props) {
             <p hidden={!msg}>{msg}</p>
             <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.nbCards} cartes</p>
-            {OtherPlayerAction.includes(props.pseudo) ? <Card x={100} y={100}/> : <></> }
+            {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card x={100} y={100} value={Info.center[props.pseudo]}/> :<Card x={100} y={100}/> : <></> }
         </div>);
 };
+
 function Card(props) {
     const { images } = useAppContext();
     const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
+    console.log("CARTE ", props.value);
     const cardStyle = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -222,7 +225,7 @@ function Card(props) {
         padding: '10px',
     };
     return (
-        <img style={cardStyle} src={src} alt={props.value ? "image de" + props.value : "dos de carte"} />
+        <img style={cardStyle} src={src} alt={props.value ? "image de" + props.value.valeur + " " + props.value.enseigne : "dos de carte"} />
     );
 }
 
@@ -297,12 +300,13 @@ function Battle() {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setIsMyTurn(true);
+                    setOtherPlayerAction([]);
                 }
             });
 
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu",data);
-                OtherPlayerAction.push(data.pseudo)
+                OtherPlayerAction.push(data.pseudoJoueur)
                 setOtherPlayerAction(OtherPlayerAction);
             });
 
@@ -317,7 +321,7 @@ function Battle() {
         }
         fetchInfoServ();
         return cleanup;
-    },[OtherPlayerAction, idJ, idParty, setCards, setInfo, setIsMyTurn, setOtherPlayerAction, socket]);
+    },[]);
 
 
 
@@ -328,7 +332,7 @@ function Battle() {
             ) : (
                 <>
                     {/*<Draw /> car on n'a pas besoin d'une pioche dans la bataille*/}
-                    <Center />
+                    {/*<Center />*/}
                     <Deconnection />
                     <Leave />
                     <Chat data={{ party: idParty }} />

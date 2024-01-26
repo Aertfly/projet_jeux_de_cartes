@@ -58,6 +58,11 @@ const WaitingRoom = ()=>{
             console.log("Refresh",data.playerList);
             setPlayerList(data.playerList);
         });
+
+        return () => {
+            socket.off('gameStart');
+            socket.off('refreshPlayerList');
+        };
     }, [socket,navigate,setPlayerList]);
     
 

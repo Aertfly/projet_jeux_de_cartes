@@ -1,4 +1,4 @@
-const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP');
+const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP');
 
 const gestionTours = function (io, socket, db) {
     // socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
@@ -193,8 +193,10 @@ function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
 function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
-        reveal(io, socket, centre, db, idPartie);
-        // console.log("Le joueur est le dernier à jouer, on déclenche la logique");
+        infoPartie(db, idPartie).then((infoJoueurs) => {
+            envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, 0);
+        });
+        console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
         compterValeurs = {};
 
