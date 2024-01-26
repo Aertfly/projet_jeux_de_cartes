@@ -296,8 +296,9 @@ function Battle() {
             });
 
             socket.on('conveyAction', (data) => {
-                console.log("conveyAction reçu");
-                setOtherPlayerAction(OtherPlayerAction.push(data.pseudo));
+                console.log("conveyAction reçu",data);
+                OtherPlayerAction.push(data.pseudo)
+                setOtherPlayerAction(OtherPlayerAction);
             });
 
             socket.emit('infoGame', idParty);
