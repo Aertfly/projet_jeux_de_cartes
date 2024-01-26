@@ -239,7 +239,7 @@ var envoyerInfos = function(db, io, idPartie, centre, archive, infoJoueurs, nbTo
 
         //console.log("Centre2 après : " + JSON.stringify(centre2));
 
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: {}, infoPlayers: infoJoueurs, nbTour});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: archive, draw: 0, infoPlayers: infoJoueurs, nbTour});
     });
 }
 
@@ -335,7 +335,7 @@ function infoPartie(db, idParty){
     return new Promise((resolve, reject) => {
         db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
             if(err)reject(err);
-            var infoPlayers=[];
+            const infoPlayers=[];
             for(i=0;i<result.length;i++){
                 infoPlayers.push({
                     "nbCards":JSON.parse(result[i].main).length,
@@ -343,7 +343,7 @@ function infoPartie(db, idParty){
                     "score":result[i].score
                 })
             }
-            resolve(result);
+            resolve(infoPlayers);
         });
     });
     
