@@ -290,6 +290,7 @@ function Player(props) {
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
             <p>{props.nbCards} cartes</p>
+            <p>{props.scoreMoyenJoueur}</p>
         </div>
     );
 }
@@ -395,12 +396,15 @@ function SixQuiPrend() {
 
     return (
         <>  
+
+            <GameBoard />
             <Chat data={{party: idParty}} />
             <Deconnection />
             <Save data={{party: idParty}} />
             <Leave />
             <Center />
             <CardsHand />
+
         </>
     )
 }
