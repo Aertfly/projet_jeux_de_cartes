@@ -131,7 +131,18 @@ function GameBoard() {
 };
 
 function CardHand(props) {
-    const { socket, idJ, images, isMyTurn, idParty } = useAppContext();
+    const { socket, idJ, images, isMyTurn, setIsMyTurn, idParty , cards} = useAppContext();
+
+    function play() {
+        console.log("Je clique sur la carte :", props.value)
+        if (isMyTurn) {
+            console.log("On joue la carte :", props.value);
+            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ, "idPartie" : idParty });
+            setIsMyTurn(false);
+            cards.splice(cards.indexOf(props.value),1);
+        }
+    }
+
     const cardStyle = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -141,13 +152,6 @@ function CardHand(props) {
         textAlign: 'center',
         padding: '10px',
     };
-    function play() {
-        console.log("Je clique sur la carte :", props.value)
-        if (isMyTurn) {
-            console.log("On joue la carte :", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ, "idPartie" : idParty });
-        }
-    }
     return (
         <div>
             <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)} style={cardStyle} className='CardHand' />
@@ -156,9 +160,10 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const { cards } = useAppContext();
+    const { cards , setIsMyTurn , isMyTurn } = useAppContext();
     const [pointsCards, setPointCards] = useState([]);
     var nbCards = cards ? cards.length : 0; 
+
 
     useEffect(() => {
         const handleResize = () => {
