@@ -9,7 +9,7 @@ function queryLine(db,condition,value,tableName,lineName){
 
 function updateTable(db,condition, value, tableName, lineName) {
     if (!db || !tableName || !lineName || !condition || !value) {
-        return "Paramètres invalides";
+        return "Paramètres invalides";s
     }
     const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ${value}`;
     db.query(query, updateValues, (error, results) => {
@@ -19,3 +19,18 @@ function updateTable(db,condition, value, tableName, lineName) {
         });
 };
 
+
+function trierArchive(archive) {
+    return archive.sort((ligneA, ligneB) => {
+        const derniereCarteA = ligneA[ligneA.length - 1];
+        const derniereCarteB = ligneB[ligneB.length - 1];
+
+        if (derniereCarteA.valeur < derniereCarteB.valeur) {
+            return -1;
+        } else if (derniereCarteA.valeur > derniereCarteB.valeur) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+}

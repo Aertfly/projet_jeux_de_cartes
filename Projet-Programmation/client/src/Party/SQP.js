@@ -18,10 +18,13 @@ const AppProvider = ({ children }) => {
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
     const [myAction, setMyAction] = useState(null);
-    const [OtherPlayerAction, setOtherPlayerAction] = useState()
+    const [OtherPlayerAction, setOtherPlayerAction] = useState();
+    const [resultGame, setResultGame] = useState('');
 
     const contextValue = {
         setInfo,
+        resultGame,
+        setResultGame,
         setMyAction,
         setOtherPlayerAction,
         OtherPlayerAction,
@@ -341,8 +344,47 @@ function GameBoard() {
     );
 }
 
+function EndGame() {
+    const { resultGame, Info } = useAppContext();
+
+    Info.sort((a, b) => a.score - b.score);
+
+    return (
+        <div>
+            {resultGame.winner && (
+                <div>
+                    <h2>Gagnant</h2>
+                    <p>Nom: {resultGame.winner.pseudo}</p>
+                    <p>Score: {resultGame.winner.score}</p>
+                </div>
+            )}
+
+            {resultGame.loser && (
+                <div>
+                    <h2>Perdant</h2>
+                    <p>Nom: {resultGame.loser.pseudo}</p>
+                    <p>Score: {resultGame.loser.score}</p>
+                </div>
+            )}
+
+            {Info && (
+                <div>
+                    <h2>Classement des joueurs</h2>
+                    {Info.map((player, index) => (
+                        <div key={index}>
+                            <p>Nom: {player.pseudo}</p>
+                            <p>Score: {player.score}</p>
+                            <p>Score Moyen Joueur: {player.scoreMoyenJoueur}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction, setOtherPlayerAction, navigate } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useAppContext()
 
     useEffect(() => {
         const fetchInfoServ = async () => {
@@ -350,8 +392,12 @@ function SixQuiPrend() {
 
             socket.on('savePartyResult', () => {
                 navigate('/home');
-            })
-            
+            });
+
+            socket.on('endGame',(data) =>{
+                setResultGame(data);
+            });
+
             socket.on("dealingCards", (data) => {
                 console.log("Cartes reçues via dealingCards",data);
                 setCards(data.Cards);
@@ -406,18 +452,33 @@ function SixQuiPrend() {
     },[]);
 
     return (
-        <>  
-
-            <GameBoard />
-            <Chat data={{party: idParty}} />
-            <Deconnection />
-            <Save data={{party: idParty}} />
-            <Leave />
-            <Center />
-            <CardsHand />
-
+        <>
+            <div>
+                {resultGame && (
+                    <>
+                        <EndGame />
+                        <Leave />
+                        <Chat data={{ party: idParty }} />
+                        <Deconnection />
+                    </>
+                )}
+            </div>
+            <div>
+                {!resultGame && (
+                    <>
+                        <GameBoard />
+                        <Chat data={{ party: idParty }} />
+                        <Deconnection />
+                        <Save data={{ party: idParty }} />
+                        <Leave />
+                        <Center />
+                        <CardsHand />
+                    </>
+                )}
+            </div>
         </>
-    )
+    );
+    
 }
 
 function App2() {
