@@ -26,9 +26,9 @@ const io = new Server(server, {
 const port = 3001;
 
 const db = mysql.createConnection({
-    host: 'mysql.etu.umontpellier.fr',
-    user: 'e20220005227',
-    password: 'azertyu',
+    host: 'localhost',
+    user: 'root',
+    password: '',
     database: 'e20220005227'
 });
 
