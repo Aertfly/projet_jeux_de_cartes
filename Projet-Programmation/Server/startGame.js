@@ -172,7 +172,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     archives.sort((a, b) => a[0].valeur - b[0].valeur);
     console.log("Test Pierre : db vaut " + db);
     // console.log("Archives",archives);
-    db.query("Update Parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
+    db.query("Update parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);
         if (!(result.changedRows ==1)) {
             console.log("Update archive raté",archives,idParty);
