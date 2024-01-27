@@ -34,7 +34,7 @@ const gestionTours = function (io, socket, db) {
         const requetePseudo = recupererPseudo(db, data.playerId);
         requetePseudo.then((data2) => {
             pseudoJoueur = data2;
-            socket.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": pseudoJoueur, "natureAction": data.action });
+            io.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": pseudoJoueur, "natureAction": data.action });
         });
 
         // On stocke dans "cartesJoueurs" l'ensemble des mains des joueurs

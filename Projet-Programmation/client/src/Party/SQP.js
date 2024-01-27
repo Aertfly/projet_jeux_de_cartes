@@ -253,31 +253,14 @@ function quadrillagePoints() {
 }
 
 function Player(props) {
-    const { Info, OtherPlayerAction, socket } = useAppContext();
+    const { Info, OtherPlayerAction} = useAppContext();
     const img = require('../img/SQP/bonhomme.png');
     const dosImg = require('../img/SQP/dos.png');
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
 
     const playerColor = colors[props.index % colors.length];
     var isCardPlayed = OtherPlayerAction && OtherPlayerAction.natureAction === 'joue' && OtherPlayerAction.pseudoJoueur === props.pseudo;
-    const revealCard = false;
-    const playerCard = Info.center[props.index];
-
-    console.log(Info.center);
-    console.log("test :", OtherPlayerAction);
-
-    useEffect(() => {
-        const reset = () => {
-            socket.on('newTurn', (data) => {
-                isCardPlayed = false;
-                console.log("reset fais");
-            });
-        }
-        reset();
-    },[socket]);
-
-    console.log("carte :", Info.center);
-    console.log("reveal :", revealCard);
+    const playerCard = Info.center[props.pseudo];
 
     const playerContainerStyle = {
         display: 'flex',
@@ -311,13 +294,12 @@ function Player(props) {
             <img src={img} alt="Bonhomme" style={imageStyle} />
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
-            {revealCard ? (
-                <Card card={playerCard} />
+            {playerCard ? (
+                <Card card={playerCard} y={200} />
             ) : isCardPlayed ? (
                 <img src={dosImg} alt="Dos de carte" style={cardStyle} />
             ) : (
-                
-                <img src={img} alt="Bonhomme" style={imageStyle} />
+                <p>{props.nbCards} cartes</p>
             )}
         </div></>
     );
@@ -432,6 +414,7 @@ function SixQuiPrend() {
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     setMyAction("jouerCarte");
+                    setOtherPlayerAction([]);
                 }
             });
             
