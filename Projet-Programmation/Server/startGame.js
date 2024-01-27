@@ -167,10 +167,17 @@ function dealCardsSQP(nbPlayers,db,idParty){
         var index = i % nbPlayers;
         (playerHands[index]).push(draw[i]);
     }
+    // Ajout d'une fonction de comparaison pour trier les cartes selon leur valeur
+    function compareCards(a, b) {
+        return a.valeur - b.valeur;
+    }
+    // Tri de chaque main de joueur avec la fonction de comparaison
+    for(let i=0;i<nbPlayers;i++){
+        playerHands[i].sort(compareCards);
+    }
     const archives = [];
     for(let c=1;c<=4;c++){archives.push([draw[104-c]])}
     archives.sort((a, b) => a[0].valeur - b[0].valeur);
-    console.log("Test Pierre : db vaut " + db);
     // console.log("Archives",archives);
     db.query("Update parties set archive = ? where idPartie = ? ",[JSON.stringify(archives),idParty],async(err,result)=>{
         if(err)throw(err);
@@ -181,6 +188,7 @@ function dealCardsSQP(nbPlayers,db,idParty){
     });
     return playerHands;
 }
+
 
 function reDealCardsSQP(io, nbPlayers,db,idParty,IdPlayerList){
     const playerHands = dealCardsSQP(nbPlayers,db,idParty);
