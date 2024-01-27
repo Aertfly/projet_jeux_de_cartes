@@ -369,37 +369,37 @@ function EndGame() {
     Info.infoPlayers.sort((a, b) => a.score - b.score);
 
     return (
-        <div>
-            {resultGame.winner && (
-                <div>
-                    <h2>Gagnant</h2>
-                    <p>Nom: {resultGame.winner.pseudo}</p>
-                    <p>Score: {resultGame.winner.score}</p>
+        <div className="result-container">
+          {resultGame.winner && (
+            <div className="result-section winner-section player-info">
+              <h2>Gagnant</h2>
+              <p>Nom: {resultGame.winner.pseudo}</p>
+              <p>Score: {resultGame.winner.score}</p>
+            </div>
+          )}
+    
+          {resultGame.loser && (
+            <div className="result-section loser-section player-info">
+              <h2>Perdant</h2>
+              <p>Nom: {resultGame.loser.pseudo}</p>
+              <p>Score: {resultGame.loser.score}</p>
+            </div>
+          )}
+    
+          {Info && (
+            <div className="result-section">
+              <h2>Classement des joueurs</h2>
+              {Info.infoPlayers.map((player, index) => (
+                <div key={index} className="player-info">
+                  <p>Nom: {player.pseudo}</p>
+                  <p>Score: {player.score}</p>
+                  <p>Score Moyen Joueur: {player.scoreMoyenJoueur}</p>
                 </div>
-            )}
-
-            {resultGame.loser && (
-                <div>
-                    <h2>Perdant</h2>
-                    <p>Nom: {resultGame.loser.pseudo}</p>
-                    <p>Score: {resultGame.loser.score}</p>
-                </div>
-            )}
-
-            {Info && (
-                <div>
-                    <h2>Classement des joueurs</h2>
-                    {Info.infoPlayers.map((player, index) => (
-                        <div key={index}>
-                            <p>Nom: {player.pseudo}</p>
-                            <p>Score: {player.score}</p>
-                            <p>Score Moyen Joueur: {player.scoreMoyenJoueur}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+              ))}
+            </div>
+          )}
         </div>
-    );
+      );
 }
 
 function SixQuiPrend() {
@@ -478,16 +478,16 @@ function SixQuiPrend() {
 
     return (
         <>
-            <div>
+           <form>
                 {resultGame && (
                     <>
-                        <EndGame />
-                        <Leave />
-                        <Chat data={{ party: idParty }} />
-                        <Deconnection />
+                    <EndGame />
+                    <Leave />
+                    <Chat data={{ party: idParty }} />
+                    <Deconnection />
                     </>
                 )}
-            </div>
+            </form>
             <div>
                 {!resultGame && (
                     <>
