@@ -366,7 +366,7 @@ function GameBoard() {
 function EndGame() {
     const { resultGame, Info } = useAppContext();
 
-    Info.sort((a, b) => a.score - b.score);
+    Info.infoPlayers.sort((a, b) => a.score - b.score);
 
     return (
         <div>
@@ -389,7 +389,7 @@ function EndGame() {
             {Info && (
                 <div>
                     <h2>Classement des joueurs</h2>
-                    {Info.map((player, index) => (
+                    {Info.infoPlayers.map((player, index) => (
                         <div key={index}>
                             <p>Nom: {player.pseudo}</p>
                             <p>Score: {player.score}</p>

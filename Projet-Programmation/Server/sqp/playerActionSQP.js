@@ -288,7 +288,7 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
                 });
                 
                 // Si le nombre de tetes du joueur est supérieur ou égal à 66
-                if(sommeTetes >= 66){
+                if(sommeTetes >= 4){
                     console.log("Un joueur a perdu en ayant sommeTetes=" + sommeTetes);
                     // Le joueur a perdu :
                     db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [idPartie], (err3, result3) => {
