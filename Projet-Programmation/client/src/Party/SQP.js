@@ -461,7 +461,7 @@ function SixQuiPrend() {
 
     return (
         <>
-           <form>
+      
                 {resultGame && (
                     <>
                     <EndGame />
@@ -470,7 +470,7 @@ function SixQuiPrend() {
                     <Deconnection />
                     </>
                 )}
-            </form>
+         
             <div>
                 {!resultGame && (
                     <>
