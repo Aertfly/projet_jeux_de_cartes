@@ -1,10 +1,13 @@
 /*Exemple liste cartes :[{"enseigne":"Pique","valeur":10},{"enseigne":"Carreau","valeur":6}]*/
 
+const { raw } = require("mysql");
+
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
         db.query("SELECT idJ, type, sauvegarde, tour, proprietaire,joueursMin FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
+            console.log("Data Partie",rawResult);
             let msg = testPreCond(rawResult,data.idPlayer);
             if (msg)socket.emit('gameStart',{'message':msg});
             else {
@@ -14,7 +17,8 @@ const startGame = function(io,socket,db){
                     
                     db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart', {'idParty':data.idParty}): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart',  {'idParty':data.idParty,'type':rawResult[0].type}): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
+                        console.log("Tentative de lancement d'une partie sauvegardé",data.idParty);
                     });
                 } else {
                     // Si la partie n'est pas sauvegardée
@@ -79,17 +83,18 @@ const startGame = function(io,socket,db){
 
 function testPreCond(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
     if (rawResult.length===0)return "Erreur 404 : Partie non trouvé";
-    if(rawResult[0].tour>=0)return "Partie déja en cours";
+    if((rawResult[0].tour>=0)&&(!rawResult[0].sauvegarde))return "Partie déja en cours";
     let isNotInParty = true;
     var cpt =0;
     for(i=0;i<rawResult.length;i++){
         if(rawResult[i]['idJ']==id){
             isNotInParty = false;
-            cpt++;
             if(!(rawResult[i]['proprietaire']))return "Vous n'êtes pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
         }
+        cpt++;
     }
-    if(cpt<rawResult[0].joueurMin)return"Attendez ! Il n'y pas encore assez de joueurs"
+    console.log(cpt);
+    if(cpt<rawResult[0].joueursMin)return"Attendez ! Il n'y pas encore assez de joueurs"
     if (isNotInParty)return  "le joueur qui a essayé de lancer n'est pas dans la partie"
     return null;
 }

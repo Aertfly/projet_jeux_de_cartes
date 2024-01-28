@@ -191,20 +191,15 @@ function CardsHand() {
 
 function Player(props) {
     const { pseudo, action,OtherPlayerAction, isMyTurn, Info} = useAppContext();
-    const [msg, setMsg] = useState("");
     const playerStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
     };
-    if ((action) && (action.pseudoJoueur === pseudo)) {
-        setMsg("A " + action.natureAction + " une carte")
-    }
     console.log("Action autres",OtherPlayerAction);
     return (
         <div className="battle-player" style={playerStyle}>
             {(props.pseudo === pseudo)? <p>{isMyTurn  ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
-            <p hidden={!msg}>{msg}</p>
             <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.nbCards} cartes</p>
             {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card x={100} y={100} value={Info.center[props.pseudo]}/> :<Card x={100} y={100}/> : <></> }
@@ -299,15 +294,17 @@ function Battle() {
                 console.log("NOUVEAU TOUR");
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    setIsMyTurn(true);
+                    OtherPlayerAction.length = 0;
                     setOtherPlayerAction([]);
+                    setIsMyTurn(true);
                 }
             });
 
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu",data);
-                OtherPlayerAction.push(data.pseudoJoueur)
-                setOtherPlayerAction(OtherPlayerAction);
+                OtherPlayerAction.push(data.pseudoJoueur);
+                let li = [...OtherPlayerAction]//permet forcément à react de détecter le changement et de correctement re-render
+                setOtherPlayerAction(li);
             });
 
             socket.emit('infoGame', idParty);

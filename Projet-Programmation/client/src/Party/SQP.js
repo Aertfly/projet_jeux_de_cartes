@@ -294,8 +294,9 @@ function Player(props) {
             <img src={img} alt="Bonhomme" style={imageStyle} />
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
+            <p>{props.scoreMoyenJoueur} Points Moyen</p>
             {playerCard ? (
-                <Card card={playerCard} y={200} />
+                <Card card={playerCard} y={250} />
             ) : isCardPlayed ? (
                 <img src={dosImg} alt="Dos de carte" style={cardStyle} />
             ) : (
@@ -336,6 +337,7 @@ function GameBoard() {
                             pseudo={player.pseudo}
                             nbCards={player.nbCards}
                             score={player.score}
+                            scoreMoyenJoueur={player.scoreMoyenJoueur}
                             action={OtherPlayerAction}
                             isCardPlayed={false}
                         />
@@ -385,7 +387,7 @@ function EndGame() {
 }
 
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, OtherPlayerAction, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useAppContext()
 
     useEffect(() => {
         const fetchInfoServ = async () => {
@@ -421,6 +423,7 @@ function SixQuiPrend() {
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu",data);
                 setOtherPlayerAction(data);
+                console.log("Action",OtherPlayerAction)
             });
 
             socket.on('loser',(data)=>{

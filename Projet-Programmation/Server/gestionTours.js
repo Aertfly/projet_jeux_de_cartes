@@ -193,9 +193,6 @@ function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
 function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
-        infoPartie(db, idPartie).then((infoJoueurs) => {
-            envoyerInfos(db, io, idPartie, centre, archive, infoJoueurs, 0);
-        });
         console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
         compterValeurs = {};
@@ -264,7 +261,7 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
                     if (err3) throw err3;
 
                     // On annonce un nouveau tour
-                    annoncerJoueurs(io, socket, joueurs, result3[0]["tour"], idPartie, cartesJoueurs);
+                    annoncerJoueurs(io, db, joueurs, result3[0]["tour"], idPartie , centre , archive)
                 });
             });
 
@@ -276,7 +273,7 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
             let joueursEnBataille = [];
             for (const clé of Object.keys(centre)) {
                 if (centre[clé]["valeur"] == valeurLaPlusGrande) {
-                    joueursEnBataille.push(clé);
+                    joueursEnBataille.push(parseInt(clé));
                 }
             }
             console.log("Joueurs en bataille :");
@@ -302,7 +299,7 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
                 if (err3) throw err3;
 
                 // On appelle la méthode annoncerJoueurs avec les joueurs de cette liste : c'est une bataille
-                annoncerJoueurs(io, socket, joueursEnBataille, result3[0]["tour"], idPartie);
+                annoncerJoueurs(io, db, joueursEnBataille, result3[0]["tour"], idPartie , centre , archive)
             });
         }
     } else {
@@ -359,14 +356,20 @@ function joueursBataille2(cartes) {
     return retour;
 }
 
-function annoncerJoueurs(io, socket, listeJoueurs, numeroTour, idPartie) {
+function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie , centre , archive) {
     // Cette fonction devrait envoyer à tous les joueurs qui doivent jouer une annonce leur disant que c'est à eux de jouer
     // par la route 'newTurn' (numeroTour, numeroJoueur)
     console.log("On attend 5 secondes avant de passer au nouveau tour");
+    infoPartie(db, idPartie).then((infoJoueurs) => {
+        envoyerInfos(db, io, idPartie, centre, infoJoueurs, numeroTour);
+    });
     setTimeout(() => {
         io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
+        infoPartie(db, idPartie).then((infoJoueurs) => {
+            envoyerInfos(db, io, idPartie, {}, infoJoueurs, numeroTour);
+        });
     }, 5000);
 }
 
@@ -414,7 +417,7 @@ function recupererPseudo(db, idJoueur) {
 async function reveal(io, socket, centre, db, idPartie) {
     var centreAEnvoyer = {};
     for (const clé of Object.keys(centre)) {
-        const recuperer = await recupererPseudo(db, clé);
+        const recuperer = await recupererPseudo(db, clé); 
         centreAEnvoyer[recuperer] = centre[clé];
     }
     io.to(idPartie).emit('reveal', centreAEnvoyer);

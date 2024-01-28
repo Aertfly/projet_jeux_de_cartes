@@ -23,7 +23,11 @@ function scoreMoyenJoueur(io,db,idParty){
                 console.error('Erreur lors de l\'exécution de la requête :', error);
                 reject(error);
             } else {
-                resolve(JSON.stringify(results));
+                let res = []
+                for (let i=0; i<res.length; i++){
+                    res.push(results[i].nombreParties/results[i].nombreParties)
+                }
+                resolve(res);
             }
         });
     });
