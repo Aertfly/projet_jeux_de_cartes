@@ -26,11 +26,12 @@ const io = new Server(server, {
 const port = 3001;
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
+    host: 'mysql.etu.umontpellier.fr',
+    user: 'e20220005227',
+    password: 'azertyu',
     database: 'e20220005227'
 });
+
 
 db.connect((err) => {
     if (err) {
