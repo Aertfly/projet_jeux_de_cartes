@@ -294,7 +294,6 @@ function Player(props) {
             <img src={img} alt="Bonhomme" style={imageStyle} />
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
-            <p>{props.scoreMoyenJoueur} Points Moyen</p>
             {playerCard ? (
                 <Card card={playerCard} y={250} />
             ) : isCardPlayed ? (
@@ -337,7 +336,6 @@ function GameBoard() {
                             pseudo={player.pseudo}
                             nbCards={player.nbCards}
                             score={player.score}
-                            scoreMoyenJoueur={player.scoreMoyenJoueur}
                             action={OtherPlayerAction}
                             isCardPlayed={false}
                         />
