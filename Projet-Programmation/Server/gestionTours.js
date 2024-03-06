@@ -79,12 +79,17 @@ const gestionTours = function (io, socket, db) {
     })
 }
 
-function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
-    // Si archive est vide : on n'est pas dans une bataille
-    if (JSON.stringify(archive) == "{}") {
-        console.log("On n'est pas dans une bataille");
+/**
+ * Calcule l'ensemble des joueurs qui peuvent jouer dans une partie.
+ * Fait l'union des joueurs qui ont une carte au centre et des joueurs qui ont une main non vide
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Number} idPartie L'ID de la partie
+ * @returns {Promise} Promesse de renvoyer la liste des joueurs qui peuvent jouer dans la partie
+ */
+async function joueursPossibles(db, idPartie){
+    return new Promise((resolve) => {
         // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
-        db.query("SELECT idJ FROM joue WHERE idPartie=? AND main != '[]'", [data.idPartie], async (err3, result3) => {
+        db.query("SELECT joue.idJ as idJ, parties.centre as centre FROM joue, parties WHERE joue.idPartie=? OR parties.idPartie=? AND main != '[]'", [idPartie, idPartie], async (err3, result3) => {
             if (err3) throw err3;
 
             // On fait la liste des joueurs qui ont une main non vide
@@ -93,29 +98,31 @@ function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
                 joueursPossibles.push("" + result3[index]["idJ"]);
             }
 
-            // On fait la liste des joueurs qui ont une carte au centre
-            db.query("SELECT centre FROM parties WHERE idPartie=?", [data.idPartie], async (err4, result4) => {
-                if (err4) throw err4;
-                //console.log(result4);
-                let joueursPossibles2 = Object.keys(JSON.parse(result4[0]["centre"]));
+            let joueursPossibles2 = Object.keys(JSON.parse(result3[0]["centre"]));
 
-                // On fait l'union des deux listes, pour avoir l'ensemble des joueurs qui peuvent jouer (main non vide et/ou carte au centre)
-                let unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);
-                //console.log(joueursPossibles);
-                //console.log(joueursPossibles2);
-                //console.log(unionJoueursPossibles);
-                unionJoueursPossibles = [...unionJoueursPossibles];
-                //console.log(unionJoueursPossibles);
-                //console.log(unionJoueursPossibles);
+            // On fait l'union des deux listes, pour avoir l'ensemble des joueurs qui peuvent jouer (main non vide et/ou carte au centre)
+            let unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);
 
-                if (unionJoueursPossibles.length == 1) {
-                    finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
-                } else {
-                    annoncerScores(io, socket, db, cartesJoueurs, data.idPartie);
-                    suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
-                }
-            });
+            unionJoueursPossibles = [...unionJoueursPossibles];
+
+            resolve(unionJoueursPossibles);
         });
+    });   
+}
+
+
+async function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
+    // Si archive est vide : on n'est pas dans une bataille
+    if (JSON.stringify(archive) == "{}") {
+        console.log("On n'est pas dans une bataille");
+            let unionJoueursPossibles = await joueursPossibles(db, data.idPartie);
+
+            if (unionJoueursPossibles.length == 1) {
+                finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
+            } else {
+                annoncerScores(io, socket, db, cartesJoueurs, data.idPartie);
+                suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
+            }
     } else { // Si archive n'est pas vide : on est dans une bataille
         console.log("On est dans une bataille")
         // le nombre de joueurs qui peuvent jouer correspond à la taille de la liste retournée par joueursBataille2(archive)
