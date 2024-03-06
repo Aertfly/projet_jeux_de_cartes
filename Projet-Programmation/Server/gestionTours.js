@@ -1,46 +1,17 @@
 const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP');
 
 const gestionTours = function (io, socket, db) {
-    // socket.on('playerLeaving', (data) => { // Quand un joueur quitte la partie ; data doit contenir l'id de la partie quittée
-    //     // Intégrer ici le code de Killian
-
-    //     // Let him cook
-    //     db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie], async (err, result) => {
-    //         if (err) {
-    //             throw err;
-    //         }
-    //         nbJoueurs = new Map(Array.from(result, (key, value) => [key, value])).size;
-    //         console.log("Il y a " + nbJoueurs + " joueurs dans la partie " + data.idPartie);
-    //         if (nbJoueurs == 0) {
-    //             // Plus aucun joueur n'est dans la partie
-    //             clearInterval(compterJoueurs);
-    //             console.log("Il n'y a plus aucun joueur");
-    //             db.query("DELETE FROM parties WHERE idPartie = ?", [data.idPartie], async (err, result) => {
-    //                 if (err || result.affectedRows != 1) {
-    //                     console.log("La partie a déjà été supprimée");
-    //                 } else {
-    //                     console.log("Normalement la partie a bien été supprimée");
-    //                 }
-    //             });
-    //         }
-    //     });
-    // });
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
         console.log("joueur " + data.playerId + " " + data.action + " " + data.carte.enseigne + " " + data.carte.valeur);
 
-        // On dit à tous les joueurs que le joueur en question a joué une carte (à remplacer par un io.broadcast.emit après les tests)
-        var pseudoJoueur = undefined;
-        const requetePseudo = recupererPseudo(db, data.playerId);
-        requetePseudo.then((data2) => {
-            pseudoJoueur = data2;
-            io.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": pseudoJoueur, "natureAction": data.action });
+        // On dit à tous les joueurs que le joueur en question a joué une carte
+        recupererPseudo(db, data.playerId).then((data2) => {
+            io.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": data2, "natureAction": data.action });
         });
 
         // On stocke dans "cartesJoueurs" l'ensemble des mains des joueurs
-        const promesse = recupererMains(db, data.idPartie);
-        promesse.then((cartesJoueurs) => {
-            // console.log("La requête a été résolue"); 
+        recupererMains(db, data.idPartie).then((cartesJoueurs) => {
 
             // On enlève la carte du joueur de sa main dans l'objet cartesJoueurs
             try {
@@ -60,7 +31,6 @@ const gestionTours = function (io, socket, db) {
             db.query("UPDATE joue SET main=? WHERE joue.idJ=? AND joue.idPartie=?", [JSON.stringify(cartesJoueurs.get(data.playerId).get("main")), data.playerId, data.idPartie], async (err0, result0) => {
                 if (err0) throw err0;
 
-
                 db.query("SELECT centre FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
                     if (err) throw err;
                     const centre = JSON.parse(result[0]["centre"]); // On peut maintenant accéder au centre, récupéré depuis la BDD
@@ -69,26 +39,23 @@ const gestionTours = function (io, socket, db) {
                     centre[data.playerId] = data.carte;
                     db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), data.idPartie], async (err, result) => { if (err) throw err; }); // On met à jour la BDD
 
-                    db.query("SELECT archive FROM parties WHERE idPartie=?", [data.idPartie], async (err2, result2) => {
+                    db.query("SELECT archive, type FROM parties WHERE idPartie=?", [data.idPartie], async (err2, result2) => {
                         if (err2) throw err2;
-                        const archive = JSON.parse(result2[0]["archive"]); // On peut maintenant accéder à archive
                         
-                        // On regarde dans quel jeu on est
-                        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err3, result3) => {
-                            const jeu = result3[0]["type"];
-                            switch (jeu){
-                                case "Bataille": 
-                                    // On passe à une logique spécifique à la bataille
-                                    bataille(io, socket, db, centre, archive, cartesJoueurs, data);
-                                    break;
-                                case "6 Qui Prend":
-                                    playerActionSQP(io, socket, db, centre, archive, data);
-                                    break;
-                                default:
-                                    throw "Jeu inconnu";
-                            }
-                        })
+                        const archive = JSON.parse(result2[0]["archive"]); // On peut maintenant accéder à archive
+                        const jeu = result2[0]["type"];
 
+                        switch (jeu){
+                            case "Bataille": 
+                                // On passe à une logique spécifique à la bataille
+                                bataille(io, socket, db, centre, archive, cartesJoueurs, data);
+                                break;
+                            case "6 Qui Prend":
+                                playerActionSQP(io, socket, db, centre, archive, data);
+                                break;
+                            default:
+                                throw "Jeu inconnu";
+                        }
                     });
                 });
             });
