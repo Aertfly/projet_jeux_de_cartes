@@ -1,7 +1,5 @@
 /*Exemple liste cartes :[{"enseigne":"Pique","valeur":10},{"enseigne":"Carreau","valeur":6}]*/
 
-const { raw } = require("mysql");
-
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
@@ -40,7 +38,7 @@ const startGame = function(io,socket,db){
                             const handPlayers = dealCardsPoker(nbPlayers);
                             break;*/    
                         default:
-                            io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux sera implémenté ce qui rendra cette partie obsolète
+                            io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux pourra être implémenté ce qui rendra cette partie obsolète
                             return;
                     }
                     if (!(giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, data.idParty))) {
@@ -53,11 +51,10 @@ const startGame = function(io,socket,db){
                 }
             }
         });
-    });
+    }); 
 
     socket.on('requestCards',data =>{
         db.query("SELECT main from joue where idPartie = ? and idJ = ?; ",[data.idParty,data.idJ],async(err,result)=>{
-            await result;
             if (err)throw(err);
             if (result.length != 0){
                 //console.log(result);
@@ -222,7 +219,7 @@ function dealCardsWar(nbPlayers){
 module.exports = {startGame,reDealCardsSQP};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
-exemple sur 10 millions : {
+exemple sur 100 millions : {
   [3,4,5]: 16666418,
   [3,5,4]: 16665702,
   [4,3,5]: 16667400,

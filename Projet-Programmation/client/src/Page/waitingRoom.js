@@ -43,10 +43,10 @@ const WaitingRoom = ()=>{
             else{
                 switch (data.type) {
                     case "Bataille":
-                        setTimeout(() => navigate('/Home/Bataille/'+data.idParty), 250);
+                        setTimeout(() => navigate('/Home/Games/Bataille/'+data.idParty), 250);
                         break;
                     case "6 Qui Prend"://traduit en SQP pour le reste du code
-                        setTimeout(() => navigate('/Home/6 Qui Prend/'+data.idParty), 250);
+                        setTimeout(() => navigate('/Home/Games/6 Qui Prend/'+data.idParty), 250);
                         break;
                     default :
                         setMsg("Jeu inconnu");
