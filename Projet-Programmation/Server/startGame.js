@@ -1,7 +1,5 @@
 /*Exemple liste cartes :[{"enseigne":"Pique","valeur":10},{"enseigne":"Carreau","valeur":6}]*/
 
-const { raw } = require("mysql");
-
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
