@@ -36,21 +36,21 @@ function GameBoard() {
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
-                <Player x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} action={OtherPlayerAction} />
+                <Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} action={OtherPlayerAction} />
             ))}
         </div>
     );
 };
 
 function CardHand(props) {
-    const { socket, idJ, images, isMyTurn, setIsMyTurn, idParty , cards} = useOutletContext();
+    const { socket, idJ, images, myAction, setMyAction, idParty , cards} = useOutletContext();
 
     function play() {
         console.log("Je clique sur la carte :", props.value)
-        if (isMyTurn) {
+        if (myAction) {
             console.log("On joue la carte :", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ, "idPartie" : idParty });
-            setIsMyTurn(false);
+            setMyAction(null);
             cards.splice(cards.indexOf(props.value),1);
         }
     }
@@ -100,7 +100,7 @@ function CardsHand() {
 
 
 function Player(props) {
-    const { pseudo,OtherPlayerAction, isMyTurn, Info} = useOutletContext();
+    const { pseudo,OtherPlayerAction, myAction, Info} = useOutletContext();
     const playerStyle = {
         position: 'absolute',
         left: `${props.x}px`,
@@ -109,7 +109,7 @@ function Player(props) {
     console.log("Action autres",OtherPlayerAction);
     return (
         <div className="battle-player" style={playerStyle}>
-            {(props.pseudo === pseudo)? <p>{isMyTurn  ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
+            {(props.pseudo === pseudo)? <p>{myAction == "jouerCarte" ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
             <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.nbCards} cartes</p>
             {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card x={100} y={100} value={Info.center[props.pseudo]}/> :<Card x={100} y={100}/> : <></> }
@@ -185,7 +185,7 @@ function Center() {
 }*/
 
 function Battle() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setIsMyTurn,OtherPlayerAction, setOtherPlayerAction, setImages } = useOutletContext()
+    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction,OtherPlayerAction, setOtherPlayerAction, setImages } = useOutletContext()
 
 
     useEffect(() => {
@@ -206,7 +206,7 @@ function Battle() {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     OtherPlayerAction.length = 0;
                     setOtherPlayerAction([]);
-                    setIsMyTurn(true);
+                    setMyAction("jouerCarte");
                 }
             });
 

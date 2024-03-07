@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../index.js'
 import Deconnection from '../Page/Component/deconnection.js';
 import Chat from '../Page/Component/chatComponent.js';
+import Save from '../Page/Component/saveComponent.js';
 import imgPlaceholder from '../img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
 
 
@@ -15,7 +16,7 @@ function GameContainer(){
     const navigate = useNavigate();
     const [cards, setCards] = useState([]);
     const [Info, setInfo] = useState([]);
-    const [isMyTurn, setIsMyTurn] = useState(false);
+    const [myAction, setMyAction] = useState(null);
     const [OtherPlayerAction, setOtherPlayerAction] = useState([]);
     const [images,setImages] = useState({"./":imgPlaceholder});
 
@@ -27,8 +28,8 @@ function GameContainer(){
         setImages,
         Info,
         setInfo,
-        isMyTurn,
-        setIsMyTurn,
+        myAction,
+        setMyAction,
         OtherPlayerAction,
         setOtherPlayerAction,
         cards,
@@ -40,8 +41,9 @@ function GameContainer(){
     return (
         <>
         <Deconnection />
+        <Save data={{ party: idParty }}/>
         <Chat data={{ party: idParty }} />
-        <Outlet context={contextValue}/>
+        <Outlet context={contextValue} />
         </>
     );
 }
