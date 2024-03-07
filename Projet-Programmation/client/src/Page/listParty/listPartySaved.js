@@ -12,7 +12,7 @@ function Party(props) {
   const joinGame = () => {
     props.onJoinClick();
     socket.emit('joinRequest', { 'idPlayer': idJ, 'idParty': props.idParty });
-    socket.on('joinGame2', data => {
+    socket.on('joinGame', data => {
       if(data.message){
         props.onError(data.message);
       }else{

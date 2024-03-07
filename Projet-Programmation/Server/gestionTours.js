@@ -1,5 +1,5 @@
 const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP');
-
+const { scores, scoreMoyenJoueur } = require('./scores.js');
 const gestionTours = function (io, socket, db) {
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
@@ -59,6 +59,34 @@ const gestionTours = function (io, socket, db) {
                     });
                 });
             });
+        });
+    });
+
+    socket.on('infoGame', idParty => {
+        db.query('SELECT pseudo,centre,archive,pioche,score,tour,main from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?', [idParty], async (err, result) => {
+            if (err) throw (err);
+            var infoPlayers = [];
+            console.log("res : ", result);
+            if (result.length != 0) {
+                await scoreMoyenJoueur(io, db, idParty).then((scoreMoyenJoueur) => {
+                    console.log("Score moy", scoreMoyenJoueur);
+                    for (i = 0; i < result.length; i++) {
+                        infoPlayers.push({
+                            "nbCards": JSON.parse(result[i].main).length,
+                            "pseudo": result[i].pseudo,
+                            "score": result[i].score,
+                            'scoreMoyenJoueur': scoreMoyenJoueur[i]
+                        })
+                    }
+                });
+                socket.emit('infoGameOut', {
+                    'center': JSON.parse(result[0].centre),
+                    'archive': JSON.parse(result[0].archive),
+                    'draw': JSON.parse(result[0].pioche).length,
+                    'infoPlayers': infoPlayers,
+                    'nbTurn': result[0].tour
+                });
+            }
         });
     });
 
@@ -154,13 +182,13 @@ function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
             pseudos_id.set(result[i].idJ, result[i].pseudo);
         }
 
-        scores = {}
+        updatedscores = {}
         cartesJoueurs.forEach((valeur, clé) => {
-            scores[pseudos_id.get(clé)] = valeur.get('main').length + valeur.get('gagnees').length;
+            updatedscores[pseudos_id.get(clé)] = valeur.get('main').length + valeur.get('gagnees').length;
         });
 
-        console.log(scores);
-        io.to(idPartie).emit('updateScores', scores);
+        console.log(updatedscores);
+        io.to(idPartie).emit('updateScores', updatedscores);
     });
 }
 
