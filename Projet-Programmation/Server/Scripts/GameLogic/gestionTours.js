@@ -1,5 +1,5 @@
-const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP');
-const { scores, scoreMoyenJoueur } = require('./scores.js');
+const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP.js');
+const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const gestionTours = function (io, socket, db) {
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie

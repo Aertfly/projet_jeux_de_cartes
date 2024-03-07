@@ -33,8 +33,6 @@ function GameBoard() {
             window.removeEventListener('resize', handleResize);
         };
     }, [numberOfPlayers]);
-
-
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
