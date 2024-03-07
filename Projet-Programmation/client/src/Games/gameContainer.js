@@ -6,6 +6,7 @@ import { usePlayer } from '../index.js'
 import Deconnection from '../Page/Component/deconnection.js';
 import Chat from '../Page/Component/chatComponent.js';
 import Save from '../Page/Component/saveComponent.js';
+import Leave from '../Page/Component/Leave.js';
 import imgPlaceholder from '../img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
 
 
@@ -42,6 +43,7 @@ function GameContainer(){
         <>
         <Deconnection />
         <Save data={{ party: idParty }}/>
+        <Leave idj={idJ} socket={socket} />
         <Chat data={{ party: idParty }} />
         <Outlet context={contextValue} />
         </>

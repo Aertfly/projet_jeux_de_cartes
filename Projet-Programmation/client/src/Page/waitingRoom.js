@@ -5,17 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../index.js'
 import Deconnection from './Component/deconnection.js';
 import Chat from './Component/chatComponent.js';
-
-
-function Quitter(props){
-    function clicked(){
-        props.socket.emit('playerLeaving',props.idJ);
-        props.navigate('/home');
-    }
-    return(
-        <button type='button' onClick={clicked}>Quitter ?</button>
-    );
-}
+import Leave from './Component/Leave.js';
 
 function Start(props){
     function clicked(){
@@ -93,8 +83,7 @@ const WaitingRoom = ()=>{
                     <Player pseudo={name} key={index} />
                 ))}
             </ul>
-
-            <Quitter idParty={idParty} idJ={idJ} pseudo={pseudo} socket={socket} navigate={navigate}/>
+            <Leave idj={idJ} socket={socket} />
             <Start socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
             <Chat data={{party : idParty}} />

@@ -6,17 +6,6 @@ import {cardImgName,importImages,generatePointCards,circlePoints} from './gameSh
 
 
 
-function Leave() {
-    const { socket, idJ, navigate } = useOutletContext();
-    function clicked() {
-        socket.emit('playerLeaving', idJ);
-        navigate('/home');
-    }
-    return (
-        <button type='button' onClick={clicked}>Quitter ?</button>
-    );
-}
-
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
     const { Info, OtherPlayerAction } = useOutletContext();
@@ -241,7 +230,6 @@ function Battle() {
                 <>
                     {/*<Draw /> car on n'a pas besoin d'une pioche dans la bataille*/}
                     {/*<Center />*/}
-                    <Leave />
                     <GameBoard />
                     <CardsHand />
                 </>

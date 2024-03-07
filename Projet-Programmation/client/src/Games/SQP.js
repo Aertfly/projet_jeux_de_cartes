@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
+
 import {generatePointCards} from './gameShared.js'
 
 
 
-function Leave() {
-    const { socket, idJ, navigate } = useOutletContext();
-    function clicked() {
-        socket.emit('playerLeaving', idJ);
-        navigate('/home');
-    }
-    return (
-        <button type='button' onClick={clicked}>Quitter ?</button>
-    );
-}
 
 function Card(props) {
     const image = require('../img/SQP/boeuf.png');
@@ -407,7 +398,6 @@ function SixQuiPrend() {
                 {resultGame && (
                     <>
                     <EndGame />
-                    <Leave />
                     </>
                 )}
          
@@ -415,7 +405,6 @@ function SixQuiPrend() {
                 {!resultGame && (
                     <>
                         <GameBoard />
-                        <Leave />
                         <Center />
                         <CardsHand />
                     </>
