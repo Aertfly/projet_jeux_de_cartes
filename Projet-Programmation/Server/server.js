@@ -7,13 +7,13 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 // Dépendances 
-const gestionTours = require('./gestionTours.js');
-const gestionParty = require('./gestionParty.js');
-const { startGame } = require('./startGame.js');
-const { scores } = require('./scores.js');
-const chat = require('./chat.js');
-const sauvegardePartie = require('./sauvegardePartie.js');
-const ICD = require ('./ICD.js');
+const gestionTours = require('./Scripts/GameLogic/gestionTours.js');
+const gestionParty = require('./Scripts/UserInterface/gestionParty.js');
+const { startGame } = require('./Scripts/GameLogic/startGame.js');
+const { scores } = require('./Scripts/Global/scores.js');
+const chat = require('./Scripts/UserInterface/chat.js');
+const sauvegardePartie = require('./Scripts/UserInterface/sauvegardePartie.js');
+const { ICD } = require ('./Scripts/UserInterface/ICD.js');
 app.use(cors);
 
 const io = new Server(server, {
@@ -23,8 +23,8 @@ const io = new Server(server, {
     }
 });
 const port = 3001;
-
-/* base de données fac : 
+//base de données fac : 
+/* 
 const db = mysql.createConnection({
     host: 'mysql.etu.umontpellier.fr',
     user: 'e20220005227',

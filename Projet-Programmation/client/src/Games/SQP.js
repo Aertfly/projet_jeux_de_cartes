@@ -1,79 +1,10 @@
-import React, { useContext, useState, useEffect, createContext } from 'react';
-import { useParams } from 'react-router-dom';
-import { SocketContext } from '../socket.js';
-import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '../index.js'
-import Deconnection from '../Page/Component/deconnection.js';
-import Chat from '../Page/Component/chatComponent.js';
-import Save from '../Page/Component/saveComponent.js';
+import React, { useState, useEffect } from 'react';
+import { useOutletContext } from "react-router-dom";
+
+import {generatePointCards} from './gameShared.js'
 
 
-const AppContext = createContext();
-const AppProvider = ({ children }) => {
-    const { socket } = useContext(SocketContext);
-    const { idJ,pseudo } = usePlayer();
-    const { idParty } = useParams();
-    const navigate = useNavigate();
-    const [cards, setCards] = useState([]);
-    const [Info, setInfo] = useState([]);
-    const [myAction, setMyAction] = useState(null);
-    const [OtherPlayerAction, setOtherPlayerAction] = useState();
-    const [resultGame, setResultGame] = useState('');
 
-    const contextValue = {
-        setInfo,
-        resultGame,
-        setResultGame,
-        setMyAction,
-        setOtherPlayerAction,
-        OtherPlayerAction,
-        myAction,
-        Info,
-        cards,
-        setCards,
-        socket,
-        idJ,
-        pseudo,
-        idParty,
-        navigate,
-    };
-
-    return (
-        <AppContext.Provider value={contextValue}>
-            {children}
-        </AppContext.Provider>
-    );
-};
-
-const useAppContext = () => {
-    return useContext(AppContext);
-}; 
-
-function generatePointCards(nb,widthCards,heightCards){
-    const width = window.innerWidth ; 
-    const listPoints = [];
-    const ecart = (width - widthCards - 400)/(nb)
-
-    for (var i = 0; i < nb; i++) {
-        var x = widthCards + i * ecart;
-        listPoints.push(x);
-    }
-    return {
-        'y' : window.innerHeight-heightCards-50,
-        'x' : listPoints
-    }
-}
-
-function Leave() {
-    const { socket, idJ, navigate } = useAppContext();
-    function clicked() {
-        socket.emit('playerLeaving', idJ);
-        navigate('/home');
-    }
-    return (
-        <button type='button' onClick={clicked}>Quitter ?</button>
-    );
-}
 
 function Card(props) {
     const image = require('../img/SQP/boeuf.png');
@@ -112,7 +43,7 @@ function Card(props) {
 };
 
 function CardHand(props) {
-    const {cards,setCards, idJ, myAction, socket, idParty , setMyAction } = useAppContext();
+    const {cards,setCards, idJ, myAction, socket, idParty , setMyAction } = useOutletContext();
 
     function onCardClick() {
         console.log("Je clique sur",props.value);
@@ -138,7 +69,7 @@ function CardHand(props) {
 }
 
 function CardsHand() {
-    const {cards,myAction} = useAppContext();
+    const {cards,myAction} = useOutletContext();
     const [pointsCards,setPointCards] = useState(generatePointCards(cards.length,100,150));
     var nbCards = cards ? cards.length : 0; 
 
@@ -166,7 +97,7 @@ function CardsHand() {
 }
 
 function Countdown(props){
-    const {myAction} = useAppContext();
+    const {myAction} = useOutletContext();
     const [number,setNumber] = useState(30);
 
     useEffect(() => {
@@ -199,7 +130,7 @@ function Countdown(props){
 }
 
 function Center() {
-    const { Info, myAction, idJ , idParty, socket } = useAppContext();
+    const { Info, myAction,setMyAction, idJ , idParty, socket } = useOutletContext();
     const positions = quadrillagePoints();
     const board = Info.archive;
 
@@ -212,6 +143,7 @@ function Center() {
         if (myAction === "choisirLigne" ){
             console.log("Envoie ligne selectionnée serveur  :",rowIndex);
             socket.emit('ligne', {'ligne': rowIndex, 'idJoueur': idJ, 'idPartie': idParty})
+            setMyAction(null)
         }
         //socket.emit('ligne', {ligne: 2, idJoueur: idJ, idPartie: idParty});
     };
@@ -253,7 +185,7 @@ function quadrillagePoints() {
 }
 
 function Player(props) {
-    const { Info, OtherPlayerAction} = useAppContext();
+    const { Info, OtherPlayerAction} = useOutletContext();
     const img = require('../img/SQP/bonhomme.png');
     const dosImg = require('../img/SQP/dos.png');
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
@@ -308,7 +240,7 @@ function Player(props) {
 
 
 function GameBoard() {
-    const { Info, OtherPlayerAction } = useAppContext();
+    const { Info, OtherPlayerAction } = useOutletContext();
 
     const boardStyle = {
         position: 'absolute',
@@ -346,7 +278,7 @@ function GameBoard() {
 }
 
 function EndGame() {
-    const { resultGame, Info } = useAppContext();
+    const { resultGame, Info } = useOutletContext();
 
     Info.infoPlayers.sort((a, b) => a.score - b.score);
 
@@ -385,7 +317,7 @@ function EndGame() {
 }
 
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, OtherPlayerAction, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useAppContext()
+    const { idParty, idJ, setInfo, setCards, OtherPlayerAction, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useOutletContext()
 
     useEffect(() => {
         const fetchInfoServ = async () => {
@@ -466,9 +398,6 @@ function SixQuiPrend() {
                 {resultGame && (
                     <>
                     <EndGame />
-                    <Leave />
-                    <Chat data={{ party: idParty }} />
-                    <Deconnection />
                     </>
                 )}
          
@@ -476,10 +405,6 @@ function SixQuiPrend() {
                 {!resultGame && (
                     <>
                         <GameBoard />
-                        <Chat data={{ party: idParty }} />
-                        <Deconnection />
-                        <Save data={{ party: idParty }} />
-                        <Leave />
                         <Center />
                         <CardsHand />
                     </>
@@ -490,14 +415,6 @@ function SixQuiPrend() {
     
 }
 
-function App2() {
-    
-    return (
-        <AppProvider>
-            <SixQuiPrend />
-        </AppProvider>
-    );
-};
 
-export default App2;
+export default SixQuiPrend;
 
