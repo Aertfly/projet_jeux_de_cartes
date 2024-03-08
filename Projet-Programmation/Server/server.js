@@ -13,7 +13,7 @@ const { startGame } = require('./startGame.js');
 const { scores } = require('./scores.js');
 const chat = require('./chat.js');
 const sauvegardePartie = require('./sauvegardePartie.js');
-const { ICD } = require ('./ICD.js');
+const ICD = require ('./ICD.js');
 app.use(cors);
 
 const io = new Server(server, {

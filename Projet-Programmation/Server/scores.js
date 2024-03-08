@@ -12,6 +12,18 @@ const scores = function(io, socket, db) {
             
         })
     })
+    
+    socket.on('getScores', (gameName) => {
+        const query = "SELECT statistiques.idJ,pseudo,totalPoints,nombreParties from statistiques,joueurs where statistiques.idJ = joueurs.idJ and jeu = ?"
+        db.query(query, [gameName], async(err,result) => {
+            if(err){
+                console.log("erreur lors de la selection des scores");
+                throw(err);
+            }
+            
+            socket.emit('globalScores', result);
+        })
+    })
 }
 
 function scoreMoyenJoueur(io,db,idParty){
