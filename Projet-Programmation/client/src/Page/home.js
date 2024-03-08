@@ -60,20 +60,20 @@ function Home(){
     }
 
     const [score, setScore] = useState([]);
+    const [selectedGame, setSelectedGame] = useState('')
     const [isModalOpen, setIsModalOpen] = useState(false);
     function openModal(){
         setIsModalOpen(true);
     }
     function showScores(gameName){
-        console.log("showScore appelé");
         socket.emit('getScores', gameName);
+        setSelectedGame(gameName);
         
     }
     const closeModal = () => setIsModalOpen(false);
 
     useEffect(() => {
         socket.on("globalScores", (globalScores) => {
-            console.log(globalScores);
             setScore(globalScores);
         });
         const cleanup = () => {
@@ -82,9 +82,8 @@ function Home(){
         return cleanup;
     }, [socket]);
 
-    function ScoreTable({ score }) {
-
-        console.log(typeof score);
+    function ScoreTable({ score, selectedGame }) {
+        console.log(selectedGame)
         if (Array.isArray(score)) {
           
             score.sort((a, b) => {
@@ -101,10 +100,11 @@ function Home(){
               }
             });
             return (
+                <div>
+                  <h1>{selectedGame}</h1>
                 <table>
                   <thead>
                     <tr>
-                      <th>Id</th>
                       <th>Pseudo</th>
                       <th>Total Points</th>
                       <th>Nombre de Parties</th>
@@ -114,7 +114,6 @@ function Home(){
                   <tbody>
                     {score.map((item) => (
                       <tr key={item.idJ}>
-                        <td>{item.idJ}</td>
                         <td>{item.pseudo}</td>
                         <td>{item.totalPoints}</td>
                         <td>{item.nombreParties}</td>
@@ -124,6 +123,7 @@ function Home(){
                     ))}
                   </tbody>
                 </table>
+                </div>
               );
           } else {
             console.log("score n'est pas un tableau");
@@ -184,7 +184,7 @@ function Home(){
                     <button type="button" onClick={() => showScores("6 Qui Prend")}>
                         Catégorie SQP
                     </button>
-                    <ScoreTable score={score} />
+                    <ScoreTable score={score} selectedGame={selectedGame}/>
                     <button type="button" onClick={closeModal}>
                         Fermer
                     </button>
