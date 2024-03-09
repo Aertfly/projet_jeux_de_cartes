@@ -1,6 +1,6 @@
 import React, { useState, useEffect,  } from 'react';
 import { useOutletContext } from "react-router-dom";
-import {cardImgName,importImages,generatePointCards,circlePoints} from './gameShared.js'
+import {cardImgName,importImages,generatePointCards,circlePoints} from '../Shared/gameShared.js'
 
 
 
@@ -25,7 +25,7 @@ function GameBoard() {
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
-                <Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} action={OtherPlayerAction} />
+                <Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} />
             ))}
         </div>
     );
@@ -148,79 +148,17 @@ function Center() {
     );
 }
 
-
-/*function Draw() {
-    const { Info, images } = useOutletContext()
-    const draw = Info.draw ? Info.draw : 0;
-    const [midX, setMidX] = useState(window.innerWidth / 2);
-    const [midY, setMidY,] = useState(window.innerHeight / 2);
-    useEffect(() => {
-        const handleResize = () => {
-            setMidX(window.innerWidth / 2);
-            setMidY(window.innerHeight / 2);
-        };
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
-    return (
-        <div>
-            <p style={{ position: 'absolute', left: `${midX - 50}px`, top: `${midY - 50}px` }}>Il y a : {draw} cartes dans la pioche</p>
-            <Card x={midX} y={midY} />
-        </div>
-    );
-}*/
-
 function Battle() {
-    const { idParty, idJ, setInfo, setCards, Info, socket, setMyAction,OtherPlayerAction, setOtherPlayerAction, setImages } = useOutletContext()
+    const {Info,setImages} = useOutletContext()
 
 
     useEffect(() => {
         const fetchInfoServ = async () => {
-            console.log("fetchInfoServ")
-            socket.on("dealingCards", (data) => {
-                console.log("Cartes reçues via dealingCards", data);
-                setCards(data.Cards);
-            });
-            socket.on('infoGameOut', (data) => {
-                console.log("Info other", data);
-                setInfo(data);
-            });
-
-            socket.on('newTurn', (data) => {
-                console.log("NOUVEAU TOUR");
-                if (data.joueurs.includes(idJ)) {
-                    console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    OtherPlayerAction.length = 0;
-                    setOtherPlayerAction([]);
-                    setMyAction("jouerCarte");
-                }
-            });
-
-            socket.on('conveyAction', (data) => {
-                console.log("conveyAction reçu",data);
-                OtherPlayerAction.push(data.pseudoJoueur);
-                let li = [...OtherPlayerAction]//permet forcément à react de détecter le changement et de correctement re-render
-                setOtherPlayerAction(li);
-            });
-
-            socket.emit('infoGame', idParty);
-            socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
             setImages(importImages("Battle"));
         }
-
-        const cleanup = () => {
-            console.log("Nettoyage")
-            const listNameSocket = ['reveal', 'conveyAction', 'newTurn', 'infoGameOut', "dealingCards"];
-            for (const n of listNameSocket) { socket.off(n) };
-        }
         fetchInfoServ();
-        return cleanup;
+        return () => {};
     },[]);
-
-
 
     return (
         <div className='BattleBody'>
@@ -237,23 +175,5 @@ function Battle() {
         </div>
     );
 }
-
-/*function JouerForm() {
-
-    const action = () => {
-        useEffect(() => {
-            const carte = { "enseigne": "Pique", "valeur": 6 };
-            const playerId = 1;
-
-            console.log(carte.enseigne);
-            console.log("Emission de la carte " + carte);
-            socket.emit('playerAction', { "carte": carte, "player": "Pierre", "action": "joue", "playerId": playerId });
-        });
-    }
-
-    return (
-        <button onClick={action}>Jouer une carte</button>
-    )
-}*/
 
 export default Battle;

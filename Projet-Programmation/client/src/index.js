@@ -7,7 +7,7 @@ import ListParty from "./Scripts/Page/listParty/listParty.js";
 import NotFound from "./Scripts/Page/notFound.js";
 import ListPartySaved from "./Scripts/Page/listParty/listPartySaved.js";
 import { SocketProvider } from './Scripts/Shared/socket.js';
-import GameContainer from "./Scripts/Games/gameContainer.js";
+import GameContainer from "./Scripts/Shared/gameContainer.js";
 import Battle from './Scripts/Games/battle.js';
 import SQP from './Scripts/Games/SQP.js';
 

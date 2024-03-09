@@ -50,4 +50,50 @@ function cardImgName(card) {
     return "./" + card.valeur + "-" + card.enseigne + ".png";
 }
 
-export  {cardImgName,importImages,generatePointCards,circlePoints}
+function quadrillagePoints() {
+    const itemsCount = 20;
+    const itemsPerRow = 5; // Nombre d'items par ligne
+    const cardSpacing = 130;
+    const positions = [];
+
+    for (let index = 0; index < itemsCount; index++) {
+        const row = Math.floor(index / itemsPerRow);
+        const col = index % itemsPerRow;
+        const x = (col * cardSpacing)-400;
+        const y = (row * cardSpacing)-400;
+        if (positions[row] === undefined) {
+            // Si la ligne n'existe pas encore, créez-la
+            positions[row] = [];
+        }
+        positions[row].push({ x, y });
+    }
+
+    return positions;
+}
+
+/*function Draw() {
+    const { Info, images } = useOutletContext()
+    const draw = Info.draw ? Info.draw : 0;
+    const [midX, setMidX] = useState(window.innerWidth / 2);
+    const [midY, setMidY,] = useState(window.innerHeight / 2);
+    useEffect(() => {
+        const handleResize = () => {
+            setMidX(window.innerWidth / 2);
+            setMidY(window.innerHeight / 2);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    return (
+        <div>
+            <p style={{ position: 'absolute', left: `${midX - 50}px`, top: `${midY - 50}px` }}>Il y a : {draw} cartes dans la pioche</p>
+            <Card x={midX} y={midY} />
+        </div>
+    );
+}*/
+
+
+export  {cardImgName,importImages,generatePointCards,circlePoints,quadrillagePoints}

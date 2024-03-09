@@ -42,7 +42,7 @@ function Home(){
             socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
             setIsSubmit(true);
             console.log("party requested");
-            socket.on('joinGame2',(data)=>{
+            socket.on('joinGame',(data)=>{
                 if(data.message){
                     setTimeout(() =>{
                         setError(data.message);

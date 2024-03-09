@@ -308,7 +308,7 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
                 });
                 
                 // Si le nombre de tetes du joueur est supérieur ou égal à 66
-                if(sommeTetes >= 66){
+                if(sommeTetes >= 2){
                     console.log("Un joueur a perdu en ayant sommeTetes=" + sommeTetes);
                     // Le joueur a perdu :
                     ajouterScores(db, idPartie).then(() => {

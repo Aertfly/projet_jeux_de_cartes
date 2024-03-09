@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
 
-import {generatePointCards} from './gameShared.js'
+import {generatePointCards,quadrillagePoints} from '../Shared/gameShared.js'
 
 
 
@@ -12,7 +12,7 @@ function Card(props) {
     
     const cardStyles = {
         position: 'absolute',
-        left: `${props.x}px`,
+        ...(props.x !== undefined ? { left: `${props.x}px` } : {}),
         top: `${props.y}px`,
         width: '100px', // Ajustez la largeur selon vos besoins
         height: '150px', // Ajustez la hauteur selon vos besoins
@@ -163,36 +163,13 @@ function Center() {
 }
 
 
-function quadrillagePoints() {
-    const itemsCount = 20;
-    const itemsPerRow = 5; // Nombre d'items par ligne
-    const cardSpacing = 130;
-    const positions = [];
-
-    for (let index = 0; index < itemsCount; index++) {
-        const row = Math.floor(index / itemsPerRow);
-        const col = index % itemsPerRow;
-        const x = (col * cardSpacing)-400;
-        const y = (row * cardSpacing)-400;
-        if (positions[row] === undefined) {
-            // Si la ligne n'existe pas encore, créez-la
-            positions[row] = [];
-        }
-        positions[row].push({ x, y });
-    }
-
-    return positions;
-}
 
 function Player(props) {
     const { Info, OtherPlayerAction} = useOutletContext();
-    const img = require('../../Assets/img/SQP/bonhomme.png');
-    const dosImg = require('../../Assets/img/SQP/dos.png');
+    const img = props.img
+    const dosImg = props.dosImg;
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
-
     const playerColor = colors[props.index % colors.length];
-    var isCardPlayed = OtherPlayerAction && OtherPlayerAction.natureAction === 'joue' && OtherPlayerAction.pseudoJoueur === props.pseudo;
-    const playerCard = Info.center[props.pseudo];
 
     const playerContainerStyle = {
         display: 'flex',
@@ -221,18 +198,11 @@ function Player(props) {
 
     return (
         <>
-        {console.log(isCardPlayed)}
         <div style={playerContainerStyle}>
             <img src={img} alt="Bonhomme" style={imageStyle} />
             <p>{props.pseudo}</p>
             <p>{props.score} Points</p>
-            {playerCard ? (
-                <Card card={playerCard} y={250} />
-            ) : isCardPlayed ? (
-                <img src={dosImg} alt="Dos de carte" style={cardStyle} />
-            ) : (
-                <p>{props.nbCards} cartes</p>
-            )}
+            {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card  y={250} card={Info.center[props.pseudo]}/> :<img src={dosImg} alt="Dos de carte" style={cardStyle} /> : <></> }
         </div></>
     );
 }
@@ -241,7 +211,8 @@ function Player(props) {
 
 function GameBoard() {
     const { Info, OtherPlayerAction } = useOutletContext();
-
+    const img = require('../../Assets/img/SQP/bonhomme.png');
+    const dosImg = require('../../Assets/img/SQP/dos.png')
     const boardStyle = {
         position: 'absolute',
         top: '10px',
@@ -256,7 +227,8 @@ function GameBoard() {
     const playersListStyle = {
         display: 'flex', // Aligner les joueurs horizontalement
     };
-
+    console.log(OtherPlayerAction);
+    console.log(Info.center);
     return (
         <div style={boardStyle}>
             <div className="players-list" style={playersListStyle}>
@@ -266,10 +238,9 @@ function GameBoard() {
                             key={index}
                             index={index}
                             pseudo={player.pseudo}
-                            nbCards={player.nbCards}
                             score={player.score}
-                            action={OtherPlayerAction}
-                            isCardPlayed={false}
+                            img = {img}
+                            dosImg = {dosImg}
                         />
                     ))}
             </div>
@@ -277,140 +248,15 @@ function GameBoard() {
     );
 }
 
-function EndGame() {
-    const { resultGame, Info } = useOutletContext();
 
-    Info.infoPlayers.sort((a, b) => a.score - b.score);
-
-    return (
-        <div className="result-container">
-          {resultGame.winner && (
-            <div className="result-section winner-section player-info">
-              <h2>Gagnant</h2>
-              <p>Nom: {resultGame.winner.pseudo}</p>
-              <p>Score: {resultGame.winner.score}</p>
-            </div>
-          )}
-    
-          {resultGame.loser && (
-            <div className="result-section loser-section player-info">
-              <h2>Perdant</h2>
-              <p>Nom: {resultGame.loser.pseudo}</p>
-              <p>Score: {resultGame.loser.score}</p>
-            </div>
-          )}
-    
-          {Info && (
-            <div className="result-section">
-              <h2>Classement des joueurs</h2>
-              {Info.infoPlayers.map((player, index) => (
-                <div key={index} className="player-info">
-                  <p>Nom: {player.pseudo}</p>
-                  <p>Score: {player.score}</p>
-                  <p>Score Moyen Joueur: {player.scoreMoyenJoueur}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-}
 
 function SixQuiPrend() {
-    const { idParty, idJ, setInfo, setCards, OtherPlayerAction, socket, setMyAction, setOtherPlayerAction, navigate, resultGame, setResultGame } = useOutletContext()
-
-    useEffect(() => {
-        const fetchInfoServ = async () => {
-            console.log("fetchInfoServ")
-
-            socket.on('savePartyResult', () => {
-                navigate('/home');
-            });
-
-            socket.on('endGame',(data) =>{
-                setResultGame(data);
-            });
-
-            socket.on("dealingCards", (data) => {
-                console.log("Cartes reçues via dealingCards",data);
-                setCards(data.Cards);
-            });
-
-            socket.on('infoGameOut', (data) => {
-                console.log("Info de la partie", data);
-                setInfo(data);
-            });
-            
-            socket.on('newTurn', (data) => {
-                console.log("NOUVEAU TOUR");
-                if (data.joueurs.includes(idJ)) {
-                    console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    setMyAction("jouerCarte");
-                    setOtherPlayerAction([]);
-                }
-            });
-            
-            socket.on('conveyAction', (data) => {
-                console.log("conveyAction reçu",data);
-                setOtherPlayerAction(data);
-                console.log("Action",OtherPlayerAction)
-            });
-
-            socket.on('loser',(data)=>{
-                console.log("Ce mec la a perdu",data);
-            });
-
-            socket.on('requestAction',(data)=>{
-                console.log("Cette personne doit faire un truc",data);
-                if(data.idJ === idJ){
-                    setMyAction("choisirLigne")
-                    console.log("Je dois faire un truc")
-                }
-            });
-
-            socket.on('gameStart',(data)=>{
-                if(data.message){
-                    console.log("Erreur :",data.message);
-                    //navigate('/')
-                }
-                else{
-                    socket.emit('infoGame', idParty);
-                    socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
-                }
-            });
-
-            socket.emit('infoGame', idParty);
-            socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
-        }
-
-        const cleanup = () => {
-            console.log("Nettoyage")
-            const listNameSocket = ['reveal','conveyAction','newTurn','infoGameOut',"dealingCards",'savePartyResult','gameStart'];
-            for(const n of listNameSocket){socket.off(n)};
-        }
-        fetchInfoServ();
-        return cleanup;
-    },[ idJ, idParty, navigate, setCards, setInfo, setMyAction, setOtherPlayerAction, socket]);
-
     return (
-        <>
-      
-                {resultGame && (
-                    <>
-                    <EndGame />
-                    </>
-                )}
-         
-            <div>
-                {!resultGame && (
-                    <>
-                        <GameBoard />
-                        <Center />
-                        <CardsHand />
-                    </>
-                )}
-            </div>
-        </>
+        <div>
+            <GameBoard />
+            <Center />
+            <CardsHand />
+        </div>
     );
     
 }
