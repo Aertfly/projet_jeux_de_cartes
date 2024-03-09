@@ -1,11 +1,11 @@
 import React, { useContext, useState,useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { SocketContext } from '../socket.js';
+import { SocketContext } from '../Shared/socket.js';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '../index.js'
-import Deconnection from './Component/deconnection.js';
-import Chat from './Component/chatComponent.js';
-import Leave from './Component/Leave.js';
+import { usePlayer } from '../../index.js'
+import Deconnection from '../Components/deconnection.js';
+import Chat from '../Components/chatComponent.js';
+import Leave from '../Components/Leave.js';
 
 function Start(props){
     function clicked(){

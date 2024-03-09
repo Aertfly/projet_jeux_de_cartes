@@ -1,15 +1,15 @@
-import "./page.css";
-import IC from './Page/IC.js'
-import CreateParty from './Page/createParty.js';
-import Home from './Page/home.js';
-import WaitingRoom from './Page/waitingRoom.js';
-import ListParty from "./Page/listParty/listParty.js";
-import NotFound from "./Page/notFound.js";
-import ListPartySaved from "./Page/listParty/listPartySaved.js";
-import { SocketProvider } from './socket.js';
-import GameContainer from "./Games/gameContainer.js";
-import Battle from './Games/battle.js';
-import SQP from './Games/SQP.js';
+import "./Styles/page.css";
+import IC from './Scripts/Page/IC.js'
+import CreateParty from './Scripts/Page/createParty.js';
+import Home from './Scripts/Page/home.js';
+import WaitingRoom from './Scripts/Page/waitingRoom.js';
+import ListParty from "./Scripts/Page/listParty/listParty.js";
+import NotFound from "./Scripts/Page/notFound.js";
+import ListPartySaved from "./Scripts/Page/listParty/listPartySaved.js";
+import { SocketProvider } from './Scripts/Shared/socket.js';
+import GameContainer from "./Scripts/Games/gameContainer.js";
+import Battle from './Scripts/Games/battle.js';
+import SQP from './Scripts/Games/SQP.js';
 
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals.js' ;

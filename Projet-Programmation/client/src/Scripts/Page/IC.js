@@ -1,10 +1,10 @@
 
 import CryptoJS from 'crypto-js';
 import React, { useState, createContext, useContext } from 'react';
-import { SocketContext } from '../socket.js';
+import { SocketContext } from '../Shared/socket.js';
 
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '../index.js';
+import { usePlayer } from '../../index.js';
 
 const InscriptionContext = createContext();
 export const ConnexionContext = createContext();

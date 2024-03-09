@@ -7,7 +7,7 @@ import {generatePointCards} from './gameShared.js'
 
 
 function Card(props) {
-    const image = require('../img/SQP/boeuf.png');
+    const image = require('../../Assets/img/SQP/boeuf.png');
     const boeufs = [];for(let i=0;i<props.card.nbBoeufs;i++){boeufs.push(i)}//pour la parcourir ensuite autant de fois qu'il y a de têtes
     
     const cardStyles = {
@@ -186,8 +186,8 @@ function quadrillagePoints() {
 
 function Player(props) {
     const { Info, OtherPlayerAction} = useOutletContext();
-    const img = require('../img/SQP/bonhomme.png');
-    const dosImg = require('../img/SQP/dos.png');
+    const img = require('../../Assets/img/SQP/bonhomme.png');
+    const dosImg = require('../../Assets/img/SQP/dos.png');
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
 
     const playerColor = colors[props.index % colors.length];

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useCallback } from 'react';
-import { SocketContext } from '../../socket.js';
-import { ConnexionContext, ConnexionProvider } from '../IC.js';
+import { SocketContext } from '../Shared/socket.js';
+import { ConnexionContext, ConnexionProvider } from '../Page/IC.js';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../../index.js';
 

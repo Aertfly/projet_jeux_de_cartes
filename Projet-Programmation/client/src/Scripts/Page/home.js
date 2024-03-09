@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Deconnection from "./Component/deconnection.js";
-import { SocketContext } from '../socket.js';
-import { usePlayer } from '../index.js';
+import Deconnection from "../Components/deconnection.js";
+import { SocketContext } from '../Shared/socket.js';
+import { usePlayer } from '../../index.js';
 import { Outlet } from "react-router-dom";
 import Modal from 'react-modal';
 

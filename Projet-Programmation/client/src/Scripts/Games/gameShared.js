@@ -11,7 +11,7 @@ function importImages(gameName){
         );
     };
     console.log('../img/' + gameName)
-    return importAll(require.context('../img/Battle', false, /\.(png)$/));
+    return importAll(require.context('../../Assets/img/Battle', false, /\.(png)$/));
 }
 
 function circlePoints(r, nb) {

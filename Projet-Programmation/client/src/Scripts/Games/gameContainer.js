@@ -1,13 +1,13 @@
 import React, { useContext, useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
-import { SocketContext } from '../socket.js';
+import { SocketContext } from '../Shared/socket.js';
 import { useNavigate } from 'react-router-dom';
-import { usePlayer } from '../index.js'
-import Deconnection from '../Page/Component/deconnection.js';
-import Chat from '../Page/Component/chatComponent.js';
-import Save from '../Page/Component/saveComponent.js';
-import Leave from '../Page/Component/Leave.js';
-import imgPlaceholder from '../img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
+import { usePlayer } from '../../index.js'
+import Deconnection from '../Components/deconnection.js';
+import Chat from '../Components/chatComponent.js';
+import Save from '../Components/saveComponent.js';
+import Leave from '../Components/Leave.js';
+import imgPlaceholder from '../../Assets/img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
 
 
 function GameContainer(){
