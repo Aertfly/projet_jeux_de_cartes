@@ -156,12 +156,10 @@ function GameContainer(){
 
     return (
         <>
-        
         <Deconnection />
-        <Save data={{ party: idParty }}/>
         <Leave idj={idJ} socket={socket} />
         <Chat data={{ party: idParty }} />
-        {resultGame ?<EndGame resultGame={resultGame} Info={Info}/>:<Outlet context={contextValue} />}
+        {resultGame ?<EndGame resultGame={resultGame} Info={Info}/>:<><Save data={{ party: idParty }}/><Outlet context={contextValue} /></>}
         </>
     );
 }
