@@ -1,4 +1,4 @@
-import { React, useState, useContext } from 'react';
+import { React, useState, useContext, useEffect } from 'react';
 import { SocketContext } from '../Shared/socket.js';
 import Deconnection from '../Components/deconnection.js';
 import { usePlayer } from '../../index.js';
@@ -51,10 +51,13 @@ function CreatePartyForm() {
     setEstSoumis(!estSoumis);
   };
 
-  socket.on('joinGame',data=>{
-    setPlayerList(data.playerList);
-    setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
-  })
+  useEffect(()=>{
+    socket.on('joinGame',data=>{
+      setPlayerList(data.playerList);
+      setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
+    })
+    return () => {socket.off('joinGame')};
+  },[]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

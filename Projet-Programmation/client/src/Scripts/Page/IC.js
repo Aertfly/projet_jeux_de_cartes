@@ -1,6 +1,6 @@
 
 import CryptoJS from 'crypto-js';
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { SocketContext } from '../Shared/socket.js';
 
 import { useNavigate } from 'react-router-dom';
@@ -101,17 +101,24 @@ function ConnectionForm() {
     const hashedPassword = CryptoJS.SHA256(motDePasse).toString();
     socket.emit('connexion', { pseudo: pseudoInput, password: hashedPassword });
   };
+  useEffect(()=>{
+    socket.on('resultatConnexion', (dataMessage) => {
+      setEstConnecte(dataMessage);
+    });
+  
+    socket.on('infoPlayer', (data) => {
+      setTimeout(() => navigate('/Home'), 500);
+      setIdJ(data.idJ);
+      setPseudo(data.pseudo);
+      socket.emit('test', data.idJ)
+    });
+    
+    return ()=>{
+      socket.off('resultatConnexion');
+      socket.off('infoPlayer');
+    }
+  },[])
 
-  socket.on('resultatConnexion', (dataMessage) => {
-    setEstConnecte(dataMessage);
-  });
-
-  socket.on('infoPlayer', (data) => {
-    setTimeout(() => navigate('/Home'), 500);
-    setIdJ(data.idJ);
-    setPseudo(data.pseudo);
-    socket.emit('test', data.idJ)
-  });
 
   return (
     <form id="connectionForm">
