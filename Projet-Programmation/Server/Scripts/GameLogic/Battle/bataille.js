@@ -1,16 +1,16 @@
 const { infoPartie, envoyerInfos } = require("../utils/functions.js");
 
-async function playerActionBataille(io, socket, db, centre, archive, cartesJoueurs, data){
+async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data){
     // Si archive est vide : on n'est pas dans une bataille
     if (JSON.stringify(archive) == "{}") {
         console.log("On n'est pas dans une bataille");
             let unionJoueursPossibles = await joueursPossibles(db, data.idPartie);
 
             if (unionJoueursPossibles.length == 1) {
-                finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
+                finDePartie(io, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
             } else {
                 annoncerScores(io, db, cartesJoueurs, data.idPartie);
-                suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
+                suite(io, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
             }
     } else { // Si archive n'est pas vide : on est dans une bataille
         console.log("On est dans une bataille")
@@ -21,9 +21,9 @@ async function playerActionBataille(io, socket, db, centre, archive, cartesJoueu
         //console.log("En jeu :");
         //console.log(archive);
         if (joueursPossibles.length == 1) {
-            finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);  // BUG A CORRIGER
+            finDePartie(io, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);  // BUG A CORRIGER
         } else {
-            suite(io, socket, db, data.idPartie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
+            suite(io, db, data.idPartie, joueursPossibles.length, centre, archive, cartesJoueurs, data);
         }
     }
 
@@ -125,7 +125,7 @@ function annoncerScores(io, db, cartesJoueurs, idPartie) {
     });
 }
 
-function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
+function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
         console.log("Le joueur est le dernier à jouer, on déclenche la logique");
@@ -261,30 +261,19 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
  * - Annonce les scores finaux
  * - Passe le tour à -2 sur la base de données
  * @param {*} io 
- * @param {*} socket 
  * @param {*} db 
  * @param {*} vainqueur 
  * @param {*} idPartie 
  * @param {*} cartesJoueurs 
  * @param {*} idPartie 
  */
-function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs, idPartie) {
+function finDePartie(io, db, vainqueur, idPartie, cartesJoueurs, idPartie) {
     io.to(idPartie).emit('winner', vainqueur);
 
     annoncerScores(io, db, cartesJoueurs, idPartie);
 
     // Passe le tour à -2
     db.query("UPDATE parties SET tour=? WHERE idPartie=?", [-2, idPartie], async (err, result) => { if (err) throw err; });
-}
-
-/**
- * CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE
- * @param {*} cartes Dictionnaire dont les valeurs sont des cartes
- * @returns L'ensemble des joueurs qui sont en bataille
- */
-function joueursBataillle(cartes) {
-    console.log("joueursBataille retourne la liste " + Object.keys(cartes));
-    return Object.keys(cartes);
 }
 
 /**
@@ -363,7 +352,7 @@ function recupererPseudo(db, idJoueur) {
  * @param {*} db 
  * @param {*} idPartie 
  */
-async function reveal(io, socket, centre, db, idPartie) {
+async function reveal(io, centre, db, idPartie) {
     var centreAEnvoyer = {};
     for (const clé of Object.keys(centre)) {
         const recuperer = await recupererPseudo(db, clé); 

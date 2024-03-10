@@ -32,42 +32,28 @@ function infoPartie(db, idParty){
     });
 };
 
-var envoyerInfos = function(db, io, idPartie, centre, infoJoueurs, nbTour){
-    let centre2 = Object.assign({},centre);
-    let infoJoueurs2 = JSON.parse(JSON.stringify(infoJoueurs));
-
-    db.query("SELECT archive FROM parties WHERE idPartie=?", [idPartie], (err0, result0) => {
-        db.query("SELECT pseudo, joue.idJ FROM joueurs, joue, parties WHERE joue.idPartie = parties.idPartie AND joue.idJ = joueurs.idJ AND parties.idPartie = ?;", [idPartie], (err, result) => {
-            if(err) throw err;
-            
-            for(ligne of result){
-                centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
-                delete centre2[ligne["idJ"]];
-            }
-            
-            // On récupère les scores des joueurs
-            db.query("SELECT j1.pseudo as pseudo, s.totalPoints/s.nombreParties as scoreMoyenJoueur FROM joueurs j1, statistiques s, joue j WHERE j.idJ=s.idJ AND j.idPartie=? AND s.jeu = '6 Qui Prend' AND j.idJ=j1.idJ", [idPartie], (err2, result2) => {
-                if(err2) throw err2;
-    
-                console.log("Le résultat SQL vaut " + JSON.stringify(result2));
-                // On crée un objet resultat = {pseudoJoueur: scoreMoyen}
-                let resultat = {};
-                for(let ligne of Object.keys(result2)){
-                    console.log("joueur : " + result2[ligne]["pseudo"] + " score : " + result2[ligne]["scoreMoyenJoueur"]);
-                    resultat[result2[ligne]["pseudo"]] = parseInt(result2[ligne]["scoreMoyenJoueur"]);
-                }
-
-                console.log("infoJoueurs2 vaut " + JSON.stringify(infoJoueurs2));
-
-                // On ajoute le score moyen du joueur dans infoJoueurs2
-                for(let i = 0; i < infoJoueurs2.length; i++){
-                    console.log("On veut accéder à l'élément " + infoJoueurs2[i]["pseudo"] + " qui vaut " + resultat[infoJoueurs2[i]["pseudo"]]);
-                    infoJoueurs2[i]["scoreMoyenJoueur"] = resultat[infoJoueurs2[i]["pseudo"]];
-                }
-
-                io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result0[0]["archive"]), draw: 0, infoPlayers: infoJoueurs2, nbTour});
+/**
+ * Envoie les informations d'une partie à ses joueurs
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Server} io Le serveur pour communiquer avec les clients
+ * @param {Number} idPartie L'ID de la partie 
+ */
+var envoyerInfos = function(db, io, idPartie){
+    // On récupère les infos utiles sur la BDD
+    db.query('SELECT pseudo, centre, archive, main, score, tour, type, FLOOR(s.totalPoints/s.nombreParties) as scoreMoyenJoueur from parties p,joue j,joueurs jo, statistiques s where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =? AND j.idJ=s.idJ AND s.jeu = p.type',[idPartie],async(err,result)=>{
+        if(err)reject(err);
+        const infoJoueurs=[];
+        for(i=0;i<result.length;i++){
+            infoJoueurs.push({
+                "nbCards":JSON.parse(result[i].main).length,
+                "pseudo":result[i].pseudo,
+                "score":result[i].score,
+                "scoreMoyenJoueur":result[i].scoreMoyenJoueur
             })
-        });
+        }
+        
+        // On envoie les informations aux joueurs
+        io.to(idPartie).emit('infoGameOut', {center: JSON.parse(result[0]["centre"]), archive: JSON.parse(result[0]["archive"]), draw: 0, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
 }
 

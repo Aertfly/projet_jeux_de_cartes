@@ -81,14 +81,10 @@ var declencherLogique = function(io, socket, db, idPartie, centre){
         // on suppose que le nombre de cartes au centre est égal au nombre de joueurs (assert ?)
         // pas forcément : possiblement reprise après ligne choisie
         
-        // on révèle les cartes : on envoie les infos
-        queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
-            infoPartie(db, idPartie).then((infoJoueurs) => {
-                envoyerInfos(db, io, idPartie, centre, infoJoueurs, nbTour);
-            });
-        });    
+        // On révèle les cartes : on envoie les infos
+        envoyerInfos(db, io, idPartie);
         
-        // on trie les cartes par ordre croissant
+        // On trie les cartes par ordre croissant
         let temp = [];
         
         
@@ -115,7 +111,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre){
                     // On va chercher infoPlayers
                     infoPartie(db, idPartie).then((infoJoueurs) => {
                         // On envoie les dernières infos sur la partie au joueur
-                        envoyerInfos(db, io, idPartie, centre, infoJoueurs, nbTour);
+                        envoyerInfos(db, io, idPartie);
                         
                         db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
                             if (err2) throw err2;
@@ -182,16 +178,7 @@ var declencherLogique = function(io, socket, db, idPartie, centre){
                         
                         // 6 qui prend : le joueur remplace la ligne par sa carte
                         remplacerLigne(io, db, parseInt(carteActuelle[0]), idPartie, ligne, {valeur: carteActuelle[1].valeur, nbBoeufs: carteActuelle[1].nbBoeufs}, centre).then(() => {
-                            queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
-                                queryLine(db, "archive" ,"parties", "idPartie", idPartie).then((archive) => {
-                                    archive = JSON.parse(archive);
-                                    console.log("L'archive qu'on va envoyer est :" + JSON.stringify(archive));
-                                    infoPartie(db, idPartie).then((infoJoueurs) => {
-                                        //console.log("On envoie les infos sur la room d'id " + idPartie);
-                                        envoyerInfos(db, io, idPartie, centre, infoJoueurs, nbTour);
-                                    });    
-                                });
-                            });
+                            envoyerInfos(db, io, idPartie);
                         });
                     } else {  // Sinon : le joueur place simplement sa carte
                         // On ajoute LA carte à la ligne dans archive
@@ -217,12 +204,8 @@ var declencherLogique = function(io, socket, db, idPartie, centre){
                     }
                 }
                 // On envoie les infos mises à jour :
-                queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
-                    infoPartie(db, idPartie).then((infoJoueurs) => {
-                        console.log("On envoie les infos sur la room d'id " + idPartie);
-                        envoyerInfos(db, io, idPartie, centre, infoJoueurs, nbTour);
-                    });
-                });
+                envoyerInfos(db, io, idPartie);
+
             }
         }, 1000);  // On attend 1 seconde
     });
@@ -284,18 +267,12 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
                                 let gagnant = {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]};
 
                                 // On envoie la fin de partie
-                                queryLine(db, "tour", "parties", "idPartie", idPartie).then((nbTour) => {
-                                    queryLine(db, "centre", "parties", "idPartie", idPartie).then((centre) => {
-                                        infoPartie(db, idPartie).then((infoJoueurs) => {
-                                            console.log("On va envoyer les infos")
-                                            envoyerInfos(db, io, idPartie, JSON.parse(centre), infoJoueurs, nbTour);
-                                            setTimeout(() => {
-                                                console.log("Infos envoyées, on envoie endGame");
-                                                io.to(idPartie).emit('endGame', {looser: perdant, winner: gagnant});
-                                            }, 2000);
-                                        });    
-                                    })
-                                });    
+                                console.log("On va envoyer les infos")
+                                envoyerInfos(db, io, idPartie);
+                                setTimeout(() => {
+                                    console.log("Infos envoyées, on envoie endGame");
+                                    io.to(idPartie).emit('endGame', {looser: perdant, winner: gagnant});
+                                }, 2000);
                             });
                         });
                     });
