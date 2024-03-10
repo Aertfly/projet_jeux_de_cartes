@@ -1,6 +1,6 @@
 const { infoPartie, envoyerInfos } = require("../utils/functions.js");
 
-async function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
+async function playerActionBataille(io, socket, db, centre, archive, cartesJoueurs, data){
     // Si archive est vide : on n'est pas dans une bataille
     if (JSON.stringify(archive) == "{}") {
         console.log("On n'est pas dans une bataille");
@@ -9,7 +9,7 @@ async function bataille(io, socket, db, centre, archive, cartesJoueurs, data){
             if (unionJoueursPossibles.length == 1) {
                 finDePartie(io, socket, db, unionJoueursPossibles[0], data.idPartie, cartesJoueurs);
             } else {
-                annoncerScores(io, socket, db, cartesJoueurs, data.idPartie);
+                annoncerScores(io, db, cartesJoueurs, data.idPartie);
                 suite(io, socket, db, data.idPartie, unionJoueursPossibles.length, centre, archive, cartesJoueurs, data);
             }
     } else { // Si archive n'est pas vide : on est dans une bataille
@@ -62,9 +62,14 @@ async function joueursPossibles(db, idPartie){
     });   
 }
 
+/**
+ * Cette fonction retourne une promesse, qui lors de la résolution donnera l'ensemble des mains non vides des joueurs
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Number} idPartie L'ID de la partie
+ * @returns Promesse de renvoyer l'ensemble des mains non vides des joueurs
+ */
 function recupererMains(db, idPartie) {
     console.log("Appel à récupererMains avec idPartie = " + idPartie);
-    // Cette fonction retourne une promesse, qui lors de la résolution donnera l'ensemble des mains non vides des joueurs
 
     return new Promise((resolve, reject) => {
         db.query('SELECT idJ, main, gagnees FROM joue WHERE idPartie = ?', [idPartie], async (err, result) => {
@@ -91,9 +96,15 @@ function recupererMains(db, idPartie) {
     });
 }
 
-
-function annoncerScores(io, socket, db, cartesJoueurs, idPartie) {
-    // Prend en entrée le dictionnaire des cartes et retourne le score de chaque joueur sous la forme d'un dictionnaire idJoueur:score
+/**
+ * Annonce le score des joueurs à partir du dictionnaire des cartes
+ * La donnée envoyée sera sous la forme d'un dictionnaire idJoueur:score
+ * @param {*} io 
+ * @param {*} db 
+ * @param {*} cartesJoueurs Dictionnaire des cartes
+ * @param {Number} idPartie L'ID de la partie
+ */
+function annoncerScores(io, db, cartesJoueurs, idPartie) {
     console.log("Envoi des scores :");
 
     pseudos_id = new Map();
@@ -244,23 +255,43 @@ function suite(io, socket, db, idPartie, nbJoueursPossibles, centre, archive, ca
     }
 }
 
+/**
+ * Gère la fin de partie :
+ * - Envoie sur la route 'winner' le pseudo du gagnant
+ * - Annonce les scores finaux
+ * - Passe le tour à -2 sur la base de données
+ * @param {*} io 
+ * @param {*} socket 
+ * @param {*} db 
+ * @param {*} vainqueur 
+ * @param {*} idPartie 
+ * @param {*} cartesJoueurs 
+ * @param {*} idPartie 
+ */
 function finDePartie(io, socket, db, vainqueur, idPartie, cartesJoueurs, idPartie) {
-    // Envoie sur la route 'winner' le pseudo du gagnant
     io.to(idPartie).emit('winner', vainqueur);
 
-    annoncerScores(io, socket, db, cartesJoueurs, idPartie);
+    annoncerScores(io, db, cartesJoueurs, idPartie);
 
     // Passe le tour à -2
     db.query("UPDATE parties SET tour=? WHERE idPartie=?", [-2, idPartie], async (err, result) => { if (err) throw err; });
 }
 
-// CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE (à partir d'un dictionnaire dont les valeurs sont des cartes)
+/**
+ * CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE
+ * @param {*} cartes Dictionnaire dont les valeurs sont des cartes
+ * @returns L'ensemble des joueurs qui sont en bataille
+ */
 function joueursBataillle(cartes) {
     console.log("joueursBataille retourne la liste " + Object.keys(cartes));
     return Object.keys(cartes);
 }
 
-// CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE (à partir d'un dictionnaire dont les valeurs sont des listes de cartes)
+/**
+ * CALCULE PUIS RETOURNE L'ENSEMBLE DES JOUEURS QUI SONT EN BATAILLE
+ * @param {*} cartes Dictionnaire dont les valeurs sont des listes de cartes
+ * @returns L'ensemble des joueurs qui sont en bataille
+ */
 function joueursBataille2(cartes) {
     var idMax = -1;
     for (var idJ of Object.keys(cartes)) {
@@ -280,9 +311,18 @@ function joueursBataille2(cartes) {
     return retour;
 }
 
+/**
+ * Envoyer à tous les joueurs qui doivent jouer une annonce leur disant que c'est à eux de jouer
+ * par la route 'newTurn' (numeroTour, numeroJoueur)
+ * @param {*} io 
+ * @param {*} db 
+ * @param {*} listeJoueurs 
+ * @param {*} numeroTour 
+ * @param {*} idPartie 
+ * @param {*} centre 
+ * @param {*} archive 
+ */
 function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie , centre , archive) {
-    // Cette fonction devrait envoyer à tous les joueurs qui doivent jouer une annonce leur disant que c'est à eux de jouer
-    // par la route 'newTurn' (numeroTour, numeroJoueur)
     console.log("On attend 5 secondes avant de passer au nouveau tour");
     infoPartie(db, idPartie).then((infoJoueurs) => {
         envoyerInfos(db, io, idPartie, centre, infoJoueurs, numeroTour);
@@ -298,7 +338,12 @@ function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie , centre , a
 }
 
 
-
+/**
+ * Récupère le pseudo d'un joueur dans la BDD à partir de son idJoueur
+ * @param {*} db 
+ * @param {*} idJoueur 
+ * @returns Promesse de renvoyer le pseudo du joueur
+ */
 function recupererPseudo(db, idJoueur) {
     return new Promise((resolve, reject) => {
         db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
@@ -310,7 +355,14 @@ function recupererPseudo(db, idJoueur) {
     });
 }
 
-// On envoie à tous les joueurs le dictionnaire qui comporte l'ensemble des cartes au centre
+/**
+ * Envoie à tous les joueurs le dictionnaire qui comporte l'ensemble des cartes au centre
+ * @param {*} io 
+ * @param {*} socket 
+ * @param {*} centre 
+ * @param {*} db 
+ * @param {*} idPartie 
+ */
 async function reveal(io, socket, centre, db, idPartie) {
     var centreAEnvoyer = {};
     for (const clé of Object.keys(centre)) {
@@ -321,4 +373,4 @@ async function reveal(io, socket, centre, db, idPartie) {
 }
 
 
-module.exports = { bataille, recupererPseudo, recupererMains };
+module.exports = { playerActionBataille, recupererPseudo, recupererMains };

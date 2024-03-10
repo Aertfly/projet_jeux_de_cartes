@@ -1,6 +1,6 @@
 const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
-const { bataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
+const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
 
 const gestionTours = function (io, socket, db) {
 
@@ -50,7 +50,7 @@ const gestionTours = function (io, socket, db) {
                         switch (jeu){
                             case "Bataille": 
                                 // On passe à une logique spécifique à la bataille
-                                bataille(io, socket, db, centre, archive, cartesJoueurs, data);
+                                playerActionBataille(io, socket, db, centre, archive, cartesJoueurs, data);
                                 break;
                             case "6 Qui Prend":
                                 playerActionSQP(io, socket, db, centre, archive, data);
