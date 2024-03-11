@@ -1,4 +1,4 @@
-const { infoPartie, envoyerInfos } = require("../utils/functions.js");
+const { recupererInfosJoueurs, envoyerInfos } = require("../utils/functions.js");
 
 async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data){
     // Si archive est vide : on n'est pas dans une bataille
@@ -99,8 +99,8 @@ function recupererMains(db, idPartie) {
 /**
  * Annonce le score des joueurs à partir du dictionnaire des cartes
  * La donnée envoyée sera sous la forme d'un dictionnaire idJoueur:score
- * @param {*} io 
- * @param {*} db 
+ * @param {Server} io La connexion aux clients
+ * @param {mysql.Connection} db La connexion à la base de données
  * @param {*} cartesJoueurs Dictionnaire des cartes
  * @param {Number} idPartie L'ID de la partie
  */
@@ -130,7 +130,10 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
         console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
-        compterValeurs = {};
+
+        reveal(io, db, idPartie);
+
+        compterValeurs = {};     
 
         for (const clé of Object.keys(centre)) { // Pour chaque carte au centre
             // On compte sa valeur et on l'ajoute dans compterValeurs
@@ -146,8 +149,6 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
         let valeurLaPlusGrande = valeurs[valeurs.length - 1];
 
         if (compterValeurs[valeurLaPlusGrande] == '1') { // si la valeur de carte la plus grande est unique
-            // console.log("La carte la plus grande est unique");
-
             // On récupère le nom du joueur qui a placé la plus grande carte
             let gagnantDeLaBataille = undefined;
             for (const clé of Object.keys(centre)) {
@@ -174,36 +175,32 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                     if (err2) throw err2;
                     gagneesAjoutes = true;
                 });
-
             });
 
             // On vide les deux centres
-            db.query("UPDATE parties SET centre=?, archive=? WHERE idPartie=?", [JSON.stringify({}), JSON.stringify({}), idPartie], async (err2, result2) => { if (err2) throw err2; });
+            db.query("UPDATE parties SET centre=?, archive=? WHERE idPartie=?", [JSON.stringify({}), JSON.stringify({}), idPartie], async (err4, result4) => { if (err4) throw err4; 
 
-            // On incrémente le numéro de tour de 1
-            db.query("UPDATE parties SET tour = tour + 1 WHERE idPartie=?", [idPartie], async (err2, result2) => { if (err2) throw err2; });
+                // On incrémente le numéro de tour de 1
+                db.query("UPDATE parties SET tour = tour + 1 WHERE idPartie=?", [idPartie], async (err2, result2) => { if (err2) throw err2; });
 
-            // On appelle la méthode annoncerJoueurs avec l'ensemble des joueurs : c'est un nouveau tour
-            db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
-                if (err2) throw err2;
-                let joueurs = [];
-                result2.forEach((idJoueur) => {
-                    joueurs.push(idJoueur["idJ"]);
-                });
+                // On appelle la méthode annoncerJoueurs avec l'ensemble des joueurs : c'est un nouveau tour
+                db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
+                    if (err2) throw err2;
+                    let joueurs = [];
+                    result2.forEach((idJoueur) => {
+                        joueurs.push(idJoueur["idJ"]);
+                    });
 
-                // On récupère le numéro de tour actuel
-                db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
-                    if (err3) throw err3;
+                    // On récupère le numéro de tour actuel
+                    db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
+                        if (err3) throw err3;
 
-                    // On annonce un nouveau tour
-                    annoncerJoueurs(io, db, joueurs, result3[0]["tour"], idPartie , centre , archive)
+                        // On annonce un nouveau tour
+                        annoncerJoueurs(io, db, joueurs, result3[0]["tour"], idPartie)
+                    });
                 });
             });
-
         } else { // sinon, il y a bataille
-            console.log("Il y a bataille");
-            console.log(centre);
-
             // On fait la liste des joueurs qui ont posé une carte de cette valeur
             let joueursEnBataille = [];
             for (const clé of Object.keys(centre)) {
@@ -223,9 +220,6 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                 }
             }
 
-            console.log("\nArchive :");
-            console.log(archive);
-
             // On stocke l'archive dans la base de données
             db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err, result) => { if (err) throw err; });
 
@@ -233,8 +227,8 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
             db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
                 if (err3) throw err3;
 
-                // On appelle la méthode annoncerJoueurs avec les joueurs de cette liste : c'est une bataille
-                annoncerJoueurs(io, db, joueursEnBataille, result3[0]["tour"], idPartie , centre , archive)
+                // On appelle la méthode annoncerJoueurs avec les joueurs en bataille
+                annoncerJoueurs(io, db, joueursEnBataille, result3[0]["tour"], idPartie)
             });
         }
     } else {
@@ -308,21 +302,18 @@ function joueursBataille2(cartes) {
  * @param {*} listeJoueurs 
  * @param {*} numeroTour 
  * @param {*} idPartie 
- * @param {*} centre 
- * @param {*} archive 
  */
-function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie , centre , archive) {
+function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
     console.log("On attend 5 secondes avant de passer au nouveau tour");
-    infoPartie(db, idPartie).then((infoJoueurs) => {
-        envoyerInfos(db, io, idPartie, centre, infoJoueurs, numeroTour);
-    });
+    
+    envoyerInfos(db, io, idPartie);
+    
     setTimeout(() => {
         io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
-        infoPartie(db, idPartie).then((infoJoueurs) => {
-            envoyerInfos(db, io, idPartie, {}, infoJoueurs, numeroTour);
-        });
+        envoyerInfos(db, io, idPartie); // envoyer centre vide ?
+        
     }, 5000);
 }
 
@@ -347,18 +338,22 @@ function recupererPseudo(db, idJoueur) {
 /**
  * Envoie à tous les joueurs le dictionnaire qui comporte l'ensemble des cartes au centre
  * @param {*} io 
- * @param {*} socket 
- * @param {*} centre 
  * @param {*} db 
  * @param {*} idPartie 
  */
-async function reveal(io, centre, db, idPartie) {
-    var centreAEnvoyer = {};
-    for (const clé of Object.keys(centre)) {
-        const recuperer = await recupererPseudo(db, clé); 
-        centreAEnvoyer[recuperer] = centre[clé];
-    }
-    io.to(idPartie).emit('reveal', centreAEnvoyer);
+async function reveal(io, db, idPartie) {
+    db.query("SELECT centre FROM parties WHERE idPartie=?", [idPartie], async (err, result) => {
+        if (err) throw err;
+        centre = JSON.parse(result[0]["centre"]);
+        var centreAEnvoyer = {};
+        for (const clé of Object.keys(centre)) {
+            const recuperer = await recupererPseudo(db, clé); 
+            centreAEnvoyer[recuperer] = centre[clé];
+        }
+        console.log("On envoie un reveal :");
+        console.log(JSON.stringify(centreAEnvoyer));
+        io.to(idPartie).emit('reveal', centreAEnvoyer);
+    });
 }
 
 

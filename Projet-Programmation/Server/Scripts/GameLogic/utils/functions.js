@@ -53,7 +53,7 @@ function recupererInfosJoueurs(db, idParty){
  */
 var envoyerInfos = function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
-    db.query('SELECT pseudo, centre, archive, main, score, tour, type, FLOOR(s.totalPoints/s.nombreParties) as scoreMoyenJoueur from parties p,joue j,joueurs jo, statistiques s where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =? AND j.idJ=s.idJ AND s.jeu = p.type',[idPartie],async(err,result)=>{
+    db.query('SELECT jo.pseudo,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
         const infoJoueurs=[];
         for(i=0;i<result.length;i++){
