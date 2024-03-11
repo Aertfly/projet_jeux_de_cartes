@@ -1,3 +1,10 @@
+
+/**
+ * Ajoute les scores des joueurs d'une partie aux statistiques dans la base de données
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Number} idPartie L'ID de la partie
+ * @returns Promesse d'envoyer une résolution vide quand les scores auront été ajoutés
+ */
 function ajouterScores(db, idPartie){
     return new Promise((resolve, reject) => {
         // On ajoute les joueurs à 0
@@ -15,19 +22,25 @@ function ajouterScores(db, idPartie){
     });
 }
 
-function infoPartie(db, idParty){
+/**
+ * Renvoie les infos de la partie
+ * @param {mysql.Connection} db La connexion à la base de données 
+ * @param {Number} idParty L'ID de la partie
+ * @returns Promesse de renvoyer les infos des joueurs (liste composée de dictionnaires {nbCards, pseudo, score})
+ */
+function recupererInfosJoueurs(db, idParty){
     return new Promise((resolve, reject) => {
         db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',[idParty],async(err,result)=>{
             if(err)reject(err);
-            const infoPlayers=[];
+            const infosJoueurs=[];
             for(i=0;i<result.length;i++){
-                infoPlayers.push({
+                infosJoueurs.push({
                     "nbCards":JSON.parse(result[i].main).length,
                     "pseudo":result[i].pseudo,
                     "score":result[i].score,
                 })
             }
-            resolve(infoPlayers);
+            resolve(infosJoueurs);
         });
     });
 };
@@ -57,4 +70,4 @@ var envoyerInfos = function(db, io, idPartie){
     });
 }
 
-module.exports = {ajouterScores, infoPartie, envoyerInfos};
+module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos};

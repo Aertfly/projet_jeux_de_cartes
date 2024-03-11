@@ -1,9 +1,7 @@
-/*Exemple liste cartes :[{"enseigne":"Pique","valeur":10},{"enseigne":"Carreau","valeur":6}]*/
-
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
-        db.query("SELECT idJ, type, sauvegarde, tour, proprietaire,joueursMin FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
+        db.query("SELECT idJ, type, sauvegarde, tour, proprietaire, joueursMin FROM joue j,parties p where j.idPartie = p.idPartie and p.idPartie = ?", data.idParty, async(err, rawResult) => {
             if (err) throw (err);
             console.log("Data Partie",rawResult);
             let msg = testPreCond(rawResult,data.idPlayer);
@@ -15,8 +13,8 @@ const startGame = function(io,socket,db){
                     
                     db.query("UPDATE parties SET sauvegarde=0 WHERE idPartie = ?;", data.idParty, async(err, result) => {
                         if (err) throw (err);
-                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart',  {'idParty':data.idParty,'type':rawResult[0].type}): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à update la valeur de sauvegarde"});
-                        console.log("Tentative de lancement d'une partie sauvegardé",data.idParty);
+                        (result.changedRows == 1) ? io.to(data.idParty).emit('gameStart',  {'idParty':data.idParty,'type':rawResult[0].type}): io.to(data.idParty).emit('gameStart', {'message':"Erreur serveur : n'a pas réussi à mettre à jour la valeur de sauvegarde"});
+                        console.log("Tentative de lancement d'une partie sauvegardée",data.idParty);
                     });
                 } else {
                     // Si la partie n'est pas sauvegardée
@@ -26,10 +24,10 @@ const startGame = function(io,socket,db){
                         case "Bataille":
                             playerHands = dealCardsWar(nbPlayers);
                             break;
-                        case "6 Qui Prend"://traduit en SQP pour le reste du code
+                        case "6 Qui Prend":
                             playerHands = dealCardsSQP(nbPlayers,db,data.idParty);
                             if(playerHands.length == 0){
-                                io.to(data.idParty).emit('gameStart', {'message':"Probléme lors de l'accés à la base de donnée"});
+                                io.to(data.idParty).emit('gameStart', {'message':"Problème lors de l'accès à la base de données"});
                                 return;
                             }
                             break;
