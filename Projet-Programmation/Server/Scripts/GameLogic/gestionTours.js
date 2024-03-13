@@ -52,7 +52,7 @@ const gestionTours = function (io, socket, db) {
                         switch (jeu){
                             case "Bataille": 
                                 // On passe à une logique spécifique à la bataille
-                                playerActionBataille(io, db, centre, archive, cartesJoueurs, data);
+                                playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket);
                                 break;
                             case "6 Qui Prend":
                                 playerActionSQP(io, db, centre, data);
