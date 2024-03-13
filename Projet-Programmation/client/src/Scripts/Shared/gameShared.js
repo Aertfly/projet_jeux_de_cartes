@@ -38,10 +38,10 @@ function generatePointWonCards(nb, widthCards, heightCards){
     let y=150;
 
     for (var i = 0; i < nb; i++) {
-        console.log(listPoints);
+        cpt++;
         if(cpt==6){y+=heightCards;x=0;cpt=0;}
-        x+=widthCards;
         listPoints.push({'x':x,'y':y});
+        x+=widthCards;
     }
     return listPoints;
 

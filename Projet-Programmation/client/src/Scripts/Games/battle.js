@@ -8,7 +8,7 @@ function WonCardComponent(){
     const {socket, idParty , idJ} = useOutletContext();
     const [showModal, setShowModal] = useState(false);
     const [wonCards,setWonCards] = useState([]);
-    const pointsCards = generatePointWonCards(wonCards.length, 75, 100);
+    const pointsCards = generatePointWonCards(wonCards.length, 100, 150);
 
     const customStyles = {
         content: {
