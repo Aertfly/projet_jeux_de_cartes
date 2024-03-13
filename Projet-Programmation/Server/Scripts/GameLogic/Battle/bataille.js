@@ -131,7 +131,8 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
         console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
 
-        reveal(io, db, idPartie);
+        envoyerInfos(db, io, idPartie);
+        // reveal(io, db, idPartie);
 
         compterValeurs = {};     
 
@@ -183,7 +184,6 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                 // On incrémente le numéro de tour de 1
                 db.query("UPDATE parties SET tour = tour + 1 WHERE idPartie=?", [idPartie], async (err2, result2) => { if (err2) throw err2; });
 
-                // On appelle la méthode annoncerJoueurs avec l'ensemble des joueurs : c'est un nouveau tour
                 db.query("SELECT idJ FROM joue WHERE idPartie=?", [idPartie], async (err2, result2) => {
                     if (err2) throw err2;
                     let joueurs = [];
@@ -220,8 +220,9 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                 }
             }
 
+
             // On stocke l'archive dans la base de données
-            db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(archive), idPartie], (err, result) => { if (err) throw err; });
+            db.query("UPDATE parties SET centre=?, archive=? WHERE idPartie=?", [JSON.stringify({}), JSON.stringify(archive), idPartie], (err, result) => { if (err) throw err; });
 
             // On récupère le numéro de tour actuel
             db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
@@ -305,15 +306,14 @@ function joueursBataille2(cartes) {
  */
 function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
     console.log("On attend 5 secondes avant de passer au nouveau tour");
-    
-    envoyerInfos(db, io, idPartie);
-    
+        
+    // envoyerInfos(db, io, idPartie);
+
     setTimeout(() => {
         io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
         console.log("On a envoyé newTurn :");
         console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
-        envoyerInfos(db, io, idPartie); // envoyer centre vide ?
-        
+        envoyerInfos(db, io, idPartie);
     }, 5000);
 }
 
