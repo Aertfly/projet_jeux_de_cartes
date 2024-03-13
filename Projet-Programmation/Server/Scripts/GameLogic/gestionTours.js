@@ -1,6 +1,7 @@
 const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
+const { envoyerCartesGagnees } = require('./utils/functions.js');
 
 const gestionTours = function (io, socket, db) {
 
@@ -10,6 +11,7 @@ const gestionTours = function (io, socket, db) {
         // On dit à tous les joueurs que le joueur en question a joué une carte
         recupererPseudo(db, data.playerId).then((data2) => {
             io.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": data2, "natureAction": data.action });
+            // TODO : exclure le joueur qui a envoyé la carte
         });
 
         // On stocke dans "cartesJoueurs" l'ensemble des mains des joueurs
@@ -98,6 +100,20 @@ const gestionTours = function (io, socket, db) {
             switch (result[0]["type"]){
                 case "6 Qui Prend":
                     ligneSQP(io, db, data);
+                    break;
+                default:
+                    throw "Jeu inconnu";
+            }
+        });
+
+    })
+
+    socket.on("requestWonCards", (data) => {
+        // On regarde dans quel jeu on est
+        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
+            switch (result[0]["type"]){
+                case "Bataille":
+                    envoyerCartesGagnees(db, socket, data);
                     break;
                 default:
                     throw "Jeu inconnu";

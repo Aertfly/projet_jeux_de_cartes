@@ -53,7 +53,7 @@ function recupererInfosJoueurs(db, idParty){
  */
 var envoyerInfos = function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
-    db.query('SELECT jo.pseudo,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
+    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
         const infoJoueurs=[];
         for(i=0;i<result.length;i++){
@@ -64,10 +64,32 @@ var envoyerInfos = function(db, io, idPartie){
                 "scoreMoyenJoueur":result[i].scoreMoyenJoueur
             })
         }
+
+        let centre2 = JSON.parse(result[0]["centre"]);
+        for(ligne of result){
+            centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
+            delete centre2[ligne["idJ"]];
+        }
+
+        console.log("On envoie le centre qui vaut " + JSON.stringify(centre2));
         
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: JSON.parse(result[0]["centre"]), archive: JSON.parse(result[0]["archive"]), draw: 0, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: 0, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
 }
 
-module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos};
+var envoyerCartesGagnees = function(db, socket, data){
+    db.query("SELECT gagnees from joue where idPartie = ? and idJ = ?; ",[data.idParty,data.idJ],async(err,result)=>{
+        if (err)throw(err);
+        if (result.length != 0){
+            //console.log(result);
+            //console.log(result[0].main);
+            console.log("On envoie les cartes gagnées au joueur ",data.idJ)
+            socket.emit("dealingWonCards",{'Cards':JSON.parse(result[0].gagnees)});
+        }else{
+            console.log("Erreur d'envoi des cartes gagnées : ",result,data.idParty,data.idJ)
+        }
+    });
+}
+
+module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos, envoyerCartesGagnees};
