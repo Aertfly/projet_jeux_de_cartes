@@ -77,7 +77,7 @@ function Chat({ data }) {
         style={{ position: 'fixed', bottom: '50px', right: '50px', width: '280px', height: '50px' }}
         value={texte}
         onChange={(e) => setTexte(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyPress}
         placeholder="Envoyer un message"
       />
     </div>

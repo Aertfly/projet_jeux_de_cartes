@@ -110,7 +110,7 @@ const gestionTours = function (io, socket, db) {
 
     socket.on("requestWonCards", (data) => {
         // On regarde dans quel jeu on est
-        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
+        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idParty], async (err, result) => {
             switch (result[0]["type"]){
                 case "Bataille":
                     envoyerCartesGagnees(db, socket, data);

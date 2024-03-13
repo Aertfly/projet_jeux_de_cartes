@@ -30,6 +30,23 @@ function circlePoints(r, nb) {
     return positions;
 }
 
+
+function generatePointWonCards(nb, widthCards, heightCards){
+    const listPoints = [];
+    let cpt =0;
+    let x=0;
+    let y=150;
+
+    for (var i = 0; i < nb; i++) {
+        console.log(listPoints);
+        if(cpt==6){y+=heightCards;x=0;cpt=0;}
+        x+=widthCards;
+        listPoints.push({'x':x,'y':y});
+    }
+    return listPoints;
+
+}
+
 function generatePointCards(nb, widthCards, heightCards) {
     const width = window.innerWidth;
     const listPoints = [];
@@ -120,4 +137,4 @@ function quadrillagePoints() {
 }*/
 
 
-export  {cardImgName,importImages,generatePointCards,circlePoints,quadrillagePoints}
+export  {cardImgName,importImages,generatePointCards,generatePointWonCards,circlePoints,quadrillagePoints}

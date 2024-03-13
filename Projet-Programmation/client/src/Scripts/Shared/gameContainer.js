@@ -95,9 +95,6 @@ function GameContainer(){
                 setCards(data.Cards);
             });
 
-            socket.on('dealingWonCards',(data)=>{
-                console.log("Cartes gagnées reçu",data)
-            });
 
             socket.on('infoGameOut', (data) => {
                 console.log("Info de la partie", data);
@@ -155,7 +152,7 @@ function GameContainer(){
         }
         fetchInfoServ();
         return cleanup;
-    },[ idJ, idParty, navigate, setCards, setInfo, setMyAction, setOtherPlayerAction, socket]);
+    },[ ]);
 
     return (
         <>
