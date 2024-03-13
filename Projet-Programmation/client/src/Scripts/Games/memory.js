@@ -4,8 +4,7 @@ import {cardImgName,importImages,generatePointCards,circlePoints,quadrillagePoin
 
 
 function memory(){
-
-    useEffect()
+    const {/*n'importe qu'elle variable du context*/} = useOutletContext();
 
     return (
         <></>

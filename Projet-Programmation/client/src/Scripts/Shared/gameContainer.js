@@ -95,6 +95,10 @@ function GameContainer(){
                 setCards(data.Cards);
             });
 
+            socket.on('dealingWonCards',(data)=>{
+                console.log("Cartes gagnées reçu",data)
+            });
+
             socket.on('infoGameOut', (data) => {
                 console.log("Info de la partie", data);
                 setInfo(data);
@@ -139,7 +143,6 @@ function GameContainer(){
                     socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
                 }
             });
-            console.log("Avant",socket);
             socket.emit('infoGame', idParty);
             socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });;
         }

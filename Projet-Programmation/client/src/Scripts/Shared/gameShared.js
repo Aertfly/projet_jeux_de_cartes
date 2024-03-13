@@ -10,7 +10,6 @@ function importImages(gameName){
             context.keys().map((key) => [key, context(key)])
         );
     };
-    console.log('../img/' + gameName)
     return importAll(require.context('../../Assets/img/Battle', false, /\.(png)$/));
 }
 
@@ -93,6 +92,31 @@ function quadrillagePoints() {
             <Card x={midX} y={midY} />
         </div>
     );
+
+    function Center() {
+    const { Info } = useOutletContext()
+    const [cardsPositions, setCardsPositions] = useState([]);
+    const center = Info.center;
+    var numberOfCards = center ? center.length : 0;
+    useEffect(() => {
+        const handleResize = () => {
+            setCardsPositions(circlePoints(100, numberOfCards));
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    },[numberOfCards]);
+
+    return (
+        <div>
+            {cardsPositions.map((position, index) => (
+                <Card x={position.x} y={position.y} value={center[index]} />
+            ))}
+        </div>
+    );
+}
 }*/
 
 

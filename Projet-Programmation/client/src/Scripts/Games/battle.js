@@ -8,7 +8,7 @@ import {cardImgName,importImages,generatePointCards,circlePoints} from '../Share
 
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
-    const { Info, OtherPlayerAction } = useOutletContext();
+    const { Info } = useOutletContext();
     const infoPlayers = Info.infoPlayers
     var numberOfPlayers = infoPlayers ? infoPlayers.length : 0;
 
@@ -22,6 +22,7 @@ function GameBoard() {
             window.removeEventListener('resize', handleResize);
         };
     }, [numberOfPlayers]);
+
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
@@ -81,21 +82,21 @@ function CardsHand() {
     return (
         <div>
             {cards.map((card, index) =>
-                <CardHand value={card} x={pointsCards.x[index]} y={pointsCards.y} />
+                <CardHand key={index} value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
         </div>
     );
 }
 
 
-function Player(props) {
-    const { pseudo,OtherPlayerAction, myAction, Info} = useOutletContext();
+function Player(props) { 
+    const { pseudo, OtherPlayerAction, myAction, Info} = useOutletContext();
     const playerStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
     };
-    console.log("Action autres",OtherPlayerAction);
+    console.log("Action autres",OtherPlayerAction); 
     return (
         <div className="battle-player" style={playerStyle}>
             {(props.pseudo === pseudo)? <p>{myAction == "jouerCarte" ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
@@ -108,13 +109,12 @@ function Player(props) {
 function Card(props) {
     const { images } = useOutletContext();
     const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
-    console.log("CARTE ", props.value);
     const cardStyle = {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '100px', // Ajustez la largeur selon vos besoins
-        height: '150px', // Ajustez la hauteur selon vos besoins
+        width: '100px', 
+        height: '150px', 
         textAlign: 'center',
         padding: '10px',
     };
@@ -123,34 +123,10 @@ function Card(props) {
     );
 }
 
-function Center() {
-    const { Info } = useOutletContext()
-    const [cardsPositions, setCardsPositions] = useState([]);
-    const center = Info.center;
-    var numberOfCards = center ? center.length : 0;
-    useEffect(() => {
-        const handleResize = () => {
-            setCardsPositions(circlePoints(100, numberOfCards));
-        };
-        window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    },[numberOfCards]);
 
-    return (
-        <div>
-            {cardsPositions.map((position, index) => (
-                <Card x={position.x} y={position.y} value={center[index]} />
-            ))}
-        </div>
-    );
-}
 
 function Battle() {
     const {Info,setImages} = useOutletContext()
-
 
     useEffect(() => {
         const fetchInfoServ = async () => {
