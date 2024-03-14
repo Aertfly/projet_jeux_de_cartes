@@ -30,13 +30,11 @@ function circlePoints(r, nb) {
     return positions;
 }
 
-
 function generatePointWonCards(nb, widthCards, heightCards){
     const listPoints = [];
     let cpt =0;
     let x=0;
     let y=150;
-
     for (var i = 0; i < nb; i++) {
         cpt++;
         if(cpt==6){y+=heightCards;x=0;cpt=0;}

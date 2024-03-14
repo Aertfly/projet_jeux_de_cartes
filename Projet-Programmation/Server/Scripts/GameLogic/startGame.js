@@ -33,7 +33,7 @@ const startGame = function(io,socket,db){
                             break;
                         /* Exemple ajout autre jeu :
                         case "poker":
-                            const handPlayers = dealCardsPoker(nbPlayers);
+                            handPlayers = dealCardsPoker(nbPlayers);
                             break;*/    
                         default:
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux pourra être implémenté ce qui rendra cette partie obsolète
@@ -73,7 +73,8 @@ const startGame = function(io,socket,db){
             }
         });
     });
-}   
+}
+
 
 
 function testPreCond(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
@@ -81,7 +82,7 @@ function testPreCond(rawResult,id){//vérifie la conformité des informations de
     if((rawResult[0].tour>=0)&&(!rawResult[0].sauvegarde))return "Partie déja en cours";
     let isNotInParty = true;
     var cpt =0;
-    for(i=0;i<rawResult.length;i++){
+    for(let i=0;i<rawResult.length;i++){
         if(rawResult[i]['idJ']==id){
             isNotInParty = false;
             if(!(rawResult[i]['proprietaire']))return "Vous n'êtes pas proprietaire";//le champ proprietaire vaut 1 si il est proprietaire de la partie donc true sinon 0 donc false
@@ -94,8 +95,20 @@ function testPreCond(rawResult,id){//vérifie la conformité des informations de
     return null;
 }
 
+const createSens = async function(db,idParty){
+    db.query('Select idj from joue jo,joueur j,parties p where j.idJ=jo.idj and jo.idPartie=j.idPartie and p.idPartie=?',[idParty],async(err,result)=>{
+        if (err)throw(err);
+        const IdPlayerList = result.map(object => object.idJ);
+        IdPlayerList = FYK(IdPlayerList);
+        db.query('Update parties SET sens=? where idPartie=?',[IdPlayerList,idParty],async(err,result)=>{
+        if (err)throw(err);
+        console.log((result.changedRows == 1) ? "Update sens réussi !":"Update sens raté :(");
+        });
+    });
+}
+
 function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
-    for (i=0;i<nbPlayers;i++){
+    for (let i=0;i<nbPlayers;i++){
         var hand = JSON.stringify(playerHands[i]);
         var idJ = IdPlayerList[i];
         db.query("UPDATE joue SET main =?  WHERE idJ=? ANd idPartie=? ",[hand, idJ,idParty],async(err,result)=>{
@@ -112,7 +125,7 @@ function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
 //algorithme Fisher-Yates, également appelé mélange de Knuth
 function FYK(list){
     len = list.length;
-    for (j=len-1;j>0;j--){
+    for (let j=len-1;j>0;j--){
         const i = Math.floor(Math.random() * (len-1));
         [list[j],list[i]]=[list[i],list[j]];
     }
@@ -124,7 +137,7 @@ function generateDraw(familyList,nbCards){
     var len = familyList.length;
     //console.log(len,familyList,nbCards);
     res = [];
-    for (i=0 ; i<len;i++){
+    for (let i=0 ; i<len;i++){
         for(j=1 ; j<=nbCards; j++){
             res.push({
                 "enseigne" : familyList[i],
@@ -135,11 +148,13 @@ function generateDraw(familyList,nbCards){
     return FYK(res);
 }
 
+
+
 function generateDrawSQP(){
     var len = 104;
     var nbBoeufs = 0;   
     res = [];
-    for (i=1 ; i<=len;i++){
+    for (let i=1 ;i<=len;i++){
         const lastNumber = i%10;
         if(lastNumber === 5) nbBoeufs +=2;
         if(lastNumber === 0) nbBoeufs += 3;
@@ -153,6 +168,7 @@ function generateDrawSQP(){
     }
     return FYK(res);
 }
+
 
 function dealCardsSQP(nbPlayers,db,idParty){
     const draw = generateDrawSQP();
@@ -202,19 +218,19 @@ function reDealCardsSQP(io, nbPlayers,db,idParty,IdPlayerList){
 function dealCardsWar(nbPlayers){
     const draw = generateDraw(["pique","carreau","trefle","coeur"],13);
     const playerHands = []; // Array(nbPlayers).fill([]) fait pointer chaque case vers la même liste vide
-    for(i=0;i<nbPlayers;i++){
+    for(let i=0;i<nbPlayers;i++){
         const li = [];
         playerHands.push(li);
     }//On a généré une liste de liste vide avec chaque liste vide correspondante à la main d'un joueur
     const len = draw.length;//éviter de calculer la longueur à chaque itération
-    for(i=0;i<len;i++){
+    for(let i=0;i<len;i++){
         var index = i % nbPlayers;
         (playerHands[index]).push(draw[i]);
     }
     return playerHands;
 }
 
-module.exports = {startGame,reDealCardsSQP};
+module.exports = {startGame,reDealCardsSQP,regenDraw,createSens};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 100 millions : {
@@ -243,3 +259,5 @@ var test =JSON.stringify(liste)
 dico[test] ++;
 }
 console.log(dico);*/ 
+
+

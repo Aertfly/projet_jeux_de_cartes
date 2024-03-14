@@ -1,4 +1,4 @@
-
+const {createSens} = require('../startGame');
 /**
  * Ajoute les scores des joueurs d'une partie aux statistiques dans la base de données
  * @param {mysql.Connection} db La connexion à la base de données
@@ -51,7 +51,7 @@ function recupererInfosJoueurs(db, idParty){
  * @param {Server} io Le serveur pour communiquer avec les clients
  * @param {Number} idPartie L'ID de la partie 
  */
-var envoyerInfos = function(db, io, idPartie){
+const envoyerInfos = function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
     db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
@@ -78,7 +78,7 @@ var envoyerInfos = function(db, io, idPartie){
     });
 }
 
-var envoyerCartesGagnees = function(db, socket, data){
+const envoyerCartesGagnees = function(db, socket, data){
     db.query("SELECT gagnees from joue where idPartie = ? and idJ = ?; ",[data.idParty,data.idJ],async(err,result)=>{
         if (err)throw(err);
         if (result.length != 0){
@@ -92,4 +92,47 @@ var envoyerCartesGagnees = function(db, socket, data){
     });
 }
 
-module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos, envoyerCartesGagnees};
+
+
+/**
+ * @param {*} db connnection to the database
+ * @returns the value of the field sens in the db;
+ */
+async function getSens(db){
+    db.query("Select sens from parties where idPartie=?",[idParty],async(err,result)=>{
+        if(err)throw err;
+        if (result.length===0)return null;
+        return JSON.parse(result[0]['sens']);
+    });
+}
+
+/**
+ * Retrieve the value of the idJ of the player who has to play
+ * @param {*} db connnection to the database
+ * @returns the idJ of the player who has to play
+ */
+async function currentPlayerTurn(db){
+    const sens = getSens(db);
+    await sens;
+    return sens[0];
+}
+
+/**
+ * Iterate to the next player in the db, Incremente turn if the turn is finished 
+ * @param {*} io connection to the server React
+ * @param {*} db connnection to the database
+ * @param {String} idParty unique identifiant of the party
+ * @param {Int} turn the number of turn 
+ * @returns the value of turn
+ */
+async function nextPlayerTurn(io,db,idParty,turn){
+    const sens = getSens(db);
+    await sens;
+    const nextIdPlayer = sens.splice(0,1);
+    io.to(data.idParty).emit('newTurn',{joueurs:[nextIdPlayer]});//A modifier ? 
+    if(sens.lenght===0){createSens(db,idParty);return turn++};
+    return turn;
+}
+
+
+module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn};

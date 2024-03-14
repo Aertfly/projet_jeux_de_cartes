@@ -3,6 +3,7 @@ const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
 const { envoyerCartesGagnees } = require('./utils/functions.js');
 
+
 const gestionTours = function (io, socket, db) {
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
