@@ -98,25 +98,27 @@ const envoyerCartesGagnees = function(db, socket, data){
  * @param {*} db connnection to the database
  * @returns the value of the field sens in the db;
  */
-async function getSens(db){
-    db.query("Select sens from parties where idPartie=?",[idParty],async(err,result)=>{
-        if(err)throw err;
-        if (result.length===0)return null;
-        return JSON.parse(result[0]['sens']);
-    });
+function getSens(db,idParty){
+    return new Promise((resolve, reject) => {
+        db.query("Select sens from parties where idPartie=?",[idParty],async(err,result)=>{
+            if(err)reject(err);
+            if (result.length===0)resolve(null);
+            resolve(JSON.parse(result[0]['sens']));
+        });
+    })
 }
-
 /**
  * Retrieve the value of the idJ of the player who has to play
  * @param {*} db connnection to the database
  * @returns the idJ of the player who has to play
  */
-async function currentPlayerTurn(db){
-    const sens = getSens(db);
-    await sens;
-    return sens[0];
+function currentPlayerTurn(db,idParty){
+    return new Promise((resolve)=>{
+        getSens(db,idParty).then((sens)=>{
+            resolve(sens[0]);
+        });
+    });
 }
-
 /**
  * Iterate to the next player in the db, Incremente turn if the turn is finished 
  * @param {*} io connection to the server React
@@ -125,13 +127,19 @@ async function currentPlayerTurn(db){
  * @param {Int} turn the number of turn 
  * @returns the value of turn
  */
-async function nextPlayerTurn(io,db,idParty,turn){
-    const sens = getSens(db);
-    await sens;
-    const nextIdPlayer = sens.splice(0,1);
-    io.to(data.idParty).emit('newTurn',{joueurs:[nextIdPlayer]});//A modifier ? 
-    if(sens.lenght===0){createSens(db,idParty);return turn++};
-    return turn;
+function nextPlayerTurn(io,db,idParty,turn){
+    return new Promise((resolve,reject)=>{
+        getSens(db,idParty).then((sens)=>{
+            const nextIdPlayer = sens.splice(0,1);
+            io.to(idParty).emit('newTurn',{joueurs:[nextIdPlayer]});//A modifier ? 
+            if(sens.lenght===0){createSens(db,idParty);return turn++};
+            db.query('Update parties SET sens=? where idPartie=?',[JSON.stringify(sens),idParty],async(err,result)=>{
+                if (err)reject(err);
+                console.log((result.changedRows == 1) ? "Update sens réussi !":"Update sens raté ");
+                resolve(turn);
+            });
+        });
+    });
 }
 
 
