@@ -71,8 +71,6 @@ const envoyerInfos = function(db, io, idPartie){
             delete centre2[ligne["idJ"]];
         }
 
-        console.log("On envoie le centre qui vaut " + JSON.stringify(centre2));
-        
         // On envoie les informations aux joueurs
         io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: 0, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });

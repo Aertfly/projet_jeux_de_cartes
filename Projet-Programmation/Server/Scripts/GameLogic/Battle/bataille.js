@@ -66,7 +66,7 @@ async function joueursPossibles(db, idPartie){
  * @returns Promesse de renvoyer l'ensemble des mains non vides des joueurs
  */
 function recupererMains(db, idPartie) {
-    console.log("Appel à récupererMains avec idPartie = " + idPartie);
+    // console.log("Appel à récupererMains avec idPartie = " + idPartie);
 
     return new Promise((resolve, reject) => {
         db.query('SELECT idJ, main, gagnees FROM joue WHERE idPartie = ?', [idPartie], async (err, result) => {
@@ -102,7 +102,7 @@ function recupererMains(db, idPartie) {
  * @param {Number} idPartie L'ID de la partie
  */
 function annoncerScores(io, db, cartesJoueurs, idPartie) {
-    console.log("Envoi des scores :");
+    // console.log("Envoi des scores :");
 
     pseudos_id = new Map();
     db.query("SELECT idJ, pseudo FROM joueurs", [], async (err, result) => {
@@ -125,7 +125,7 @@ function annoncerScores(io, db, cartesJoueurs, idPartie) {
 function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoueurs, data, socket) {
     console.log("Joueurs : " + Object.keys(centre).length + "/" + nbJoueursPossibles);
     if (Object.keys(centre).length == nbJoueursPossibles) { // si le joueur est le dernier à jouer = si le nombre de cartes dans le premier centre est égal au nombre de joueurs qui peuvent jouer
-        console.log("Le joueur est le dernier à jouer, on déclenche la logique");
+        // console.log("Le joueur est le dernier à jouer, on déclenche la logique");
         // on lance la bataille
 
         envoyerInfos(db, io, idPartie);
@@ -142,7 +142,7 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
         }
 
         let valeurs = Object.keys(compterValeurs); // valeurs comptient la liste des valeurs jouées
-        valeurs.sort();
+        valeurs.sort(function(a, b){return a-b}); // On fournit une fonction de comparaison pour trier correctement les valeurs
         let valeurLaPlusGrande = null;
         if(valeurs.includes("1")){ // S'il y a un as, c'est la valeur la plus grande
             valeurLaPlusGrande = 1;
@@ -159,7 +159,7 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                     gagnantDeLaBataille = clé;
                 }
             }
-            console.log("Pli remporté par " + gagnantDeLaBataille);
+            // console.log("Pli remporté par " + gagnantDeLaBataille + " sur la base de " + JSON.stringify(centre) + " ; valeurs = " + JSON.stringify(valeurs) + " ; valeurLaPlusGrande = " + JSON.stringify(valeurLaPlusGrande));
             // On ajoute à ses cartes gagnées toutes les cartes des deux centres
             db.query("SELECT gagnees FROM joue WHERE idJ=? AND idPartie=?", [gagnantDeLaBataille, idPartie], async (err, result) => {
                 if (err) throw err;
@@ -251,10 +251,9 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
             if (resultCartes.length != 0){
                 //console.log(result);
                 //console.log(result[0].main);
-                console.log("On envoie les cartes au joueur ",data.playerId, " ", resultCartes[0].main);
                 socket.emit("dealingCards",{'Cards':JSON.parse(resultCartes[0].main)});
             }else{
-                console.log("Erreur envoie cartes :",resultCartes,idPartie,data.playerId)
+                console.log("Erreur envoi cartes :",resultCartes,idPartie,data.playerId)
             }
         });
 }
@@ -317,8 +316,7 @@ function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
 
     setTimeout(() => {
         io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
-        console.log("On a envoyé newTurn :");
-        console.log({ "numeroTour": numeroTour, "joueurs": listeJoueurs });
+        console.log("On a envoyé newTurn aux joueurs " + JSON.stringify(listeJoueurs));
         envoyerInfos(db, io, idPartie);
     }, 500);
 }

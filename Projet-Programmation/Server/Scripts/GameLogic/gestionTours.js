@@ -7,7 +7,7 @@ const { envoyerCartesGagnees } = require('./utils/functions.js');
 const gestionTours = function (io, socket, db) {
 
     socket.on("playerAction", (data) => { // Data doit contenir l'id de la partie
-        console.log("joueur " + data.playerId + " " + data.action + " " + data.carte.enseigne + " " + data.carte.valeur);
+        // console.log("joueur " + data.playerId + " " + data.action + " " + data.carte.enseigne + " " + data.carte.valeur);
 
         // On dit à tous les joueurs que le joueur en question a joué une carte
         recupererPseudo(db, data.playerId).then((data2) => {
