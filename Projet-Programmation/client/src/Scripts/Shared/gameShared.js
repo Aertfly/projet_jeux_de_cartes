@@ -30,21 +30,23 @@ function circlePoints(r, nb) {
     return positions;
 }
 
-function generatePointWonCards(nb, widthCards, heightCards){
+function generatePointWonCards(nb, widthCards, heightCards) {
     const listPoints = [];
-    let cpt =0;
-    let x=0;
-    let y=150;
-    for (var i = 0; i < nb; i++) {
-        cpt++;
-        if(cpt==6){y+=heightCards;x=0;cpt=0;}
-        listPoints.push({'x':x,'y':y});
-        x+=widthCards;
+    const rows = Math.ceil(nb / 5); 
+    const cols = Math.min(nb, 5); 
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const index = y * cols + x; 
+        if (index >= nb) break; 
+        listPoints.push({
+          x: x * widthCards, 
+          y: 150+ y * heightCards 
+        });
+      }
     }
+  
     return listPoints;
-
-}
-
+  }
 function generatePointCards(nb, widthCards, heightCards) {
     const width = window.innerWidth;
     const listPoints = [];
