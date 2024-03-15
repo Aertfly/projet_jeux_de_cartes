@@ -230,7 +230,7 @@ function dealCardsWar(nbPlayers){
     return playerHands;
 }
 
-module.exports = {startGame,reDealCardsSQP,regenDraw,createSens};
+module.exports = {startGame,reDealCardsSQP,createSens};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 100 millions : {

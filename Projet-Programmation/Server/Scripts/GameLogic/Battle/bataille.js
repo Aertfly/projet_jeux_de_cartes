@@ -144,9 +144,10 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
         let valeurs = Object.keys(compterValeurs); // valeurs comptient la liste des valeurs jouées
         valeurs.sort();
         let valeurLaPlusGrande = null;
-        if(valeurs.includes(1)){ // S'il y a un as, c'est la valeur la plus grande
+        if(valeurs.includes("1")){ // S'il y a un as, c'est la valeur la plus grande
             valeurLaPlusGrande = 1;
         } else { // Sinon, la liste étant triée, la dernière valeur est forcément la plus grande
+            console.log("Pas d'as détecté, voici les valeurs : " + JSON.stringify(valeurs));
             valeurLaPlusGrande = valeurs[valeurs.length - 1];
         }
 
