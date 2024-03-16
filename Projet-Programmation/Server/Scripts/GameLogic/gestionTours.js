@@ -1,8 +1,7 @@
 const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
-const { envoyerCartesGagnees } = require('./utils/functions.js');
-
+const { envoyerCartesGagnees,envoyerInfos,joueursPossibles } = require('./utils/functions.js');
 
 const gestionTours = function (io, socket, db) {
 
@@ -14,7 +13,54 @@ const gestionTours = function (io, socket, db) {
             io.to(data.idPartie).emit('conveyAction', { "pseudoJoueur": data2, "natureAction": data.action });
             // TODO : exclure le joueur qui a envoyé la carte
         });
+        switch(data.action){
+            case 'jouerCarte':
+                jouerCarte(io,db,data);
+        }
+    });
 
+    socket.on('infoGame', async(idParty) => {
+        console.log(idParty);
+        envoyerInfos(db,io,idParty);
+        const joueurs = await joueursPossibles(db,idParty)
+        for(let i=0;i<joueurs.length;i++){
+            joueurs[i] = JSON.parse(joueurs[i]);}
+        db.query('Select tour from parties where idPartie=?',[idParty],(err,result)=>{
+            if(err)throw err;
+            console.log("Joueurs :",joueurs,result[0]['tour']);
+            socket.emit('newTurn', { "numeroTour":result[0]['tour'], "joueurs": joueurs });
+        }); 
+    });
+
+    socket.on("ligne", (data) => {
+        // On regarde dans quel jeu on est
+        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
+            switch (result[0]["type"]){
+                case "6 Qui Prend":
+                    ligneSQP(io, db, data);
+                    break;
+                default:
+                    throw "Jeu inconnu";
+            }
+        });
+    })
+
+    socket.on("requestWonCards", (data) => {
+        // On regarde dans quel jeu on est
+        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idParty], async (err, result) => {
+            switch (result[0]["type"]){
+                case "Bataille":
+                    envoyerCartesGagnees(db, socket, data);
+                    break;
+                default:
+                    throw "Jeu inconnu";
+            }
+        });
+
+    })
+}
+
+function jouerCarte(io,db,data){
         // On stocke dans "cartesJoueurs" l'ensemble des mains des joueurs
         recupererMains(db, data.idPartie).then((cartesJoueurs) => {
 
@@ -65,65 +111,7 @@ const gestionTours = function (io, socket, db) {
                 });
             });
         });
-    });
-
-    socket.on('infoGame', idParty => {
-        db.query('SELECT pseudo,centre,archive,pioche,score,tour,main from parties p,joue j,joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?', [idParty], async (err, result) => {
-            if (err) throw (err);
-            var infoPlayers = [];
-            console.log("res : ", result);
-            if (result.length != 0) {
-                await scoreMoyenJoueur(io, db, idParty).then((scoreMoyenJoueur) => {
-                    console.log("Score moy", scoreMoyenJoueur);
-                    for (i = 0; i < result.length; i++) {
-                        infoPlayers.push({
-                            "nbCards": JSON.parse(result[i].main).length,
-                            "pseudo": result[i].pseudo,
-                            "score": result[i].score,
-                            'scoreMoyenJoueur': scoreMoyenJoueur[i]
-                        })
-                    }
-                });
-                socket.emit('infoGameOut', {
-                    'center': JSON.parse(result[0].centre),
-                    'archive': JSON.parse(result[0].archive),
-                    'draw': JSON.parse(result[0].pioche).length,
-                    'infoPlayers': infoPlayers,
-                    'nbTurn': result[0].tour
-                });
-            }
-        });
-    });
-
-    socket.on("ligne", (data) => {
-        // On regarde dans quel jeu on est
-        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
-            switch (result[0]["type"]){
-                case "6 Qui Prend":
-                    ligneSQP(io, db, data);
-                    break;
-                default:
-                    throw "Jeu inconnu";
-            }
-        });
-
-    })
-
-    socket.on("requestWonCards", (data) => {
-        // On regarde dans quel jeu on est
-        db.query("SELECT type FROM parties WHERE idPartie=?", [data.idParty], async (err, result) => {
-            switch (result[0]["type"]){
-                case "Bataille":
-                    envoyerCartesGagnees(db, socket, data);
-                    break;
-                default:
-                    throw "Jeu inconnu";
-            }
-        });
-
-    })
 }
-
 
 
 module.exports = gestionTours;

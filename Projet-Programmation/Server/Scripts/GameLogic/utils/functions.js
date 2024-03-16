@@ -90,7 +90,31 @@ const envoyerCartesGagnees = function(db, socket, data){
     });
 }
 
-
+/**
+ * Calcule l'ensemble des joueurs qui peuvent jouer dans une partie.
+ * Fait l'union des joueurs qui ont une carte au centre et des joueurs qui ont une main non vide
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Number} idPartie L'ID de la partie
+ * @returns {Promise} Promesse de renvoyer la liste des joueurs qui peuvent jouer dans la partie
+ */
+async function joueursPossibles(db, idPartie){
+    return new Promise((resolve) => {
+        // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
+        db.query("SELECT jo.idJ, p.centre from joue jo,parties p where jo.idPartie = p.idPartie AND p.idPartie=? AND jo.main!= '[]';", [idPartie, idPartie], async (err3, result3) => {
+            if (err3) throw err3;
+            // On fait la liste des joueurs qui ont une main non vide
+            let joueursPossibles = [];
+            for (let index = 0; index < result3.length; index++) {
+                joueursPossibles.push("" + result3[index]["idJ"]);
+            }
+            let joueursPossibles2 = Object.keys(JSON.parse(result3[0]["centre"]));
+            // On fait l'union des deux listes, pour avoir l'ensemble des joueurs qui peuvent jouer (main non vide et/ou carte au centre)
+            let unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);
+            unionJoueursPossibles = [...unionJoueursPossibles];
+            resolve(unionJoueursPossibles);
+        });
+    });   
+}
 
 /**
  * @param {*} db connnection to the database
@@ -141,4 +165,4 @@ function nextPlayerTurn(io,db,idParty,turn){
 }
 
 
-module.exports = {ajouterScores, recupererInfosJoueurs, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn};
+module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn};

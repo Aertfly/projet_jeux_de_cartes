@@ -1,4 +1,4 @@
-const { ajouterScores, envoyerInfos } = require("../utils/functions.js");
+const { recupererInfosJoueurs, envoyerInfos,joueursPossibles } = require("../utils/functions.js");
 
 async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket){
     // Si archive est vide : on n'est pas dans une bataille
@@ -28,43 +28,6 @@ async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data
 
     // la suite de la logique est effectuée dans la fonction suite appelée plus haut et située plus bas
     
-}
-
-/**
- * Calcule l'ensemble des joueurs qui peuvent jouer dans une partie.
- * Fait l'union des joueurs qui ont une carte au centre et des joueurs qui ont une main non vide
- * @param {mysql.Connection} db La connexion à la base de données
- * @param {Number} idPartie L'ID de la partie
- * @returns {Promise} Promesse de renvoyer la liste des joueurs qui peuvent jouer dans la partie
- */
-async function joueursPossibles(db, idPartie){
-    return new Promise((resolve) => {
-        // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
-        db.query("SELECT joue.idJ as idJ, parties.centre as centre FROM joue, parties WHERE joue.idPartie=parties.idPartie AND joue.idPartie=? AND main != '[]'", [idPartie], async (err3, result3) => {
-            if (err3) throw err3;
-
-            // On fait la liste des joueurs qui ont une main non vide
-            var joueursPossibles = [];
-            for (let index = 0; index < result3.length; index++) {
-                joueursPossibles.push("" + result3[index]["idJ"]);
-            }
-
-            if(JSON.stringify(result3) == "[]"){
-                resolve([]);
-            } else {
-                var joueursPossibles2 = Object.keys(JSON.parse(result3[0]["centre"]));
-
-                // On fait l'union des deux listes, pour avoir l'ensemble des joueurs qui peuvent jouer (main non vide et/ou carte au centre)
-                var unionJoueursPossibles = new Set([...joueursPossibles, ...joueursPossibles2]);
-    
-                unionJoueursPossibles = [...unionJoueursPossibles];
-    
-                resolve(unionJoueursPossibles);
-            }
-
-
-        });
-    });   
 }
 
 /**
