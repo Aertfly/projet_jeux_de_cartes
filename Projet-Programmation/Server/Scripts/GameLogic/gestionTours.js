@@ -1,4 +1,4 @@
-const { playerActionSQP, ligneSQP, envoyerInfos, infoPartie } = require('./sqp/playerActionSQP.js');
+const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
 const { envoyerCartesGagnees } = require('./utils/functions.js');
