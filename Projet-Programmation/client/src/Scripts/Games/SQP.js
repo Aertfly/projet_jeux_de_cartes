@@ -131,7 +131,7 @@ function Countdown(props){
 
 function Center() {
     const { Info, myAction,setMyAction, idJ , idParty, socket } = useOutletContext();
-    const positions = quadrillagePoints();
+    const positions = quadrillagePoints(5, 4);
     const board = Info.archive;
 
     console.log("Board", board);

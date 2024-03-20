@@ -66,9 +66,9 @@ function cardImgName(card) {
     return "./" + card.valeur + "-" + card.enseigne + ".png";
 }
 
-function quadrillagePoints() {
-    const itemsCount = 20;
-    const itemsPerRow = 5; // Nombre d'items par ligne
+function quadrillagePoints(x, y) {
+    const itemsCount = x+y;
+    const itemsPerRow = x; // Nombre d'items par ligne
     const cardSpacing = 130;
     const positions = [];
 

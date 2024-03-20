@@ -38,6 +38,9 @@ const WaitingRoom = ()=>{
                     case "6 Qui Prend"://traduit en SQP pour le reste du code
                         setTimeout(() => navigate('/Home/Games/6 Qui Prend/'+data.idParty), 250);
                         break;
+                    case "Memory":
+                        setTimeout(() => navigate('/Home/Games/Memory/'+data.idParty), 250);
+                        break;
                     default :
                         setMsg("Jeu inconnu");
 
