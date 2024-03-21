@@ -102,7 +102,6 @@ function GameContainer(){
             });
             
             socket.on('newTurn', (data) => {
-                console.log("NOUVEAU TOUR");
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
                     OtherPlayerAction.length = 0;
@@ -125,8 +124,15 @@ function GameContainer(){
             socket.on('requestAction',(data)=>{
                 console.log("Cette personne doit faire un truc",data);
                 if(data.idJ === idJ){
-                    setMyAction("choisirLigne")
-                    console.log("Je dois faire un truc")
+                    setMyAction(data.action);
+                    console.log("Je dois faire un truc");
+                }
+            });
+            socket.on('drawedCard',(data)=>{
+                console.log("quelqu'un pioche une carte");
+                if(data.idJ === idJ){
+                    let newCards = [...cards,data.card];//faire une copie de tableau force react à detecter le changement
+                    setCards(newCards)
                 }
             });
 

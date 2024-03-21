@@ -49,7 +49,7 @@ function CardHand(props) {
         console.log("Je clique sur",props.value);
         if (myAction === "jouerCarte") {
             console.log("Moi le joueur d'id :", idJ, "joue la carte", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": "joue", "playerId": idJ ,"idPartie": idParty});
+            socket.emit('playerAction', { "carte": props.value, "action": myAction, "playerId": idJ ,"idPartie": idParty});
             setMyAction(null);
             cards.splice(cards.indexOf(props.value),1);
             setCards(cards);

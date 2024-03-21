@@ -1,4 +1,3 @@
-
 /**
  * Récupére toute les images .png du dossier d'un jeu
  * @param {string} gameName nom du dossier du jeu (normalement toujours le nom du jeu)

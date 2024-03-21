@@ -60,10 +60,9 @@ db.connect((err) => {
     console.log('Connecté à MySQL');
 });
 
-io.on('connection', (socket) => {
+io.on('connection', async(socket) => {
     console.log('Un utilisateur s\'est connecté ' + socket.id);
     socket.emit('firstConnection');
-
     startGame(io, socket, db);
     scores(io, socket, db);
     gestionParty(io, socket, db);

@@ -1,4 +1,4 @@
-const {createSens} = require('../startGame');
+
 /**
  * Ajoute les scores des joueurs d'une partie aux statistiques dans la base de données
  * @param {mysql.Connection} db La connexion à la base de données
@@ -53,7 +53,7 @@ function recupererInfosJoueurs(db, idParty){
  */
 const envoyerInfos = function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
-    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
+    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur,p.pioche FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
         const infoJoueurs=[];
         for(i=0;i<result.length;i++){
@@ -72,7 +72,7 @@ const envoyerInfos = function(db, io, idPartie){
         }
 
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: 0, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: JSON.parse(result[0]["pioche"])['pioche'].length, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
 }
 
@@ -116,53 +116,51 @@ async function joueursPossibles(db, idPartie){
     });   
 }
 
+
+
 /**
+ * Retrieve the value of the idJ of the player who has to play
  * @param {*} db connnection to the database
- * @returns the value of the field sens in the db;
+ * @param {string} idParty unique id of a party
+ * @returns the idJ of the player who has to play
  */
-function getSens(db,idParty){
+async function currentPlayerTurn(db,idParty){
     return new Promise((resolve, reject) => {
         db.query("Select sens from parties where idPartie=?",[idParty],async(err,result)=>{
             if(err)reject(err);
             if (result.length===0)resolve(null);
-            resolve(JSON.parse(result[0]['sens']));
+            resolve(JSON.parse(result[0]['sens'])[0]);
         });
     })
 }
 /**
- * Retrieve the value of the idJ of the player who has to play
- * @param {*} db connnection to the database
- * @returns the idJ of the player who has to play
- */
-function currentPlayerTurn(db,idParty){
-    return new Promise((resolve)=>{
-        getSens(db,idParty).then((sens)=>{
-            resolve(sens[0]);
-        });
-    });
-}
-/**
- * Iterate to the next player in the db, Incremente turn if the turn is finished 
+ * Tell the next player that he have to play, Incremente turn if the turn is finished 
  * @param {*} io connection to the server React
  * @param {*} db connnection to the database
  * @param {String} idParty unique identifiant of the party
- * @param {Int} turn the number of turn 
- * @returns the value of turn
+ * @param {int} timeOut time to wait before sending the new turn
+ * @returns true once it's done
  */
-function nextPlayerTurn(io,db,idParty,turn){
+function nextPlayerTurn(io,db,idParty,timeOut=0){
     return new Promise((resolve,reject)=>{
-        getSens(db,idParty).then((sens)=>{
-            const nextIdPlayer = sens.splice(0,1);
-            io.to(idParty).emit('newTurn',{joueurs:[nextIdPlayer]});//A modifier ? 
-            if(sens.lenght===0){createSens(db,idParty);return turn++};
-            db.query('Update parties SET sens=? where idPartie=?',[JSON.stringify(sens),idParty],async(err,result)=>{
+        db.query("Select sens,tour from parties where idPartie=?",[idParty],async(err,result)=>{
+            if(err)throw err;
+            const playerOrder = JSON.parse(result[0]['sens']);
+            let turn = result[0]['tour'];
+            playerOrder.push(playerOrder.splice(0,1)[0]);
+            turn++;
+            db.query('Update parties SET sens=?,tour=? where idPartie=?',[JSON.stringify(playerOrder),turn,idParty],async(err,result)=>{
                 if (err)reject(err);
-                console.log((result.changedRows == 1) ? "Update sens réussi !":"Update sens raté ");
-                resolve(turn);
+                console.log("On emit newTurn avec la fonction nextPlayerTurn",{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
+                setTimeout(()=>{
+                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
+                    resolve(true);
+                },timeOut)
             });
         });
     });
 }
+
 
 
 module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn};

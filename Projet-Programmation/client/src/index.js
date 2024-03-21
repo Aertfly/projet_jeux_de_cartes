@@ -10,8 +10,8 @@ import { SocketProvider } from './Scripts/Shared/socket.js';
 import GameContainer from "./Scripts/Shared/gameContainer.js";
 import Battle from './Scripts/Games/battle.js';
 import SQP from './Scripts/Games/SQP.js';
-
-
+import Regicide from "./Scripts/Games/regicide.js";
+import Memory from "./Scripts/Games/memory.js"
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals.js' ;
 
@@ -50,7 +50,9 @@ root.render(
             <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
             <Route path="/Home/Games" element={<GameContainer />}>
               <Route path="Bataille/:idParty" element={<Battle />} />
-              <Route path="6 qui prend/:idParty" element={<SQP />} />  
+              <Route path="6 qui prend/:idParty" element={<SQP />} />
+              <Route path="Memory/:idParty" element={<Memory />} />    
+              <Route path="Régicide/:idParty" element={<Regicide />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

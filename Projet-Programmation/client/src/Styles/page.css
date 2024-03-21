@@ -236,4 +236,15 @@ table {
     margin: 5px 0;
   }
   
-  
+
+
+.boss {
+    background-color: #262626; /* Couleur de fond sombre pour chaque joueur */
+    color: #f0f0f0; /* Couleur du texte claire */
+    padding: 15px 20px;
+    border-radius: 10px; /* Coins arrondis */
+    margin: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4); /* Ombre portée */
+    width: 250px;
+    height: 180px;
+}

@@ -78,7 +78,7 @@ function CardHand(props) {
 
     function play() {
         console.log("Je clique sur la carte :", props.value)
-        if (myAction) {
+        if (myAction==='jouerCarte'|myAction==='defausserCarte') {
             console.log("On joue la carte :", props.value);
             socket.emit('playerAction', { "carte": props.value, "action": myAction, "playerId": idJ, "idPartie" : idParty });
             setMyAction(null);
@@ -140,7 +140,7 @@ function Player(props) {
     console.log("Action autres",OtherPlayerAction); 
     return (
         <div className="battle-player" style={playerStyle}>
-            {(props.pseudo === pseudo)? <p>{myAction === "jouerCarte" ? "A vous de jouer !" : "Veuillez attendre votre tour..."}</p> : <></>}
+            {(props.pseudo === pseudo)? <p>{myAction === "jouerCarte" ? "A vous de jouer !" :myAction === "defausserCarte"? "défausser des cartes pour vous proteger!":"Veuillez attendre votre tour..."}</p> : <></>}
             <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.nbCards} cartes</p>
             {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card x={100} y={100} value={Info.center[props.pseudo]}/> :<Card x={100} y={100}/> : <></> }
@@ -164,31 +164,89 @@ function Card(props) {
     );
 }
 
-
-
-function Battle() {
-    const {Info,setImages} = useOutletContext()
-
+function Draw() {
+    const { Info, myAction,setMyAction,idJ, idParty,socket} = useOutletContext()
+    const draw = Info.draw ? Info.draw : 0;
+    const [midX, setMidX] = useState(window.innerWidth / 2);
+    const [midY, setMidY,] = useState(window.innerHeight / 2);
+    function handleClick(){
+        if(myAction==='piocherCarte'){
+            console.log("Je demande à piocher");
+            socket.emit("playerAction",{"action":myAction,"playerId":idJ,"idPartie":idParty})
+            setMyAction(null);
+        }
+        return;
+    }
     useEffect(() => {
-        setImages(importImages("Battle"));
+        const handleResize = () => {
+            setMidX(window.innerWidth / 2);
+            setMidY(window.innerHeight / 2);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    return (
+        <div>
+            <p style={{ position: 'absolute', left: `${midX - 50}px`, top: `${midY - 50}px` }}>Il y a : {draw} cartes dans la pioche</p>
+            <div onClick={handleClick}>
+            <Card x={midX} y={midY} />
+            </div>
+        </div>
+    );
+}
+
+function Boss(){
+    const {Info} = useOutletContext();
+    const [midX, setMidX] = useState(window.innerWidth / 2);
+    const style = {
+        position: 'absolute',
+        left: `${midX-75}px`,
+        top: '10px',
+    }
+    useEffect(() => {
+        const handleResize = () => {
+            setMidX(window.innerWidth / 2);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    console.log("Affichage du boss !",Info);
+    if(Info.archive?.boss){return(
+        <div className="boss" style={style}>
+                <u style={{color:'red'}}>Immunité {Info.archive.boss.card.enseigne}</u>
+                <p>Attaque : {Info.archive.boss.atk}</p>
+                <p>PV : {Info.archive.boss.hp}</p>
+                <Card x={150} y={15} value={Info.archive.boss.card}/> 
+        </div>
+    )}
+    return(<></>);
+}
+
+function Regicide(){
+    const {setImages} = useOutletContext()
+    useEffect(() => {
+        const fetchInfoServ = async () => {
+            setImages(importImages("Battle"));
+        }
+        fetchInfoServ();
         return () => {};
     },[]);
 
     return (
         <div className='BattleBody'>
-            {Info === undefined ? (
-                "CHARGEMENT..."
-            ) : (
-                <>
-                    {/*<Draw /> car on n'a pas besoin d'une pioche dans la bataille*/}
-                    {/*<Center />*/}
-                    <GameBoard />
-                    <CardsHand />
-                    <WonCardComponent />
-                </>
-            )}
+        <Boss />
+        <GameBoard />
+        <CardsHand />
+        <WonCardComponent />
+        <Draw />
         </div>
-    );
+    )
 }
 
-export default Battle;
+export default Regicide;

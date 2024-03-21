@@ -26,14 +26,14 @@ const startGame = function(io,socket,db){
                             break;
                         case "6 Qui Prend":
                             playerHands = dealCardsSQP(nbPlayers,db,data.idParty);
-                            if(playerHands.length == 0){
-                                io.to(data.idParty).emit('gameStart', {'message':"Problème lors de l'accès à la base de données"});
-                                return;
-                            }
+                            break;
+                        case "Régicide":
+                            await createSens(db,data.idParty);
+                            playerHands = dealCardsRegicide(nbPlayers,db,data.idParty)
                             break;
                         /* Exemple ajout autre jeu :
                         case "poker":
-                            handPlayers = dealCardsPoker(nbPlayers);
+                            const handPlayers = dealCardsPoker(nbPlayers);
                             break;*/    
                         default:
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux pourra être implémenté ce qui rendra cette partie obsolète
@@ -59,27 +59,17 @@ const startGame = function(io,socket,db){
                 //console.log(result[0].main);
                 console.log("On envoie les cartes au joueur",data.idJ)
                 socket.emit("dealingCards",{'Cards':JSON.parse(result[0].main)});
-                db.query("SELECT idJ FROM joue WHERE idPartie=?", [data.idParty], async (err2, result2) => {
-                    if (err2) throw err2;
-                    let joueurs = [];
-                    result2.forEach((idJoueur) => {
-                        joueurs.push(idJoueur["idJ"]);
-                    });
-                    console.log("On emit sur newTurn avec " + JSON.stringify({ "numeroTour": 0, "joueurs": joueurs }));
-                    socket.emit('newTurn', { "numeroTour": 0, "joueurs": joueurs });
-                });
             }else{
                 console.log("Erreur envoie cartes :",result,data.idParty,data.idJ)
             }
         });
     });
-}
-
+}   
 
 
 function testPreCond(rawResult,id){//vérifie la conformité des informations de la partie et renvoie le message d'erreur à transmettre
     if (rawResult.length===0)return "Erreur 404 : Partie non trouvé";
-    if((rawResult[0].tour>=0)&&(!rawResult[0].sauvegarde))return "Partie déja en cours";
+    //if((rawResult[0].tour>=0)&&(!rawResult[0].sauvegarde))return "Partie déja en cours";
     let isNotInParty = true;
     var cpt =0;
     for(let i=0;i<rawResult.length;i++){
@@ -96,16 +86,20 @@ function testPreCond(rawResult,id){//vérifie la conformité des informations de
 }
 
 const createSens = async function(db,idParty){
-    db.query('Select idj from joue jo,joueur j,parties p where j.idJ=jo.idj and jo.idPartie=j.idPartie and p.idPartie=?',[idParty],async(err,result)=>{
-        if (err)throw(err);
-        const IdPlayerList = result.map(object => object.idJ);
-        IdPlayerList = FYK(IdPlayerList);
-        db.query('Update parties SET sens=? where idPartie=?',[IdPlayerList,idParty],async(err,result)=>{
-        if (err)throw(err);
-        console.log((result.changedRows == 1) ? "Update sens réussi !":"Update sens raté :(");
+    return new Promise((resolve, reject) => {
+    db.query('Select j.idJ from joue jo,joueurs j,parties p where j.idJ=jo.idJ and jo.idPartie=p.idPartie and p.idPartie=?',[idParty],(err,result)=>{
+        if (err)reject(err);
+        const IdPlayerList= FYK(result.map(obj=>obj.idJ));
+        db.query('Update parties SET sens=? where idPartie=?',[JSON.stringify(IdPlayerList),idParty],(err,result2)=>{
+        if (err)reject(err);
+        console.log((result2.changedRows === 1) ? "Update sens réussi !":"Update sens raté :(");
+        resolve(result2.changedRows === 1);
         });
     });
+    });
 }
+
+
 
 function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
     for (let i=0;i<nbPlayers;i++){
@@ -148,7 +142,27 @@ function generateDraw(familyList,nbCards){
     return FYK(res);
 }
 
+function randint(n) {
+    return Math.floor(Math.random() * n);
+  }
 
+
+async function regenDraw(db,idParty,amount){
+    return new Promise((resole,reject)=>{db.query("Select pioche from parties where idPartie=? ",[idParty],async(err,result)=>{
+            if(err)reject(err);
+            const drawObject =JSON.parse(result[0]['pioche']);
+            const draw =drawObject['pioche'] ;
+            const discard =drawObject['defausse'] ;
+            for(let i=1;i<amount;i++){
+                if(discard.length===0){break;}
+                draw.push(discard.splice(randint(discard.length),1)[0])
+            }
+            FYK(draw);
+            await db.query("Update parties SET pioche=? where idPartie=?",[JSON.stringify(drawObject),idParty]);
+            resole(true);
+        });
+    });
+}
 
 function generateDrawSQP(){
     var len = 104;
@@ -167,6 +181,44 @@ function generateDrawSQP(){
         nbBoeufs = 0;
     }
     return FYK(res);
+}
+
+
+function  dealCardsRegicide(nbPlayers,db,idParty){
+    const draw = generateDraw(["pique","carreau","trefle","coeur"],10);
+    const  cardsPerPlayer = {2:7,3:6,4:5}[nbPlayers] || 0;//0 est la valeur par défaut si on ne trouve pas la clé stringify(nbPlayers)
+    const playerHands = [];
+    for(let i=0;i<nbPlayers;i++){ const li = [];playerHands.push(li);}
+    for(let i=0;i<nbPlayers*cardsPerPlayer;i++){
+        var index = i % nbPlayers;
+        (playerHands[index]).push(draw[i]);
+    }
+    const tuple = handleCastle();
+    const drawObject = {'pioche':draw,'defausse':[],'chateau':tuple[1]}
+    db.query('Update parties SET pioche=?,archive=? where idPartie =?',[JSON.stringify(drawObject),JSON.stringify(tuple[0]),idParty],async(err,result)=>{
+        if(err)throw(err);if (!(result.changedRows ==1)) {console.log("Update de la pioche raté",archive,idParty);}});
+    return playerHands;
+}
+
+function handleCastle(){
+    const family = ["pique","carreau","trefle","coeur"];
+    let value = 11;
+    let castle=[];
+    let heads =[];
+    for(let i=0;i<3;i++){
+        heads = [];
+        for(let j=0;j<family.length;j++){
+            heads.push({
+                "enseigne" : family[j],
+                "valeur" : value
+            });
+            heads=FYK(heads);
+        }
+        castle = castle.concat(heads);
+        value++;
+    }
+    const archive = {'boss':{'card':castle.splice(0,1)[0],'hp':20,'atk':10}}
+    return [archive,castle];
 }
 
 
@@ -230,7 +282,7 @@ function dealCardsWar(nbPlayers){
     return playerHands;
 }
 
-module.exports = {startGame,reDealCardsSQP,createSens};
+module.exports = {startGame,reDealCardsSQP,createSens,regenDraw};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 100 millions : {

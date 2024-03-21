@@ -41,6 +41,9 @@ const WaitingRoom = ()=>{
                     case "Memory":
                         setTimeout(() => navigate('/Home/Games/Memory/'+data.idParty), 250);
                         break;
+                    case "Régicide":
+                        setTimeout(() => navigate('/Home/Games/Régicide/'+data.idParty), 250);
+                        break;
                     default :
                         setMsg("Jeu inconnu");
 
