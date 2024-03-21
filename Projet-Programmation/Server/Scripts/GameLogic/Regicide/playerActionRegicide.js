@@ -32,11 +32,13 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
         let turnFinished=true;
         if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
         else turnFinished=makePlayerTakeDmg(socket,data.playerId,archive.boss);
-        newTurn(io,db,data.idPartie,archive,turnFinished);
+        newTurn(io,db,data.idPartie,data.playerId,archive,turnFinished);
     }else {
         console.log("On demande au joueur de rejouer")
-        db.query("Update parties SET archive=? where idPartie=?",[JSON.stringify(archive),data.idPartie])
-        socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
+        db.query("Update parties SET archive=? where idPartie=?",[JSON.stringify(archive),data.idPartie],(err,res)=>{
+            if(err)throw err;
+            socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
+        })
     }
 }
 
@@ -59,7 +61,7 @@ async function verifyPreCond(socket,db,playerHand,playedCards,playerId,idPartie)
  * @param {string} idPartie  permet d'actualiser la valeur du centre de la partie et de la main du joueur
  */
 async function cancelPlayerAction(socket,db,playerHand,playedCard,idPartie,playerId){
-    socket.emit('drawedCards',{idJ:playerId,Cards:playedCard});
+    socket.emit('drawedCard',{idJ:playerId,card:playedCard});
     try{
         await db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify({}), idPartie]); 
         playerHand.push(playedCard);
@@ -161,15 +163,13 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
     let hand;
     let i=0;
     while((amount>i)&&(nbFullHands<playerOrder.length)){
-        console.log(amount,i,nbFullHands,playerOrder.length);
         index=i%playerOrder.length;
         if(index===0)nbFullHands=0;
         hand=playersHand.get(playerOrder[index]).get('main');
         if(hand.length<maxCardsPerPlayer){
             cardDrawed = draw.pop();
             hand.push(cardDrawed);
-            console.log(hand.length,maxCardsPerPlayer,{idJ:playerOrder[index],Cards:cardDrawed});
-            io.to(idParty).emit('drawedCards',{idJ:playerOrder[index],Cards:cardDrawed});
+            io.to(idParty).emit('drawedCard',{idJ:playerOrder[index],card:cardDrawed});
         }else{nbFullHands++}
         i++;
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -227,36 +227,56 @@ function fuseCards(playedCards){
 function getTrueValue(card){
     if(card.valeur===11)return 10;//si c'est un valet, sa vrai valeur est 10
     if(card.valeur===12)return 15;//si c'est une dame, sa vrai valeur est 15
-    if(card.valeur===13)return 15;//si c'est un roi, sa vrai valeur est 20
+    if(card.valeur===13)return 20;//si c'est un roi, sa vrai valeur est 20
     return card.valeur;
 }
 
 async function handleEnemyDeath(io,db,idParty,currentBoss){//changement à faire 
-    console.log("Le boss a été vaincu, on lance la gestion de sa mort");
-    return new Promise((resolve,reject)=>{
-        db.query("Select pioche,archive from parties where idPartie=?",[idParty],(err,result)=>{
-            if(err)reject(err);
-            const drawObject= JSON.parse(result[0]['pioche']);
-            const archive = JSON.parse(result[0]['archive']);
-            for(const idJ in archive){
-                if(idJ!="boss"){
-                    for(const card of archive[idJ]){
-                        drawObject.defausse.push(card);
-                    }
+    console.log("Le boss a été vaincu, on lance la gestion de sa mort"); 
+    db.query("Select pioche,archive,sens from parties where idPartie=?",[idParty],(err,result)=>{
+        if(err)reject(err);
+        const drawObject= JSON.parse(result[0]['pioche']);
+        const archive = JSON.parse(result[0]['archive']);
+        for(const idJ in archive){
+            if(idJ!="boss"){
+                for(const card of archive[idJ]){
+                    drawObject.defausse.push(card);
                 }
             }
-            if(currentBoss.hp=0){drawObject['pioche'].push(currentBoss.card)}
-            else{drawObject['defausse'].push(currentBoss.card)}
-            if(drawObject['chateau'].length===0){io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*4}})}
-            else {const nextBoss = drawObject['chateau'].pop()};
-            const trueValue = getTrueValue(nextBoss);
-            currentBoss = {'card':nextBoss,'hp':trueValue*2,'dmg':trueValue}
+        }
+        if(currentBoss.hp=0){drawObject['pioche'].push(currentBoss.card)}
+        else{drawObject['defausse'].push(currentBoss.card)}
+        if(drawObject['chateau'].length===0){io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*4}});return;}
+        const nextBoss = drawObject['chateau'].pop()
+        const trueValue = getTrueValue(nextBoss);
+        currentBoss = {'card':nextBoss,'hp':trueValue*2,'atk':trueValue}
+        const PromiseList = [new Promise((resolve,reject)=>{
             db.query("Update parties SET archive=?,pioche=? where idPartie=?",[JSON.stringify({"boss":currentBoss}),JSON.stringify(drawObject),idParty],(err,res)=>{
                 if(err)reject(err);
                 console.log(res);
                 resolve(res.changedRows === 3);
             });
-        });
+        }),updatePlayersScore(db,idParty,JSON.parse(result[0]['sens']))];
+        return Promise.all(PromiseList);
+    });
+}
+
+function updatePlayersScore(db,idParty,playerList){
+    const PromiseList = [];
+    console.log("On incremente le score des joueurs")
+    db.query("Select jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
+        if(err)throw err;
+        const scores = res.map(obj =>  {return{[obj['idJ']]:obj['score']+1}});
+        console.log(scores);
+        for(const player of playerList){
+            PromiseList.push(new Promise((resolve,reject)=>{
+                db.query("Update joue jo,parties p,joueurs j  SET jo.score=? where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? AND j.idJ=? ",[scores[player],idParty,player],(errU,resU)=>{
+                    if(errU)reject(resU);
+                    resolve(resU.changedRows===1);
+                });
+            }))
+        }
+        return Promise.all(PromiseList);
     });
 }
 
@@ -269,10 +289,21 @@ function makePlayerTakeDmg(socket,idJ,currentBoss){
 }
 
 
-async function newTurn(io,db,idParty,archive,turnFinished) {
+async function newTurn(io,db,idParty,playerId,archive,turnFinished) {
+    stashArchivePlayer(playerId,archive)
     await updateInfoGame(db,idParty,archive)
     envoyerInfos(db,io,idParty);
     if(turnFinished)nextPlayerTurn(io,db,idParty,1000);
+}
+
+function stashArchivePlayer (playerId,archive){
+    if(archive['neutre']){
+        for(const card in archive[playerId]){
+            archive['neutre'].push(card);
+        }
+    }else{
+        archive['neutre']=archive[playerId]
+     } 
 }
 
 function updateInfoGame(db,idParty,archive){

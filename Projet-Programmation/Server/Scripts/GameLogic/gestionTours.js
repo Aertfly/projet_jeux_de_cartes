@@ -1,7 +1,7 @@
 const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
-const { envoyerCartesGagnees,envoyerInfos,joueursPossibles, currentPlayerTurn } = require('./utils/functions.js');
+const { envoyerCartesGagnees,envoyerInfos,joueursPossibles, currentPlayerTurn, nextPlayerTurn } = require('./utils/functions.js');
 const {playerActionRegicide,playerDiscardRegicide} = require('./Regicide/playerActionRegicide.js');
 
 const gestionTours = function (io, socket, db) {
