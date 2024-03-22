@@ -14,6 +14,7 @@ const playerActionMemory = function(io, db, data, donneesDB){
     pioche = JSON.parse(donneesDB[0]['pioche']);
     if(centre[data.idPlayer].lenght == 0){ // si le joueur joue sa première carte
         archive = await (resetArchive(archive, db)); // on remet à -1 les anciens coups joués par l'ancien joueur
+        //infoGameOut archive
         if (archive[data.carte] == 0) {
             console.log("Le joueur n'est pas censé choisir une paire déjà trouvée !");
         } else if (archive[data.carte] == -1){
