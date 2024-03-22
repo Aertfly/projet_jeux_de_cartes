@@ -24,6 +24,7 @@ const gestionParty = function (io, socket, db) {
         const estPublicNum = estPublic ? 1 : 0;
 
         try {
+            
             const partyId = await generatePartyId();
             var sens = "";
             switch (selectedGame) {

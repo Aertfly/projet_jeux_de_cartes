@@ -1,3 +1,4 @@
+
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);
@@ -31,10 +32,10 @@ const startGame = function(io,socket,db){
                             await createSens(db,data.idParty);
                             playerHands = dealCardsRegicide(nbPlayers,db,data.idParty)
                             break;
-                        /* Exemple ajout autre jeu :
-                        case "poker":
-                            const handPlayers = dealCardsPoker(nbPlayers);
-                            break;*/    
+                        case "Memory":
+                            await createSens(db,data.idParty);
+                            await memoryInit(db, data.idParty, rawResult[0].idJ);
+                            break;
                         default:
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux pourra être implémenté ce qui rendra cette partie obsolète
                             return;
@@ -100,6 +101,34 @@ const createSens = async function(db,idParty){
 }
 
 
+/**
+ * Initialiser les Paires dans 'pioche', Mélanger avec FYK
+ * Initialiser 'archive' qui contient pour l'instant que des cartes face cachée [-1,-1,-1] 
+ * Initialiser 'centre' sous format {idj : [(liste de cartes jouées)]}
+ * Initialiser 'sens' qui contient la liste de passage des joueurs sous format [idJ1, idJ2]
+ *  @param {*} data La donnée envoyée par le client
+ *  @param {mysql.Connection} db La connexion à la base de données
+ */     
+function memoryInit(db, data, playerList){
+    return new Promise((resolve, reject) => {
+        let piocheInit = []
+        let archiveInit = Array(16).fill(-1); //Initialiser 'archive'
+        for(let i=1;i<=16;i++){
+            piocheInit.push(i,i);
+        }
+        piocheInit = FYK(piocheInit); // Initialiser 'pioche'
+        playerList = JSON.parse(playerList);
+        centreInit = {};
+        playerList.forEach(item => {
+            centreInit[item] = [];
+        });
+        db.query("UPDATE parties SET pioche = ?, archive = ?, centre = ? where idPartie = ?",[piocheInit,archiveInit,centreInit,data.idPartie],async(err,result)=>{
+            if(err)reject(err)
+            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides pour l'initialisation du Memory");
+            resolve(result.changedRows === 1);
+        });
+    });
+};
 
 function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
     for (let i=0;i<nbPlayers;i++){

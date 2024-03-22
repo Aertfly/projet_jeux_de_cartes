@@ -3,6 +3,7 @@ const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
 const { envoyerCartesGagnees,envoyerInfos,joueursPossibles, currentPlayerTurn } = require('./utils/functions.js');
 const {playerActionRegicide,playerDiscardRegicide} = require('./Regicide/playerActionRegicide.js');
+const {playerActionMemory} = require('./Memory/memory.js')
 
 const gestionTours = function (io, socket, db) {
 
@@ -24,6 +25,8 @@ const gestionTours = function (io, socket, db) {
             case 'defausserCarte':
                 defausserCarte(io,socket,db,data);
                 break;
+            case 'retournerCarte':
+                isRightPlayerMemory(io,db,data); // A FAIRE POUR LE MEMORY, data = {playerId, idPartie, indexCarte}
             default :
                 console.log("action inconnu");
                 return;
@@ -167,6 +170,20 @@ function defausserCarte(io,socket,db,data){
         }
     });
 }
+
+function isRightPlayerMemory(io,db,data){
+    // Vérifier si le joueur qui m'envoie une action est bien celui attendu et qu'il à joué < 2 fois
+    db.query("SELECT COUNT(*) FROM parties WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
+        if(err)throw(err);
+        currentSens = JSON.parse(donneesDB[0]['sens']);
+        currentCentre = JSON.parse(donneesDB[0]['centre']);
+        if(data.idPlayer == currentSens[0] && currentCentre[data.idPlayer].length < 2){
+            playerActionMemory(io,db,data,donneesDB);
+        } else {
+            console.log("Ce joueur + " + data.idPlayer + " n'est pas censé jouer");
+        };
+    });
+};
 
 module.exports = gestionTours;
 

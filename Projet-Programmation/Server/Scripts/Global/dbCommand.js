@@ -9,7 +9,7 @@ function queryLine(db,condition,value,tableName,lineName){
 
 function updateTable(db,condition, value, tableName, lineName) {
     if (!db || !tableName || !lineName || !condition || !value) {
-        return "Paramètres invalides";s
+        return "Paramètres invalides";
     }
     const query = `UPDATE ${tableName} SET ${lineName} WHERE ${condition} = ${value}`;
     db.query(query, updateValues, (error, results) => {
