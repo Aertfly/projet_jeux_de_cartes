@@ -154,7 +154,7 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
                 console.log("On emit newTurn avec la fonction nextPlayerTurn",{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
                 setTimeout(()=>{
                     io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
-                    resolve(true);
+                    resolve(result.changedRow === 3);
                 },timeOut)
             });
         });

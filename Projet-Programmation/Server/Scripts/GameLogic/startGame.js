@@ -231,7 +231,7 @@ function  dealCardsRegicide(nbPlayers,db,idParty){
 
 function handleCastle(){
     const family = ["pique","carreau","trefle","coeur"];
-    let value = 11;
+    let value = 13;
     let castle=[];
     let heads =[];
     for(let i=0;i<3;i++){
@@ -244,9 +244,9 @@ function handleCastle(){
             heads=FYK(heads);
         }
         castle = castle.concat(heads);
-        value++;
+        value--;
     }
-    const archive = {'boss':{'card':castle.splice(0,1)[0],'hp':20,'atk':10}}
+    const archive = {'boss':{'card':castle.pop(),'hp':20,'atk':10}}
     return [archive,castle];
 }
 
