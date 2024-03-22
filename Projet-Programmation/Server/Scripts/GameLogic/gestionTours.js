@@ -173,7 +173,7 @@ function defausserCarte(io,socket,db,data){
 
 function isRightPlayerMemory(io,db,data){
     // Vérifier si le joueur qui m'envoie une action est bien celui attendu et qu'il à joué < 2 fois
-    db.query("SELECT COUNT(*) FROM parties WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
+    db.query("SELECT * FROM parties WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
         if(err)throw(err);
         currentSens = JSON.parse(donneesDB[0]['sens']);
         currentCentre = JSON.parse(donneesDB[0]['centre']);
