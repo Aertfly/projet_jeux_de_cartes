@@ -42,7 +42,7 @@ const playerActionMemory = function(io, db, data, donneesDB){
                     io.emit('endGameMemory'); // faire une fonction qui récupère les infos globales de la partie et les envoies
 
                 } else {  // 2 => newTurn, next player turn
-                    nextPlayerTurn(io, db, data.idPartie, 30000); // millisecondes = 30 sec
+                    nextPlayerTurn(io, db, data.idPartie); // millisecondes = 30 sec
                     centre[data.idPlayer] = [];
                     await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
                 };
