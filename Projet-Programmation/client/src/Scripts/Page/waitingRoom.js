@@ -13,7 +13,7 @@ function Start(props){
         props.socket.emit('start',{'idParty':props.idParty,'idPlayer':props.idJ})
     }
     return(
-        <button hidden={props.hidden} onClick={clicked}>Start ?</button>
+        <button hidden={props.hidden} onClick={clicked}>Lancer la partie</button>
     );
 }
 
@@ -74,8 +74,8 @@ const WaitingRoom = ()=>{
     
     return (
         <div className="waiting-room-container">
-            <h1>Bienvenue dans la Partie : </h1>
-            <span>Passer la souris pour afficher l'id de la partie !
+            <h1>Salle d'attente</h1>
+            <span>Passer la souris pour afficher l'id de la partie
                 <p
             onMouseEnter={() => setIsMouseOver(true)}
             onMouseLeave={() => setIsMouseOver(false)}

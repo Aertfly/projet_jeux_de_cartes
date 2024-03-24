@@ -37,10 +37,10 @@ function WonCardComponent(){
         <>
             <button onClick={handleClick} >Carte gagnées </button >
             <Modal isOpen={showModal} onRequestClose={()=>{setShowModal(false)}} style={customStyles} ariaHideApp={false}>
-                <h2>Liste de vos cartes gagnées !</h2>
+                <h2>Liste de vos cartes gagnées</h2>
                 {wonCards&&pointsCards.length>0?wonCards.map((card, index) =>
                 <Card key={index} value={card} x={pointsCards[index].x} y={pointsCards[index].y} />
-                ):<p>Vous n'avez gagnées aucune carte</p>}
+                ):<p>Vous n'avez gagné aucune carte</p>}
                 <button onClick={()=>{setShowModal(false)}}>Fermer</button>
             </Modal>
         </>
@@ -90,8 +90,8 @@ function CardHand(props) {
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
-        width: '100px', // Ajustez la largeur selon vos besoins
-        height: '150px', // Ajustez la hauteur selon vos besoins
+        width: '100px',
+        height: '150px',
         textAlign: 'center',
         padding: '10px',
     };
