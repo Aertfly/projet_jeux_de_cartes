@@ -21,14 +21,15 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
     return;
 }
 
-
- async function playerActionRegicide(io, socket, db, center, archive, data, playersHand){
-    archive[data.playerId]?archive[data.playerId].push(center[data.playerId]):archive[data.playerId]=[center[data.playerId]]
-    if(await verifyPreCond(socket,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
-    console.log("pre-cond vérifier")
-    if(!canPlay(archive[data.playerId],playersHand.get(data.playerId).get("main"))){
+ async function playerActionRegicide(io, socket, db, center, archive, data, playersHand,hasPassed=false){
+    if(!hasPassed){
+        archive[data.playerId]?archive[data.playerId].push(center[data.playerId]):archive[data.playerId]=[center[data.playerId]]
+        if(await verifyPreCond(socket,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
+        console.log("pre-cond vérifier")
+    }
+    if(hasPassed||!canPlay(archive[data.playerId],playersHand.get(data.playerId).get("main"))){
         console.log("Declenchement des calcul du tour")
-        await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
+        if(archive[data.playerId])await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
         let turnFinished=true;
         if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
         else turnFinished=makePlayerTakeDmg(socket,data.playerId,archive.boss);
@@ -38,9 +39,11 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
         db.query("Update parties SET archive=? where idPartie=?",[JSON.stringify(archive),data.idPartie],(err,res)=>{
             if(err)throw err;
             socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
-        })
+        });
     }
 }
+
+
 
 async function verifyPreCond(socket,db,playerHand,playedCards,playerId,idPartie){
     const currentPlayer = await currentPlayerTurn(db,idPartie);
@@ -162,16 +165,17 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
     let cardDrawed;
     let hand;
     let i=0;
+    let index =0;
     while((amount>i)&&(nbFullHands<playerOrder.length)){
-        index=i%playerOrder.length;
+        index= (index===playerOrder.length-1?0:index+1);
         if(index===0)nbFullHands=0;
         hand=playersHand.get(playerOrder[index]).get('main');
         if(hand.length<maxCardsPerPlayer){
             cardDrawed = draw.pop();
             hand.push(cardDrawed);
             io.to(idParty).emit('drawedCard',{idJ:playerOrder[index],card:cardDrawed});
+            i++;
         }else{nbFullHands++}
-        i++;
         await new Promise(resolve => setTimeout(resolve, 500));
     }
     return updateDbAfterDrawPlayer(db,drawObject,playersHand,playerOrder,idParty);
@@ -215,11 +219,11 @@ function fuseCards(playedCards){
     let fusedCard = {enseigne:[],valeur:0};
     let possibleFamilyDuplicate = null;
     for(card of playedCards){
-        if(!(card.enseigne===possibleFamilyDuplicate)){fusedCard.enseigne.push(card.enseigne);}// TO DO trier les familles par ordre de jeu
+        if(!(card.enseigne===possibleFamilyDuplicate)){fusedCard.enseigne.push(card.enseigne);}
         if(card.valeur===1){possibleFamilyDuplicate = card.enseigne}
         fusedCard.valeur += getTrueValue(card);}
     fusedCard.enseigne.sort((carte1, carte2)=>{
-        const ordreEnseignes = ["coeur", "carreau", "pique", "trefle"];//on trie les pouvoirs dans l'ordre ou ils doivent être joués
+        const ordreEnseignes = ["coeur", "carreau", "pique", "trefle"];
         return ordreEnseignes.indexOf(carte1.enseigne) - ordreEnseignes.indexOf(carte2.enseigne);});
     return fusedCard;
 }
@@ -301,9 +305,11 @@ function stashArchivePlayer (playerId,archive){
         for(const card in archive[playerId]){
             archive['neutre'].push(card);
         }
+
     }else{
         archive['neutre']=archive[playerId]
-     } 
+    } 
+    archive[playerId] = [];
 }
 
 function updateInfoGame(db,idParty,archive){

@@ -1,4 +1,4 @@
-import React, { useContext, useState,useEffect } from 'react';
+import React, {useContext, useState,useEffect } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { SocketContext } from './socket.js';
 import { useNavigate } from 'react-router-dom';
@@ -47,36 +47,37 @@ function EndGame(props) {
         </div>
       );
 }
-
 function GameContainer(){
-    const { socket } = useContext(SocketContext);
-    const { idJ, pseudo } = usePlayer();
-    const { idParty } = useParams();
-    const navigate = useNavigate();
-    const [cards, setCards] = useState([]);
-    const [Info, setInfo] = useState([]);
-    const [myAction, setMyAction] = useState(null);
-    const [OtherPlayerAction, setOtherPlayerAction] = useState([]);
-    const [images,setImages] = useState({"./":imgPlaceholder});
-    const [resultGame, setResultGame] = useState('');
+  const { socket } = useContext(SocketContext);
+  const { idJ, pseudo } = usePlayer();
+  const { idParty } = useParams();
+  const navigate = useNavigate();
+  const [cards, setCards] = useState([]);
+  const [Info, setInfo] = useState([]);
+  const [myAction, setMyAction] = useState(null);
+  const [OtherPlayerAction, setOtherPlayerAction] = useState([]);
+  const [images,setImages] = useState({"./":imgPlaceholder});
+  const [resultGame, setResultGame] = useState('');
+  const contextValue = {
+      idJ,
+      pseudo,
+      idParty,
+      images,
+      setImages,
+      Info,
+      setInfo,
+      myAction,
+      setMyAction,
+      OtherPlayerAction,
+      setOtherPlayerAction,
+      cards,
+      setCards,   
+      socket,
+      navigate,
+      resultGame, 
+      setResultGame
+  };
 
-    const contextValue = {
-        idJ,
-        pseudo,
-        idParty,
-        images,
-        setImages,
-        Info,
-        setInfo,
-        myAction,
-        setMyAction,
-        OtherPlayerAction,
-        setOtherPlayerAction,
-        cards,
-        setCards,   
-        socket,
-        navigate,
-    };
 
     useEffect(() => {
         const fetchInfoServ = async () => {
@@ -128,11 +129,10 @@ function GameContainer(){
                     console.log("Je dois faire un truc");
                 }
             });
+            
             socket.on('drawedCard',(data)=>{
-                console.log("quelqu'un pioche une carte");
                 if(data.idJ === idJ){
-                    let newCards = [...cards,data.card];//faire une copie de tableau force react à detecter le changement
-                    setCards(newCards)
+                    setCards(prevCards=>[prevCards,data.card]);
                 }
             });
 
@@ -151,14 +151,11 @@ function GameContainer(){
         }
 
         const cleanup = () => {
-            /* au cas où socket.removeAllListeners() ne marche pas comme prévu
-            const listNameSocket = ['savePartyResult','endGame','dealingCards','infoGameOut','newTurn','conveyAction','loser','requestAction','gameStart'];
-            for(const n of listNameSocket){socket.off(n)};*/
             socket.removeAllListeners();
         }
         fetchInfoServ();
         return cleanup;
-    },[ ]);
+    },[]);
 
     return (
         <>
@@ -169,6 +166,5 @@ function GameContainer(){
         </>
     );
 }
-
 
 export default GameContainer;

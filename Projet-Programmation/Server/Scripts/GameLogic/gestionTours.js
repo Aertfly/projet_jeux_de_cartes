@@ -25,8 +25,12 @@ const gestionTours = function (io, socket, db) {
             case 'defausserCarte':
                 defausserCarte(io,socket,db,data);
                 break;
+            case "passerTour":
+                passerTour(io,socket,db,data);
+                break;
             case 'retournerCarte':
                 isRightPlayerMemory(io,db,data); // A FAIRE POUR LE MEMORY, data = {playerId, idPartie, indexCarte}
+                break;
             default :
                 console.log("action inconnu");
                 return;
@@ -123,7 +127,7 @@ function jouerCarte(io,socket,db,data){
                                 playerActionSQP(io, db, centre, data);
                                 break;
                             case 'Régicide':
-                                playerActionRegicide(io,socket,db,centre,archive,data,cartesJoueurs)
+                                playerActionRegicide(io,socket,db,centre,archive,data,cartesJoueurs);
                                 break;
                             default:
                                 throw "Jeu inconnu";
@@ -184,6 +188,16 @@ function isRightPlayerMemory(io,db,data){
         };
     });
 };
+
+function passerTour(io,socket,db,data){
+    console.log("Un joueur passe son tour",data);
+    recupererMains(db, data.idPartie).then((cartesJoueurs) => {
+        db.query('Select centre,archive,main from parties p,joue j where p.idPartie = j.idPartie AND j.idJ=? AND p.idPartie=?',[data.playerId,data.idPartie],(err, result) =>{
+            if(err)throw err;
+            playerActionRegicide(io,socket,db,JSON.parse(result[0]["centre"]),JSON.parse(result[0]["archive"]),data,cartesJoueurs,true);
+        });
+    });
+}
 
 module.exports = gestionTours;
 
