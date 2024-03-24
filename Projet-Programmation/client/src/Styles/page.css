@@ -206,15 +206,15 @@ table {
 }
 
 .result-container {
-    /*background-color: #000000; 
+    background-color: #000000; 
     color: #fff; 
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); 
   }
   
   .result-section {
-    /*margin-bottom: 20px;*/
+    margin-bottom: 20px;
   }
   
   .result-section h2 {
@@ -260,37 +260,3 @@ hr{
 #id_join{
     display: flex;
 }
-
-
-#howtoPlay.div {
-    font-family: Arial, sans-serif;
-}
-
-#howtoPlay.h1 {
-    color: #FF0000;
-}
-
-#howtoPlay.h2 {
-    color: #0000FF;
-}
-
-#howtoPlay.p {
-    color: #008000;
-}
-#home {
-    margin: auto;
-}
-
-#nbJoueurs {
-    display: flex;
-    align-items: center;
-  }
-  
-  #nbJoueurs label {
-    margin: 0 5px;
-  }
-  
-  #nbJoueurs input {
-    margin: 0 5px;
-  }
-  

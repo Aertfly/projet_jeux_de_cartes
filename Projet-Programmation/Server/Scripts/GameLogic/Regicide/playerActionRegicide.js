@@ -248,8 +248,8 @@ async function handleEnemyDeath(io,db,idParty,currentBoss){//changement à faire
                 }
             }
         }
-        if(currentBoss.hp=0){drawObject['pioche'].push(currentBoss.card);console.log("Mise de la tete dans la pioche");}
-        else{drawObject['defausse'].push(currentBoss.card);console.log("Mise de la tete dans la defausse");}
+        if(currentBoss.hp=0){drawObject['pioche'].push(currentBoss.card)}
+        else{drawObject['defausse'].push(currentBoss.card)}
         if(drawObject['chateau'].length===0){io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*4}});return;}
         const nextBoss = drawObject['chateau'].pop()
         const trueValue = getTrueValue(nextBoss);

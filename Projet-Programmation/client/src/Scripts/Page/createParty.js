@@ -74,10 +74,9 @@ function CreatePartyForm() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} style={{minHeight: '500px', display: 'inline-grid', marginLeft: '100px'}}>
-        <h1>Créer une partie</h1>
-        <div id="nbJoueurs">
-          <label>Entre</label>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Nombre de joueurs requis :
           <input
             type="number"
             value={minValue}
@@ -85,23 +84,29 @@ function CreatePartyForm() {
             min="2"
             max = {maxValue}
             
-          /><label>et</label>
+          />
+        </label>
+        <br />
+        <label>
+          Nombre de joueurs maximum :
           <input
             type="number"
             value={maxValue}
             onChange={handleMaxChange}
             min= {minValue}
             max = "10"
-          /> joueurs
-        </div>
+          />
+        </label>
         <br />
         <GameSelector 
           selectedGame={selectedGame} 
           onGameSelect={setSelectedGame}
         />
         <br />
-        <button type="button" onClick={handlePublicClick} style={{backgroundColor: 'grey'}}>{estPublic ? 'Partie publique' : 'Partie privée'}</button>
+        <button type="button" onClick={handlePublicClick}>{estPublic ? 'Partie publique' : 'Partie privée'}</button>
         <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Création...' : 'Créer la partie'}</button>
+        
+        <Deconnection />
       </form>
     </div>
   );
@@ -115,4 +120,5 @@ function CreateParty () {
     )
 }
 export default CreateParty;
-export {CreatePartyForm};
+
+

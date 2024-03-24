@@ -112,8 +112,8 @@ const createSens = async function(db,idParty){
 async function memoryInit(db, idParty, playerList){
     return new Promise((resolve, reject) => {
         let piocheInit = []
-        let archiveInit = Array(36).fill(-1); //Initialiser 'archive'
-        for(let i=1;i<=18;i++){
+        let archiveInit = Array(32).fill(-1); //Initialiser 'archive'
+        for(let i=1;i<=16;i++){
             piocheInit.push(i,i);
         }
         piocheInit = FYK(piocheInit); // Initialiser 'pioche'

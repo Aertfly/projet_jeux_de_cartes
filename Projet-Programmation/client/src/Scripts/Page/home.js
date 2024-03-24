@@ -4,7 +4,6 @@ import Deconnection from "../Components/deconnection.js";
 import { SocketContext } from '../Shared/socket.js';
 import { usePlayer } from '../../index.js';
 import { Outlet } from "react-router-dom";
-import { CreatePartyForm } from "./createParty.js";
 import Modal from 'react-modal';
 
 function CreateButton(props){
@@ -130,69 +129,83 @@ function Home(){
             console.log("score n'est pas un tableau");
           }
       }
-      
+
+      const customStyles = {
+        content: {
+          top: '50%',
+          left: '50%',
+          right: 'auto',
+          bottom: 'auto',
+          marginRight: '-50%',
+          transform: 'translate(-50%, -50%)'
+        }
+      };
+
     return (
         <div>
-          <h1>Jeu de cartes - HAI405I</h1>
-          <div id="home" style={{display: 'flex'}}>
-            <CreatePartyForm />
-            <form onSubmit={submit}>
-              <h1>Rejoindre une partie</h1>
-              <p style={{ color: "red" }}>{error}</p>
-              {/*<CreateButton
-                path="createParty"
-                text="Créer une partie"
-                disabled={isSubmit}
-              /><hr>*/}
-              <PrintButton
-                path="listParty"
-                text="Afficher les parties en cours"
-                disabled={isSubmit}
+          <form onSubmit={submit}>
+            <h2>Projet HAI405I</h2>
+            <p style={{ color: "red" }}>{error}</p>
+            <CreateButton
+              path="createParty"
+              text="Créer une partie"
+              disabled={isSubmit}
+            />
+            <hr></hr>
+            <PrintButton
+              path="listParty"
+              text="Afficher les parties en cours"
+              disabled={isSubmit}
+            />
+            <hr></hr>
+            <PrintButton
+              path="listPartySaved"
+              text="Afficher mes parties sauvegardées"
+              disabled={isSubmit}
+            />
+            <hr></hr>
+            <Outlet />
+            <div id="id_join">
+              <input
+                type="text"
+                placeholder="Identifiant de la partie à rejoindre"
+                onChange={(event) => setIdPartyRequested(event.target.value)}
               />
-              <hr></hr>
-              <PrintButton
-                path="listPartySaved"
-                text="Afficher mes parties sauvegardées"
-                disabled={isSubmit}
-              />
-              <hr></hr>
-              <Outlet />
-              <br /><br /><br /><br />
-              <div id="id_join">
-                <input
-                  type="text"
-                  placeholder="Identifiant de la partie à rejoindre"
-                  onChange={(event) => setIdPartyRequested(event.target.value)}
-                />
-                <button type="submit" disabled={isSubmit}>
-                  {isSubmit ? "Veuillez patienter" : "Rejoindre la partie"}
-                </button>
-              </div>
-              <br /><br /><br /><br />
-            </form>
-            <form style={{minHeight: '500px'}}>
-                <div>
-                      <h1>Statistiques</h1>
-                      <button type="button" onClick={() => showScores("Bataille")}>
-                          Bataille
-                      </button>
-                      <button type="button" onClick={() => showScores("6 Qui Prend")}>
-                          6 Qui Prend
-                      </button>
-                      <button type="button" onClick={() => showScores("Memory")}>
-                          Mémory
-                      </button>
-                      <button type="button" onClick={() => showScores("Regicide")}>
-                          Régicide
-                      </button>
-                      <ScoreTable score={score} selectedGame={selectedGame}/>
-                </div>
-              </form>
-          </div>
-          <ul>
-            <li>Projet réalisé par le <b>groupe 4</b>.</li>
-          </ul>
-          <Deconnection />
+              <button type="submit" disabled={isSubmit}>
+                {isSubmit ? "Veuillez patienter" : "Rejoindre via l'identifiant saisi"}
+              </button>
+            </div>
+            <div>
+              <button type="button" onClick={openModal}>
+                Statistiques
+              </button>
+              <Modal
+                    isOpen={isModalOpen}
+                    onRequestClose={closeModal}
+                    style={customStyles}
+                    >
+                    <h1>Statistiques</h1>
+                    <button type="button" onClick={() => showScores("Bataille")}>
+                        Bataille
+                    </button>
+                    <button type="button" onClick={() => showScores("6 Qui Prend")}>
+                        6 Qui Prend
+                    </button>
+                    <button type="button" onClick={() => showScores("Memory")}>
+                        Mémory
+                    </button>
+                    <button type="button" onClick={() => showScores("Regicide")}>
+                        Régicide
+                    </button>
+                    <ScoreTable score={score} selectedGame={selectedGame}/>
+                    <button type="button" onClick={closeModal}>
+                        Fermer
+                    </button>
+              </Modal>
+
+            </div>
+            <Deconnection disabled={isSubmit} />
+          </form>
         </div>
       );
 }

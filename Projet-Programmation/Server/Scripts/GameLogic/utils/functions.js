@@ -72,6 +72,7 @@ const envoyerInfos = function(db, io, idPartie){
         }
         const draw = JSON.parse(result[0]["pioche"]);
         let nbdraw = draw['pioche']? draw['pioche'].length: draw.length;
+
         // On envoie les informations aux joueurs
         io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
