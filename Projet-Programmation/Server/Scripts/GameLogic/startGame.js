@@ -34,7 +34,7 @@ const startGame = function(io,socket,db){
                             break;
                         case "Memory":
                             await createSens(db,data.idParty);
-                            await memoryInit(db, data.idParty, rawResult[0].idJ);
+                            await memoryInit(db, data.idParty, rawResult);
                             break;
                         default:
                             io.to(data.idParty).emit('gameStart', {'message':"Type inconnu"}); // Non testé plus haut, l'ajout d'une table type donnant toutes les informations sur les jeux pourra être implémenté ce qui rendra cette partie obsolète
@@ -109,35 +109,43 @@ const createSens = async function(db,idParty){
  *  @param {*} data La donnée envoyée par le client
  *  @param {mysql.Connection} db La connexion à la base de données
  */     
-function memoryInit(db, data, playerList){
+async function memoryInit(db, data, playerList){
     return new Promise((resolve, reject) => {
         let piocheInit = []
-        let archiveInit = Array(16).fill(-1); //Initialiser 'archive'
+        let archiveInit = Array(32).fill(-1); //Initialiser 'archive'
         for(let i=1;i<=16;i++){
             piocheInit.push(i,i);
         }
         piocheInit = FYK(piocheInit); // Initialiser 'pioche'
-        playerList = JSON.parse(playerList);
-        centreInit = {};
-        playerList.forEach(item => {
-            centreInit[item] = [];
-        });
-        db.query("UPDATE parties SET pioche = ?, archive = ?, centre = ? where idPartie = ?",[piocheInit,archiveInit,centreInit,data.idPartie],async(err,result)=>{
-            if(err)reject(err)
-            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides pour l'initialisation du Memory");
-            resolve(result.changedRows === 1);
+
+        const centreInit = {}; // Initialiser 'centre' pour chaque joueur
+        for (const player of playerList) {
+            centreInit[player.idJ] = []; // Ajouter un tableau vide pour le centre du joueur
+        };
+        console.log(JSON.stringify(piocheInit) +  "   " + JSON.stringify(archiveInit) + "   " + JSON.stringify(centreInit));
+        db.query("UPDATE parties SET pioche = ?, archive = ?, centre = ? where idPartie = ?", [JSON.stringify(piocheInit), JSON.stringify(archiveInit), JSON.stringify(centreInit), data.idPartie], async (err, result) => {
+            if (err) {console.log(err); reject(err);}
+            console.log((result.changedRows === 3) ? 'Paramètres enregistrés dans la db' : "Erreur paramètres invalides pour l'initialisation du Memory");
+            resolve(result.changedRows === 3);
         });
     });
 };
 
-function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
-    for (let i=0;i<nbPlayers;i++){
-        var hand = JSON.stringify(playerHands[i]);
-        var idJ = IdPlayerList[i];
-        db.query("UPDATE joue SET main =?  WHERE idJ=? ANd idPartie=? ",[hand, idJ,idParty],async(err,result)=>{
-            if(err)throw(err);
-            if (!(result.changedRows ==1)) {
-                console.log("Update main joueur raté",idJ,hand);
+function giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, idParty) {
+    // Vérifier si playerHands est nul
+    if (playerHands === null) {
+        console.log("playerHands est nul, aucune action nécessaire dans giveCardsDb");
+        return true;
+    }
+
+    for (let i = 0; i < nbPlayers; i++) {
+        const hand = JSON.stringify(playerHands[i]);
+        const idJ = IdPlayerList[i];
+
+        db.query("UPDATE joue SET main = ? WHERE idJ = ? AND idPartie = ?", [hand, idJ, idParty], async (err, result) => {
+            if (err) throw (err);
+            if (!(result.changedRows == 1)) {
+                console.log("Update main joueur raté", idJ, hand);
                 return false;
             }
         });
@@ -145,6 +153,7 @@ function giveCardsDb(db,playerHands,IdPlayerList,nbPlayers,idParty){
     console.log("Mains correctement transmises à la BDD");
     return true;
 }
+
 //algorithme Fisher-Yates, également appelé mélange de Knuth
 function FYK(list){
     len = list.length;

@@ -106,8 +106,8 @@ function Home(){
                   <thead>
                     <tr>
                       <th>Pseudo</th>
-                      <th>Total Points</th>
-                      <th>Nombre de Parties</th>
+                      <th>Total de points</th>
+                      <th>Nombre de Parties jouées</th>
                       <th>Score Moyen</th>
                     </tr>
                   </thead>
@@ -144,54 +144,58 @@ function Home(){
     return (
         <div>
           <form onSubmit={submit}>
-            <h2>Souhaitez-vous créer ou rejoindre une partie ?</h2>
+            <h2>Projet HAI405I</h2>
             <p style={{ color: "red" }}>{error}</p>
-            <p>Créer une partie :</p>
             <CreateButton
               path="createParty"
               text="Créer une partie"
               disabled={isSubmit}
             />
-            <p>Rejoindre une partie existante:</p>
+            <hr></hr>
             <PrintButton
               path="listParty"
-              text="Afficher les parties disponibles"
+              text="Afficher les parties en cours"
               disabled={isSubmit}
             />
-            <p>Rejoindre une partie que vous avez sauvegardée :</p>
+            <hr></hr>
             <PrintButton
               path="listPartySaved"
-              text="Afficher les parties sauvegardées"
+              text="Afficher mes parties sauvegardées"
               disabled={isSubmit}
             />
+            <hr></hr>
             <Outlet />
-            <h3>
-              Si vous voulez rejoindre la partie d'un ami, renseignez l'ID de la partie
-              :
-            </h3>
-            <input
-              type="text"
-              onChange={(event) => setIdPartyRequested(event.target.value)}
-            />
-            <button type="submit" disabled={isSubmit}>
-              {isSubmit ? "Veuillez patienter" : "Rejoindre la partie !"}
-            </button>
-            <Deconnection disabled={isSubmit} />
+            <div id="id_join">
+              <input
+                type="text"
+                placeholder="Identifiant de la partie à rejoindre"
+                onChange={(event) => setIdPartyRequested(event.target.value)}
+              />
+              <button type="submit" disabled={isSubmit}>
+                {isSubmit ? "Veuillez patienter" : "Rejoindre via l'identifiant saisi"}
+              </button>
+            </div>
             <div>
               <button type="button" onClick={openModal}>
-                Ouvrir la fenêtre des scores
+                Statistiques
               </button>
               <Modal
                     isOpen={isModalOpen}
                     onRequestClose={closeModal}
                     style={customStyles}
                     >
-                    <h1>Fenêtre des scores</h1>
+                    <h1>Statistiques</h1>
                     <button type="button" onClick={() => showScores("Bataille")}>
-                        Catégorie Bataille
+                        Bataille
                     </button>
                     <button type="button" onClick={() => showScores("6 Qui Prend")}>
-                        Catégorie SQP
+                        6 Qui Prend
+                    </button>
+                    <button type="button" onClick={() => showScores("Memory")}>
+                        Mémory
+                    </button>
+                    <button type="button" onClick={() => showScores("Regicide")}>
+                        Régicide
                     </button>
                     <ScoreTable score={score} selectedGame={selectedGame}/>
                     <button type="button" onClick={closeModal}>
@@ -200,6 +204,7 @@ function Home(){
               </Modal>
 
             </div>
+            <Deconnection disabled={isSubmit} />
           </form>
         </div>
       );

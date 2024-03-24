@@ -42,7 +42,7 @@ function Deco(props) {
         null
       ) : (
         <>
-          <p>Vous êtes connecté sous le compte : {pseudo} d'id : {idJ}</p>
+          <p>Vous êtes {pseudo}, d'identifiant {idJ}</p>
           <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>
             Se déconnecter
           </button>
