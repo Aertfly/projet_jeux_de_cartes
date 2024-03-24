@@ -262,21 +262,62 @@ hr{
 }
 
 
-#howtoPlay.div {
+#howtoPlay {
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-#howtoPlay.h1 {
+#howtoPlay h1 {
+    color: #012fff;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+#howtoPlay h2 {
+    color: #00a2ff;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+#howtoPlay p, #howtoPlay li {
+    color: #000000;
+    line-height: 1.6;
+}
+
+#howtoPlay ul, #howtoPlay ol {
+    margin-left: 20px;
+}
+
+.card-family {
+    font-weight: bold;
+}
+
+.card-family.red {
     color: #FF0000;
 }
 
-#howtoPlay.h2 {
-    color: #0000FF;
+.card-family.black {
+    color: #000000;
 }
 
-#howtoPlay.p {
-    color: #008000;
+.damage, .life {
+    font-weight: bold;
+    color: #FF4500;
 }
+
+.keyword {
+    text-decoration: underline;
+}
+
+
+
 #home {
     margin: auto;
 }

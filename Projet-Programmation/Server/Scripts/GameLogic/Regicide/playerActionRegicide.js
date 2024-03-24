@@ -1,26 +1,6 @@
 const {regenDraw} = require("../startGame.js");
 const {currentPlayerTurn,nextPlayerTurn,envoyerInfos} = require("../utils/functions.js")
 
-function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idParty,idJ){
-    let sum=0;
-    for(const card of discardedCards){
-        sum+=card.valeur;
-    }
-    if(sum>=currentBoss.atk){
-        discardedCards=[];
-        nextPlayerTurn(io,db,idParty,1000)
-    }else{
-        db.query('Update joue Set gagnees=? where idJ=? and idPartie=?',[JSON.stringify(discardedCards),idJ,idParty],(err,result)=>{
-            if(err)throw(err);
-            if(hand.length!=0){socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"})}
-            else{
-                io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}})
-            }
-        });
-    }
-    return;
-}
-
  async function playerActionRegicide(io, socket, db, center, archive, data, playersHand,hasPassed=false){
     if(!hasPassed){
         archive[data.playerId]?archive[data.playerId].push(center[data.playerId]):archive[data.playerId]=[center[data.playerId]]
@@ -32,7 +12,7 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
         if(archive[data.playerId])await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
         let turnFinished=true;
         if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
-        else turnFinished=makePlayerTakeDmg(socket,data.playerId,archive.boss);
+        else turnFinished=makePlayerTakeDmg(socket,data.playerId,archive.boss,playersHand.get(data.playerId).get("main"));
         newTurn(io,db,data.idPartie,data.playerId,archive,turnFinished);
     }else {
         console.log("On demande au joueur de rejouer")
@@ -43,13 +23,38 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
     }
 }
 
+function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idParty,idJ){
+    let sum=0;
+    for(const card of discardedCards){
+        sum+=card.valeur;
+    }
+    console.log("Le joueur",idJ,"a défaussé ",discardedCards,sum);
+    if(sum>=currentBoss.atk){
+        discardedCards=[];
+    }
+    db.query('Update joue Set gagnees=? where idJ=? and idPartie=?',[JSON.stringify(discardedCards),idJ,idParty],(err,result)=>{
+        if(err)throw(err);
+        envoyerInfos(db,io,idParty);
+        if(sum>=currentBoss.atk){
+            nextPlayerTurn(io,db,idParty,1000);
+        }else{
+            if(hand.length!=0){socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"})}
+            else{
+                io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}})
+            }
+        }
+    });
 
+    return;
+}
 
 async function verifyPreCond(socket,db,playerHand,playedCards,playerId,idPartie){
     const currentPlayer = await currentPlayerTurn(db,idPartie);
-    if((currentPlayer!=playerId)||(!verifyDuplicate(playedCards))){
-        console.log("On annule l'action du joueur ");
+    if((currentPlayer!=playerId)){
         return await cancelPlayerAction(socket,db,playerHand,playedCards[playedCards.length-1],idPartie,playerId);
+    }
+    if(!verifyDuplicate(playedCards)){//si la personne se trompe dans son double, elle peut rejouer
+        socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
     }
     return false;
 }
@@ -57,7 +62,7 @@ async function verifyPreCond(socket,db,playerHand,playedCards,playerId,idPartie)
 /**
  * Annule l'action du joueur, remettant la base de données et la main du joueur dans l'état précédent
  * @param {*} socket permet de renvoyer au joueur sa carte, on simule une pioche de la carte 
- * @param {*} db connection à la base de donnée
+ * @param {*} db connexion à la base de donnée
  * @param {object} center on lui enleve la carte jouée et on update la valeur du centre de la partie dans la db
  * @param {list} playedCards carte jouées par le joueur
  * @param {int} playerId permet d'actualiser de la main du joueur
@@ -248,7 +253,7 @@ async function handleEnemyDeath(io,db,idParty,currentBoss){//changement à faire
                 }
             }
         }
-        if(currentBoss.hp=0){drawObject['pioche'].push(currentBoss.card);console.log("Mise de la tete dans la pioche");}
+        if(currentBoss.hp===0){drawObject['pioche'].push(currentBoss.card);console.log("Mise de la tete dans la pioche");}
         else{drawObject['defausse'].push(currentBoss.card);console.log("Mise de la tete dans la defausse");}
         if(drawObject['chateau'].length===0){io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*4}});return;}
         const nextBoss = drawObject['chateau'].pop()
@@ -268,13 +273,13 @@ async function handleEnemyDeath(io,db,idParty,currentBoss){//changement à faire
 function updatePlayersScore(db,idParty,playerList){
     const PromiseList = [];
     console.log("On incremente le score des joueurs")
-    db.query("Select jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
+    db.query("Select jo.idJ,jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
         if(err)throw err;
         const scores = res.map(obj =>  {return{[obj['idJ']]:obj['score']+1}});
         console.log(scores);
         for(const player of playerList){
             PromiseList.push(new Promise((resolve,reject)=>{
-                db.query("Update joue jo,parties p,joueurs j  SET jo.score=? where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? AND j.idJ=? ",[scores[player],idParty,player],(errU,resU)=>{
+                db.query("Update joue   SET score=? where idPartie=? AND idJ=? ",[scores[player],idParty,player],(errU,resU)=>{
                     if(errU)reject(resU);
                     resolve(resU.changedRows===1);
                 });
@@ -284,13 +289,16 @@ function updatePlayersScore(db,idParty,playerList){
     });
 }
 
-function makePlayerTakeDmg(socket,idJ,currentBoss){
+function makePlayerTakeDmg(socket,idJ,currentBoss,playerHand){
     if(currentBoss.atk>0){
-        socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"})
+        if(playerHand===0) io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}});
+        else socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"});
         return false;
+        }
+        return true;
     }
-    return true;
-}
+
+
 
 
 async function newTurn(io,db,idParty,playerId,archive,turnFinished) {

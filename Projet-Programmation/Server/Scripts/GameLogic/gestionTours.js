@@ -154,7 +154,7 @@ function piocherCarte(socket,db,data){
 
 function updateDraw(db,idParty,draw){
     return new Promise((resolve,reject)=>{
-        db.query("UPDATE parties SET main=? WHERE idPartie=?", [JSON.stringify(draw),idParty],(err,res) => { 
+        db.query("UPDATE parties SET pioche=? WHERE idPartie=?", [JSON.stringify(draw),idParty],(err,res) => { 
             if (err) reject(err); 
             resolve(res.changedRows === 1);
         });   
