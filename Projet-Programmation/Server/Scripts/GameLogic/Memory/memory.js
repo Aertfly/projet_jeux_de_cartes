@@ -8,7 +8,6 @@ const { ajouterScores, recupererInfosJoueurs, envoyerInfos, currentPlayerTurn, n
 
 const playerActionMemory = function(io, db, data, donneesDB){    
     
-    if(err)throw(err);
     centre = JSON.parse(donneesDB[0]['centre']);
     archive = JSON.parse(donneesDB[0]['archive']);
     pioche = JSON.parse(donneesDB[0]['pioche']);
@@ -24,7 +23,7 @@ const playerActionMemory = function(io, db, data, donneesDB){
             await (updateArchive(archive, data, db)); // pareil
             // infoGameOut, archive, tour
             // newTurn, current player turn 
-        }
+        };
     } else if (centre[data.idPlayer].lenght == 1){
         ancienneCarte = centre[data.idPlayer][0];
         if (archive[data.carte] >= 0){
@@ -32,31 +31,53 @@ const playerActionMemory = function(io, db, data, donneesDB){
         } else if (archive[data.carte] == -1){
             if (pioche[data.carte] == pioche[ancienneCarte]){ // si le joueur trouve une paire 
                 archive[data.carte] = pioche[data.carte];
-                archive[ancienneCarte] = pioche[ancienneCarte]; // on setup l'archive à envoyer
                 centre[data.idPlayer].push(data.carte); // deuxième carte 
-                // mettre dans 'gagnees' les cartes gagnees par le joueur;
+
                 
+                winnedCards = [pioche[data.carte],pioche[ancienneCarte]];
+                await (updateWinnedCards(data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
+
                 // infoGameOut archive, centre[data.idPlayer], tour, gagnees,  envoyerInfos
 
                 if(checkEndMemory(archive)) { // 1 => si archive n'a plus de cartes à -1, la game est finie, emit fin de game 
                     io.emit('endGameMemory'); // faire une fonction qui récupère les infos globales de la partie et les envoies
 
                 } else {  // 2 => newTurn, next player turn
-                    nextPlayerTurn(io, db, data.idPartie); // millisecondes = 30 sec
                     centre[data.idPlayer] = [];
                     await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
+                    nextPlayerTurn(io, db, data.idPartie); 
                 };
                 
             } else { // si le joueur ne trouve pas de paire 
                 archive[data.carte] = pioche[data.carte];
                 archive[ancienneCarte] = pioche[ancienneCarte]; // on setup l'archive à envoyer
+
                 // infoGameOut archive, centre[data.idPlayer], tour
-                nextPlayerTurn(io, db, data.idPartie, 30000); // millisecondes = 30 sec
+
+                nextPlayerTurn(io, db, data.idPartie); 
                 centre[data.idPlayer] = [];
                 await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
             };
         };
     };
+};
+
+function updateWinnedCards(data, winnedCards, db){
+    return new Promise((resolve,reject)=>{
+
+        db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
+            if(err)throw(err);
+            winnedCardsDB = [JSON.parse(donneesDB[0]['gagnees']), winnedCards];
+            currentScore = JSON.parse(donneesDB[0]['score']) + 2;
+
+            db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ?",[winnedCardsDB, currentScore, data.idPartie],async(err,result)=>{
+                if(err)reject(err);
+                console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
+                resolve(result.changedRows === 1);
+            });
+        });
+
+    });
 };
 
 function resetArchive(archive, db) {
