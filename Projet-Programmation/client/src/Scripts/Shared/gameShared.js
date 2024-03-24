@@ -9,7 +9,12 @@ function importImages(gameName){
             context.keys().map((key) => [key, context(key)])
         );
     };
-    return importAll(require.context('../../Assets/img/Memory', false, /\.(png)$/));
+    switch(gameName){
+        case "Memory":
+            return importAll(require.context('../../Assets/img/Memory', false, /\.(png)$/));
+        case "Battle":
+            return importAll(require.context('../../Assets/img/Battle', false, /\.(png)$/));
+    }
 }
 
 function circlePoints(r, nb) {
