@@ -253,3 +253,10 @@ table {
 hr{
     width: 100%;
 }
+
+#id_join > input{
+    width: 70%;
+}
+#id_join{
+    display: flex;
+}
