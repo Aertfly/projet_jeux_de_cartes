@@ -18,9 +18,9 @@ function EndGame(props) {
         <div className="result-container">
           {resultGame.winner && (
             <div className="result-section winner-section player-info">
-              <h2>Gagnant</h2>
-              <p>Nom: {resultGame.winner.pseudo}</p>
-              <p>Score: {resultGame.winner.score}</p>
+              <p>La partie a été remportée par </p>
+              <h2>{resultGame.winner.pseudo}</h2>
+              <p>avec un score de {resultGame.winner.score}</p>
             </div>
           )}
     
@@ -34,14 +34,26 @@ function EndGame(props) {
     
           {Info && (
             <div className="result-section">
-              <h2>Classement des joueurs</h2>
+              <h2 style={{color: "black"}}>Classement des joueurs</h2>
+              <table>
+                <tr>
+                    <th>Pseudo</th>
+                    <th>Score</th>
+                    <th>Score Moyen</th>
+                </tr>
               {Info.infoPlayers.map((player, index) => (
-                <div key={index} className="player-info">
+                <tr>
+                    <td>{player.pseudo}</td>
+                    <td>{player.score}</td>
+                    <td>{player.scoreMoyenJoueur}</td>
+                </tr>
+                /*<div key={index} className="player-info">
                   <p>Nom: {player.pseudo}</p>
                   <p>Score: {player.score}</p>
                   <p>Score Moyen Joueur: {player.scoreMoyenJoueur}</p>
-                </div>
+                </div>*/
               ))}
+              </table>
             </div>
           )}
         </div>

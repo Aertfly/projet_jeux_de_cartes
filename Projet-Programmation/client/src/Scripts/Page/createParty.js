@@ -74,7 +74,7 @@ function CreatePartyForm() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} style={{minHeight: '500px', display: 'inline-grid'}}>
+      <form onSubmit={handleSubmit} style={{minHeight: '500px', display: 'inline-grid', marginLeft: '100px'}}>
         <h1>Créer une partie</h1>
         <div id="nbJoueurs">
           <label>Entre</label>
