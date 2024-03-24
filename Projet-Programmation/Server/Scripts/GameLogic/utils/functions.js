@@ -71,7 +71,7 @@ const envoyerInfos = function(db, io, idPartie){
             delete centre2[ligne["idJ"]];
         }
         const draw = JSON.parse(result[0]["pioche"]);
-        let nbdraw = draw['pioche']? draw['pioche'].length: draw.length;
+        let nbdraw = draw['pioche']? {'pioche':draw['pioche'].length,'defausse':draw['defausse'].length}: draw.length;
         // On envoie les informations aux joueurs
         io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
