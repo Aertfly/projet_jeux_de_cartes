@@ -66,7 +66,7 @@ function cardImgName(card) {
 }
 
 function quadrillagePoints(x, y) {
-    const itemsCount = x+y;
+    const itemsCount = x*y;
     const itemsPerRow = x; // Nombre d'items par ligne
     const cardSpacing = 130;
     const positions = [];
