@@ -260,3 +260,7 @@ hr{
 #id_join{
     display: flex;
 }
+
+#home > *{
+    margin: auto;
+}
