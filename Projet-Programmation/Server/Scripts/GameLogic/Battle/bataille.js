@@ -317,7 +317,7 @@ function recupererPseudo(db, idJoueur) {
             resolve(result[0]["pseudo"]);
         });
     });
-}
+};
 
 /**
  * Met à jour les scores des joueurs d'une partie

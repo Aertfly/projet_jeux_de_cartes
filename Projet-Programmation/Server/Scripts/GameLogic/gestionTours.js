@@ -198,10 +198,10 @@ function isRightPlayerMemory(io,db,data){
         if(err)throw(err);
         currentSens = JSON.parse(donneesDB[0]['sens']);
         currentCentre = JSON.parse(donneesDB[0]['centre']);
-        if(data.idPlayer == currentSens[0] && currentCentre[data.idPlayer].length < 2){
+        if(data.playerId == currentSens[0] && currentCentre[data.playerId].length < 2){
             playerActionMemory(io,db,data,donneesDB);
         } else {
-            console.log("Ce joueur + " + data.idPlayer + " n'est pas censé jouer");
+            console.log("Ce joueur + " + data.playerId + " n'est pas censé jouer");
         };
     });
 };
