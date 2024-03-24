@@ -109,7 +109,7 @@ const createSens = async function(db,idParty){
  *  @param {*} data La donnée envoyée par le client
  *  @param {mysql.Connection} db La connexion à la base de données
  */     
-async function memoryInit(db, data, playerList){
+async function memoryInit(db, idParty, playerList){
     return new Promise((resolve, reject) => {
         let piocheInit = []
         let archiveInit = Array(32).fill(-1); //Initialiser 'archive'
@@ -123,7 +123,7 @@ async function memoryInit(db, data, playerList){
             centreInit[player.idJ] = []; // Ajouter un tableau vide pour le centre du joueur
         };
         console.log(JSON.stringify(piocheInit) +  "   " + JSON.stringify(archiveInit) + "   " + JSON.stringify(centreInit));
-        db.query("UPDATE parties SET pioche = ?, archive = ?, centre = ? where idPartie = ?", [JSON.stringify(piocheInit), JSON.stringify(archiveInit), JSON.stringify(centreInit), data.idPartie], async (err, result) => {
+        db.query("UPDATE parties SET pioche = ?, archive = ?, centre = ? where idPartie = ?", [JSON.stringify(piocheInit), JSON.stringify(archiveInit), JSON.stringify(centreInit), idParty], async (err, result) => {
             if (err) {console.log(err); reject(err);}
             console.log((result.changedRows === 3) ? 'Paramètres enregistrés dans la db' : "Erreur paramètres invalides pour l'initialisation du Memory");
             resolve(result.changedRows === 3);
