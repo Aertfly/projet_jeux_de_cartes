@@ -70,9 +70,11 @@ const envoyerInfos = function(db, io, idPartie){
             centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
             delete centre2[ligne["idJ"]];
         }
+        const draw = JSON.parse(result[0]["pioche"]);
+        let nbdraw = draw['pioche']? draw['pioche'].length: draw.length;
 
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: JSON.parse(result[0]["pioche"])['pioche'].length, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
     });
 }
 

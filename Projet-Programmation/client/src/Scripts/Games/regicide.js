@@ -105,7 +105,7 @@ function CardHand(props) {
 function CardsHand() {
     const { cards   } = useOutletContext();
     var nbCards = cards ? cards.length : 0; 
-    const [pointsCards, setPointCards] = useState(generatePointCards(nbCards, 75, 100));
+    const [pointsCards, setPointCards] = useState(generatePointCards(nbCards+1, 75, 100));
 
     useEffect(() => {
         const handleResize = () => {
@@ -125,10 +125,36 @@ function CardsHand() {
             {cards.map((card, index) =>
                 <CardHand key={index} value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
+            <PassCard x={pointsCards.x[nbCards]} y={pointsCards.y} />
         </div>
     );
 }
 
+function PassCard(props){
+    const { socket, idJ, images, myAction, setMyAction, idParty } = useOutletContext();
+
+    function passTurn(){
+        if (myAction==='jouerCarte') {
+            socket.emit('playerAction', {"action": "passerTour", "playerId": idJ, "idPartie" : idParty });
+            setMyAction(null);
+        }
+    }
+    const cardStyle = {
+        position: 'absolute',
+        left: `${props.x}px`,
+        top: `${props.y}px`,
+        width: '100px', // Ajustez la largeur selon vos besoins
+        height: '150px', // Ajustez la hauteur selon vos besoins
+        textAlign: 'center',
+        padding: '10px',
+    };
+    return (
+        <div>
+            <img src={images['passCard']} onClick={passTurn} alt={"image pour passer son tour"} style={cardStyle} className='CardHand' />
+        </div>
+    );
+    
+}
 
 function Player(props) { 
     const { pseudo, OtherPlayerAction, myAction, Info} = useOutletContext();
@@ -232,7 +258,9 @@ function Regicide(){
     const {setImages} = useOutletContext()
     useEffect(() => {
         const fetchInfoServ = async () => {
-            setImages(importImages("Battle"));
+            const images = importImages("Battle");
+            images['passCard'] = require("../../Assets/img/passCard.png")
+            setImages(images);
         }
         fetchInfoServ();
         return () => {};

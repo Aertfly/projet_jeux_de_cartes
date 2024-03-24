@@ -165,14 +165,16 @@ function Home(){
             />
             <hr></hr>
             <Outlet />
-            <input
-              type="text"
-              placeholder="Identifiant de la partie à rejoindre"
-              onChange={(event) => setIdPartyRequested(event.target.value)}
-            />
-            <button type="submit" disabled={isSubmit}>
-              {isSubmit ? "Veuillez patienter" : "Rejoindre via l'identifiant saisi"}
-            </button>
+            <div id="id_join">
+              <input
+                type="text"
+                placeholder="Identifiant de la partie à rejoindre"
+                onChange={(event) => setIdPartyRequested(event.target.value)}
+              />
+              <button type="submit" disabled={isSubmit}>
+                {isSubmit ? "Veuillez patienter" : "Rejoindre via l'identifiant saisi"}
+              </button>
+            </div>
             <div>
               <button type="button" onClick={openModal}>
                 Statistiques
