@@ -165,7 +165,7 @@ function Home(){
                   onChange={(event) => setIdPartyRequested(event.target.value)}
                 />
                 <button type="submit" disabled={isSubmit}>
-                  {isSubmit ? "Veuillez patienter" : "Rejoindre via l'identifiant saisi"}
+                  {isSubmit ? "Veuillez patienter" : "Rejoindre la partie"}
                 </button>
               </div>
               <br /><br /><br /><br />

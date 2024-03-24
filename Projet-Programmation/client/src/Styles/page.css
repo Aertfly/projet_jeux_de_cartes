@@ -280,3 +280,17 @@ hr{
 #home {
     margin: auto;
 }
+
+#nbJoueurs {
+    display: flex;
+    align-items: center;
+  }
+  
+  #nbJoueurs label {
+    margin: 0 5px;
+  }
+  
+  #nbJoueurs input {
+    margin: 0 5px;
+  }
+  
