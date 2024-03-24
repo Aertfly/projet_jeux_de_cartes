@@ -131,8 +131,9 @@ function GameContainer(){
             });
             
             socket.on('drawedCard',(data)=>{
+                console.log('drawedCard',data);
                 if(data.idJ === idJ){
-                    setCards(prevCards=>[prevCards,data.card]);
+                    setCards(prevCards=>[...prevCards,data.card]);
                 }
             });
 

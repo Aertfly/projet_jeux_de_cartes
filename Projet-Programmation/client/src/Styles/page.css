@@ -260,3 +260,20 @@ hr{
 #id_join{
     display: flex;
 }
+
+
+#howtoPlay.div {
+    font-family: Arial, sans-serif;
+}
+
+#howtoPlay.h1 {
+    color: #FF0000;
+}
+
+#howtoPlay.h2 {
+    color: #0000FF;
+}
+
+#howtoPlay.p {
+    color: #008000;
+}
