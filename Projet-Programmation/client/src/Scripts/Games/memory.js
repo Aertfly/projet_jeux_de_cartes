@@ -62,7 +62,7 @@ function Center() {
     const handleValidateClick = () => {
         if (showValidateButton) {
             console.log("Validation de la carte :", selectedCardIndex);
-            socket.emit('carte', { 'ligne': selectedCardIndex, 'idJoueur': idJ, 'idPartie': idParty }); // à modifier en fonction du côté server
+            socket.emit('playerAction', { 'carte': selectedCardIndex, 'idPlayer': idJ, 'idPartie': idParty });
             setSelectedCardIndex(null); // Réinitialisation de la sélection de carte
             setMyAction(null); // Fin de l'action
         }
