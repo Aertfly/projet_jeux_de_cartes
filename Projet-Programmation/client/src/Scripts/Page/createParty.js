@@ -62,7 +62,7 @@ function CreatePartyForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedGame) {
-      alert("Veuillez sélectionner un jeu avant de soumettre.");
+      alert("Veuillez sélectionner un jeu avant de créer la partie.");
       setEstSoumis(false);
       return;
     }
@@ -76,7 +76,7 @@ function CreatePartyForm() {
     <div>
       <form onSubmit={handleSubmit}>
         <label>
-          Valeur Min:
+          Nombre de joueurs requis :
           <input
             type="number"
             value={minValue}
@@ -88,7 +88,7 @@ function CreatePartyForm() {
         </label>
         <br />
         <label>
-          Valeur Max:
+          Nombre de joueurs maximum :
           <input
             type="number"
             value={maxValue}
@@ -103,8 +103,8 @@ function CreatePartyForm() {
           onGameSelect={setSelectedGame}
         />
         <br />
-        <button type="button" onClick={handlePublicClick}>{estPublic ? 'Public' : 'Privé'}</button>
-        <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Soumis' : 'Soumettre'}</button>
+        <button type="button" onClick={handlePublicClick}>{estPublic ? 'Partie publique' : 'Partie privée'}</button>
+        <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Création...' : 'Créer la partie'}</button>
         
         <Deconnection />
       </form>

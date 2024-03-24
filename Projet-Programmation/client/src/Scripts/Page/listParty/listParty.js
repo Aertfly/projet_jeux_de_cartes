@@ -32,7 +32,7 @@ function Party(props) {
           <td>{props.type}</td>
           <td>{props.min}</td>
           <td>{props.nbPlayer +"/"+ props.max}</td>
-          <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre ?</button></td>
+          <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre</button></td>
         </tr>
       </tbody>
   );
@@ -44,7 +44,7 @@ function Hide(){
         setTimeout(() => navigate('/Home'), 250);
     };
     return (
-        <button type='button' onClick={clicked}>Cacher ?</button>
+        <button type='button' onClick={clicked}>Masquer la liste</button>
     );
 }
 
@@ -83,16 +83,16 @@ function ListParty() {
 
   return (
     <div>
-      <h3>Liste des Parties :</h3>
+      <h3>Parties disponibles :</h3>
       <p style={{color:"red"}}>{error}</p>
       <table border="1">
         <thead>
           <tr>
-            <th>ID Partie</th>
-            <th>Type</th>
-            <th>Min</th>
-            <th>joueurs Actuels</th>
-            <th>Cliquer ici</th>
+            <th>Identifiant</th>
+            <th>Jeu</th>
+            <th>Joueurs Requis</th>
+            <th>Nombre de joueurs</th>
+            <th style={{ color: 'transparent' }}>Rejoindre</th>
           </tr>
         </thead>
         {parties.map((party) => (

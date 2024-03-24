@@ -26,12 +26,7 @@ const gestionParty = function (io, socket, db) {
         try {
             
             const partyId = await generatePartyId();
-            var sens = "";
-            switch (selectedGame) {
-                case "Bataille":
-                    sens = "all";
-                    break;
-            }
+            var sens = "all";
             if (minValue && maxValue && selectedGame) {
                 const request = 'INSERT INTO `parties`(`idPartie`, `joueursMin`, `joueursMax`, `sens`, `tour`, `type`, `sauvegarde`, `centre`, `archive`, `pioche`, `publique`) VALUES (?, ?, ?, ?, -1, ?, 0, "{}", "{}", ?, ?)';
                 db.query(request, [partyId, minValue, maxValue, sens, selectedGame,JSON.stringify({pioche:[]}), estPublicNum], (err) => {

@@ -55,7 +55,7 @@ function InscriptionForm() {
 
   return (
     <form id="inscriptionForm">
-      <h2>Si vous n'avez pas de compte, inscrivez vous :</h2>
+      <h2>Si vous n'avez pas de compte, inscrivez-vous :</h2>
       <input 
         type="text" 
         value={pseudoInput}
@@ -122,7 +122,7 @@ function ConnectionForm() {
 
   return (
     <form id="connectionForm">
-      <h2>Si vous avez un compte, connectez vous :</h2>
+      <h2>Si vous avez un compte, connectez-vous :</h2>
       <input 
         type="text" 
         value={pseudoInput}

@@ -5,7 +5,7 @@ function Leave(props) {
     const  idJ = props.idj
     const navigate = useNavigate();
     if(!idJ || !socket){
-        console.log("Erreur parramétre manquant pour le boutton 'leave'")
+        console.log("Erreur paramètre manquant pour le bouton 'leave'")
         return;
     }
     function clicked() {
@@ -13,7 +13,7 @@ function Leave(props) {
         navigate('/home');
     }
     return (
-        <button type='button' onClick={clicked}>Quitter ?</button>
+        <button type='button' onClick={clicked}>Quitter</button>
     );
 }
 
