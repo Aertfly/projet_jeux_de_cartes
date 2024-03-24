@@ -189,7 +189,7 @@ function Memory(){
 
     useEffect(() => {
         const Images = () => {
-            setImages(importImages('Memory')); // La fonction de JM
+            setImages(importImages('Memory')); 
         };
         Images()
         return () => {

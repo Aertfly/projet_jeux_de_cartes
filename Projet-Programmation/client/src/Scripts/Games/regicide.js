@@ -1,51 +1,6 @@
 import React, { useState, useEffect,  } from 'react';
 import { useOutletContext } from "react-router-dom";
 import {cardImgName,importImages,generatePointCards,generatePointWonCards,circlePoints} from '../Shared/gameShared.js'
-import Modal from 'react-modal';
-
-
-function WonCardComponent(){
-    const {socket, idParty , idJ} = useOutletContext();
-    const [showModal, setShowModal] = useState(false);
-    const [wonCards,setWonCards] = useState([]);
-    const pointsCards = generatePointWonCards(wonCards.length, 100, 150);
-
-    const customStyles = {
-        content: {
-          top: '50%',
-          left: '50%',
-          right: 'auto',
-          bottom: 'auto',
-          marginRight: '-50%',
-          transform: 'translate(-50%, -50%)',
-          width: '500px',
-          height: '500px'
-        }
-      };
-
-    const handleClick = () => {
-        socket.on('dealingWonCards',(data)=>{
-            console.log("Cartes gagnées reçu",data);
-            setWonCards(data.Cards);
-            setShowModal(true);
-        });
-        socket.emit('requestWonCards',{"idParty":idParty,"idJ":idJ});
-    }
-
-
-    return(
-        <>
-            <button onClick={handleClick} >Carte gagnées </button >
-            <Modal isOpen={showModal} onRequestClose={()=>{setShowModal(false)}} style={customStyles} ariaHideApp={false}>
-                <h2>Liste de vos cartes gagnées !</h2>
-                {wonCards&&pointsCards.length>0?wonCards.map((card, index) =>
-                <Card key={index} value={card} x={pointsCards[index].x} y={pointsCards[index].y} />
-                ):<p>Vous n'avez gagnées aucune carte</p>}
-                <button onClick={()=>{setShowModal(false)}}>Fermer</button>
-            </Modal>
-        </>
-    )
-}
 
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
@@ -109,7 +64,7 @@ function CardsHand() {
 
     useEffect(() => {
         const handleResize = () => {
-            setPointCards(generatePointCards(nbCards, 75, 100));
+            setPointCards(generatePointCards(nbCards+1, 75, 100));
         };
         window.addEventListener('resize', handleResize);
         handleResize()
@@ -118,7 +73,7 @@ function CardsHand() {
         };
     }, [nbCards]);
 
-    //console.log(pointsCards);
+    console.log("point",pointsCards.x);
 
     return (
         <div>
@@ -132,7 +87,7 @@ function CardsHand() {
 
 function PassCard(props){
     const { socket, idJ, images, myAction, setMyAction, idParty } = useOutletContext();
-
+    console.log( "PASS CARD ",props.x,props.y);
     function passTurn(){
         if (myAction==='jouerCarte') {
             socket.emit('playerAction', {"action": "passerTour", "playerId": idJ, "idPartie" : idParty });
@@ -242,7 +197,6 @@ function Boss(){
         };
     }, []);
 
-    console.log("Affichage du boss !",Info);
     if(Info.archive?.boss){return(
         <div className="boss" style={style}>
                 <u style={{color:'red'}}>Immunité {Info.archive.boss.card.enseigne}</u>
@@ -271,7 +225,6 @@ function Regicide(){
         <Boss />
         <GameBoard />
         <CardsHand />
-        <WonCardComponent />
         <Draw />
         </div>
     )
