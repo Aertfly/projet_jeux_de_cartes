@@ -3,57 +3,76 @@ import { useOutletContext } from "react-router-dom";
 import {cardImgName,importImages,generatePointCards,circlePoints,quadrillagePoints} from '../Shared/gameShared.js'
 
 function Card(props) {
-    const {images} = useOutletContext();
-    const imagePath = (props.card === null) ? images['./0.png'] : images[`./${props.card}.png`]; // Si j'ai bien compris on a les images comme ça
-
+    console.log("carte affichée :", props.id, ": ", props);
+    console.log("test");
+    const { images } = useOutletContext();
+    const imagePath = (props.card === "dos") ? images['./dos.png'] : images[`./${props.card}.png`];
+    
     const cardStyles = {
         position: 'absolute',
         ...(props.x !== undefined ? { left: `${props.x}px` } : {}),
         top: `${props.y}px`,
-        width: '100px',
-        height: '150px',
-        border: `1px solid ${props.border}`, // Soit vert soit rouge soit gris
+        width: '30px',
+        height: '50px',
+        border: `2px solid ${props.border}`, // Soit vert soit rouge soit gris
         textAlign: 'center',
         padding: '10px',
         backgroundColor: "#D3D3D3"
     };
 
+    const imageStyles = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)', // Déplace l'image au centre
+        width: '100%', // Utilise 150% de la largeur du conteneur parent
+        height: '100%', // Utilise 150% de la hauteur du conteneur parent
+        objectFit: 'contain', // Ajuste l'image pour s'adapter au conteneur sans déformer
+    };
+
     return (
         <div style={cardStyles} onClick={props.onClick} className='CardHand' hidden={props.played}>
-            <img src={imagePath} alt={`Card ${props.card}`} />
+            <img src={imagePath} alt={`Card ${props.card}`} style={imageStyles} />
         </div>
     );
 };
 
 
 function Center() {
-    const { Info, myAction, setMyAction, idJ , idParty, socket } = useOutletContext();
+    const { Info, myAction, setMyAction, idJ , idParty, socket, images } = useOutletContext();
     const [selectedCardIndex, setSelectedCardIndex] = useState(null);
-    const positions = quadrillagePoints(6, 6);
+    const positions = quadrillagePoints(6, 6, 120, 110);
     const board = Info.archive;
-
     // Le bouton pour valider son choix (si c'est notre tour et que une carte est sélectionnée)
-    const showValidateButton = myAction === "choisirCarte" && selectedCardIndex !== null;
+    const showValidateButton = myAction === "jouerCarte" && selectedCardIndex !== null;
 
     console.log("Board", board);
     if (!board) return null;
+    console.log("ce quon a dans images :", images);
 
     const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
-        console.log("Carte du centre cliquée :", card,rowIndex);
-        if (myAction === "retournerCarte" ){ 
-            console.log("Envoie la carte selectionnée côté serveur  :",rowIndex);
+        console.log("Carte du centre cliquée :", card === null ? "dos" : card, rowIndex);
+        if (myAction === "jouerCarte" ){ 
+            console.log("Affichage du bouton:",rowIndex);
             setSelectedCardIndex(rowIndex); // Sélection de la carte
         }
     };
 
     const handleValidateClick = () => {
-        if (selectedCardIndex !== null) {
+        if (showValidateButton) {
             console.log("Validation de la carte :", selectedCardIndex);
             socket.emit('carte', { 'ligne': selectedCardIndex, 'idJoueur': idJ, 'idPartie': idParty }); // à modifier en fonction du côté server
             setSelectedCardIndex(null); // Réinitialisation de la sélection de carte
             setMyAction(null); // Fin de l'action
         }
+    };
+
+    const buttonContainerStyle = {
+        position: 'fixed',
+        bottom: '-180px',
+        left: '50%',
+        transform: 'translateX(-50%)',
     };
 
     const countShowedCard = (value) => {
@@ -75,41 +94,54 @@ function Center() {
         const rowCards = row.map((position, colIndex) => {
             const index = rowIndex * 6 + colIndex;
             const cardValue = Info.archive[index];
-
+    
             let borderColor = null;
-
+    
             if (countShowedCard(cardValue) === 2) {
-                // Quand on a deux cartes visibles qui ont la même valeur, alors mettre la bordure verte car c'est une pair
                 borderColor = "green";
             } else if (countShowedCard(cardValue) === 1 && countSelectedCards() === 2) {
-                // Quand deux cartes retournées ont pas la même valeur, alors mettre la bordure rouge car ce n'est pas une pair
                 borderColor = "red";
             } else {
-                // Le reste du temps, ça veut dire que deux cartes n'ont pas été sélectionné, donc par défault la bordure est grise
                 borderColor = "gray";
             }
-
-            if (cardValue === -1) {
-                // Cachée
-                return <Card key={colIndex} x={position.x} y={position.y} card="null" border={borderColor} onclick={() => handleCardClick(null, {rowIndex})} />;
-            } else if (cardValue > 0) {
-                // Visible
-                return <Card key={colIndex} x={position.x} y={position.y} card={cardValue} border={borderColor} onclick={() => handleCardClick({cardValue}, {rowIndex})} />;
-            } else {
-                // Pas de carte
-                return null;
-            }
-        }).filter(Boolean); // Filtrer les éléments null
     
-        return <div key={rowIndex} class="row-container">${rowCards.join('')}</div>;
+            let cardComponent = null;
+    
+            if (cardValue === -1 || cardValue > 0) {
+                cardComponent = (
+                    <Card
+                        key={index}
+                        id={index}
+                        x={position.x}
+                        y={position.y}
+                        card={cardValue === -1 ? "dos" : cardValue}
+                        border={borderColor}
+                        onClick={() => handleCardClick(cardValue === -1 ? null : { cardValue }, index)}
+                    />
+                );
+            }
+    
+            return cardComponent;
+        });
+    
+        return rowCards.filter(Boolean); // Filtrer les éléments null
     });
-
+    
     return (
         <div className="center-container">
-            {centerRows}
-            {showValidateButton && <button onClick={handleValidateClick}>Valider</button>}
-        </div>      
+            {centerRows.map((rowCards, rowIndex) => (
+                <div key={rowIndex} className="row-container">
+                    {rowCards}
+                </div>
+            ))}
+            {showValidateButton && (
+                <div style={buttonContainerStyle}>
+                    <button style={buttonContainerStyle} onClick={handleValidateClick}>Valider</button>
+                </div>
+            )}
+        </div>
     );
+    
 }
 
 function Player(props) {
@@ -189,7 +221,7 @@ function Memory(){
 
     useEffect(() => {
         const Images = () => {
-            setImages(importImages('Memory')); // La fonction de JM
+            setImages(importImages('Memory'));
         };
         Images()
         return () => {

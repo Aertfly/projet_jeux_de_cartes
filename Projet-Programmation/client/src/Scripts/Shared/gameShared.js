@@ -9,7 +9,7 @@ function importImages(gameName){
             context.keys().map((key) => [key, context(key)])
         );
     };
-    return importAll(require.context('../../Assets/img/Battle', false, /\.(png)$/));
+    return importAll(require.context('../../Assets/img/Memory', false, /\.(png)$/));
 }
 
 function circlePoints(r, nb) {
@@ -65,17 +65,16 @@ function cardImgName(card) {
     return "./" + card.valeur + "-" + card.enseigne + ".png";
 }
 
-function quadrillagePoints(x, y) {
-    const itemsCount = x*y;
+function quadrillagePoints(x, y, cardSpacingX, cardSpacingY) {
+    const itemsCount = x * y;
     const itemsPerRow = x; // Nombre d'items par ligne
-    const cardSpacing = 130;
     const positions = [];
 
     for (let index = 0; index < itemsCount; index++) {
         const row = Math.floor(index / itemsPerRow);
         const col = index % itemsPerRow;
-        const x = (col * cardSpacing)-400;
-        const y = (row * cardSpacing)-400;
+        const x = (col * cardSpacingX) - (400 - cardSpacingX / 2);
+        const y = (row * cardSpacingY) - (400 - cardSpacingY / 2);
         if (positions[row] === undefined) {
             // Si la ligne n'existe pas encore, créez-la
             positions[row] = [];
