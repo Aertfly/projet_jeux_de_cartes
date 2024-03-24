@@ -137,24 +137,40 @@ function jouerCarte(io,socket,db,data){
             });
         });
 }
-
+//non utilisée
 function piocherCarte(socket,db,data){
-    db.query('Select pioche,main from parties p,joue j where p.idPartie = j.idPartie AND j.idJ=? AND p.idPartie=?',[data.playerId,data.idPartie],(err, result) =>{
+    db.query('Select pioche,main from parties p,joue j where p.idPartie = j.idPartie AND j.idJ=? AND p.idPartie=?',[data.playerId,data.idPartie],async(err, result) =>{
         if(err)throw err;
         const drawObject = JSON.parse(result[0]['pioche']);
         const draw = drawObject['pioche'];
         const hand = JSON.parse(result[0]['main']);
         const cardDrawed = draw.pop();
         hand.push(cardDrawed);
-        updateDrawAndHand(data.idPartie,data.playerId,drawObject,hand);
+        await updateHand(db,data.idPartie,data.playerId,hand);
+        await updateDraw(db,data.idPartie,drawObject)
         socket.emit('drawedCards',{Cards:cardDrawed,nextAction:'jouerCarte'});
     }); 
 }
-function updateDrawAndHand(db,idParty,idPlayer,draw,hand){
-    db.query("UPDATE joue,parties SET main=?,pioche=? WHERE joue.idPartie=parties.idPartie AND joue.idJ=?AND joue.idPartie=?", [JSON.stringify(hand),JSON.stringify(draw),JSON.stringify(idPlayer),idParty],(err) => { if (err) throw err; });   
+
+function updateDraw(db,idParty,draw){
+    return new Promise((resolve,reject)=>{
+        db.query("UPDATE parties SET main=? WHERE idPartie=?", [JSON.stringify(draw),idParty],(err,res) => { 
+            if (err) reject(err); 
+            resolve(res.changedRows === 1);
+        });   
+    });
+}
+   
+function updateHand(db,idParty,idPlayer,hand){
+    return new Promise((resolve,reject)=>{
+        db.query("UPDATE joue SET main=? WHERE idJ=?AND idPartie=?", [JSON.stringify(hand),JSON.stringify(idPlayer),idParty],(err,res) => { 
+            if (err) reject(err); 
+            resolve(res.changedRows === 1);
+        });   
+    });
 }
 function defausserCarte(io,socket,db,data){
-    db.query('Select archive,main,gagnees,pioche,type,tour from parties p,joue j where p.idPartie = j.idPartie AND j.idJ=? AND p.idPartie=?',[data.playerId,data.idPartie],(err, result) =>{
+    db.query('Select archive,main,gagnees,pioche,type,tour from parties p,joue j where p.idPartie = j.idPartie AND j.idJ=? AND p.idPartie=?',[data.playerId,data.idPartie],async(err, result) =>{
         if(err)throw err;
         const archive = JSON.parse(result[0]['archive']);
         const drawObject = JSON.parse(result[0]['pioche']);
@@ -164,7 +180,8 @@ function defausserCarte(io,socket,db,data){
 
         discardedCards.push(data.carte);
         discardPile.push(hand.splice(hand.indexOf(data.carte),1));
-        updateDrawAndHand(db,data.idPartie,data.playerId,drawObject,hand);
+        await updateHand(db,data.idPartie,data.playerId,hand);
+        await updateDraw(db,data.idPartie,drawObject);
         switch(result[0]["type"]){
             case 'Régicide':
                 playerDiscardRegicide(io,socket,db,hand,discardedCards,archive.boss,data.idPartie,data.playerId)
