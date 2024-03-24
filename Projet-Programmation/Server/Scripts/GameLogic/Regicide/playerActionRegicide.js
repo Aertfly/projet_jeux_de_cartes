@@ -171,18 +171,27 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
     let hand;
     let i=0;
     let index =0;
+
+    let cpt= 0;
+    console.log(playerOrder);
+    console.log(draw);
     while((amount>i)&&(nbFullHands<playerOrder.length)){
-        index= (index===playerOrder.length-1?0:index+1);
-        if(index===0)nbFullHands=0;
+        if(index===playerOrder.length-1){
+            index = 0;
+            nbFullHands=0;}
         hand=playersHand.get(playerOrder[index]).get('main');
         if(hand.length<maxCardsPerPlayer){
             cardDrawed = draw.pop();
+            console.log(playerOrder[index],"pioche",cardDrawed);
             hand.push(cardDrawed);
             io.to(idParty).emit('drawedCard',{idJ:playerOrder[index],card:cardDrawed});
             i++;
+            cpt++;
         }else{nbFullHands++}
         await new Promise(resolve => setTimeout(resolve, 500));
+        index++;
     }
+    console.log("pioché tant de cartes:",cpt);
     return updateDbAfterDrawPlayer(db,drawObject,playersHand,playerOrder,idParty);
 }
 

@@ -155,7 +155,7 @@ function piocherCarte(socket,db,data){
 function updateDraw(db,idParty,draw){
     return new Promise((resolve,reject)=>{
         db.query("UPDATE parties SET pioche=? WHERE idPartie=?", [JSON.stringify(draw),idParty],(err,res) => { 
-            if (err) reject(err); 
+            if (err) reject(err);   
             resolve(res.changedRows === 1);
         });   
     });
@@ -179,7 +179,7 @@ function defausserCarte(io,socket,db,data){
         const discardedCards = JSON.parse(result[0]['gagnees']);
 
         discardedCards.push(data.carte);
-        discardPile.push(hand.splice(hand.indexOf(data.carte),1));
+        discardPile.push(hand.splice(hand.indexOf(data.carte),1)[0]);
         await updateHand(db,data.idPartie,data.playerId,hand);
         await updateDraw(db,data.idPartie,drawObject);
         switch(result[0]["type"]){
