@@ -75,6 +75,7 @@ function CreatePartyForm() {
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        <h1>Créer une partie</h1>
         <label>
           Nombre de joueurs requis :
           <input
@@ -105,8 +106,6 @@ function CreatePartyForm() {
         <br />
         <button type="button" onClick={handlePublicClick}>{estPublic ? 'Partie publique' : 'Partie privée'}</button>
         <button type="submit" onClick={handleSoumisClick}>{estSoumis ? 'Création...' : 'Créer la partie'}</button>
-        
-        <Deconnection />
       </form>
     </div>
   );
@@ -120,5 +119,4 @@ function CreateParty () {
     )
 }
 export default CreateParty;
-
-
+export {CreatePartyForm};
