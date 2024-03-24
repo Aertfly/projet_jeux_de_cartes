@@ -1,0 +1,95 @@
+% Une ligne commentaire débute par le caractère « % »
+
+\documentclass[a4paper]{article}
+
+% Options possibles : 10pt, 11pt, 12pt (taille de la fonte)
+%                     oneside, twoside (recto simple, recto-verso)
+%                     draft, final (stade de développement)
+
+\usepackage[utf8]{inputenc}   % LaTeX, comprends les accents !
+\usepackage[T1]{fontenc}      % Police contenant les caractères français
+\usepackage[francais]{babel}  
+
+
+\usepackage[a4paper,left=2cm,right=2cm]{geometry}% Format de la page, réduction des marges
+\usepackage{graphicx}  % pour inclure des images
+
+%\pagestyle{headings}        % Pour mettre des entêtes avec les titres
+                              % des sections en haut de page
+
+
+\begin{document}
+\centerline{\Huge\bf HAI405I}
+\vspace*{1.5cm}
+\begin{center}               % pour centrer 
+	
+	\framebox[8cm]{
+  %\includegraphics[width=10cm]{logo.pdf}   % insertion d'une image
+	ici un logo si vous le souhaitez.
+	}
+
+\end{center}
+\vspace*{1.5cm}
+
+\fbox{\centerline{\Huge Projet de programmation}}
+
+\vspace*{1.5cm}
+
+\noindent{\large\bf Groupe 4 :}
+
+\begin{itemize}
+\item COLIBEAU Jean-Matthieu
+\item LARAMY Enzo
+\item PREVOST--AVENEL Pierre
+\item ROUZIER Killian
+\end{itemize}
+\vspace*{1.5cm}
+\begin{center}
+  L2 informatique\\
+  Faculté des Sciences\\
+Université de Montpellier.
+\end{center}
+
+\newpage
+Le nombre de pages s'entend en police de taille 11, sans compter les figures tout en restant lisible.  Dans tout le rapport, chaque extrait de code fourni référencera clairement d’où est extrait le code : fichier avec son chemin et numéros de lignes. 
+
+\section{Introduction}
+Cette introduction sera d’une quinzaine de lignes. Elle doit ici simplement donner le contexte du projet, la composition de l’équipe, les objectifs du projet, et dresser les grandes lignes du rapport (de quoi ce rapport va parler)
+
+\section{Organisation et répartition du travail}
+ Cette partie doit rester courte (une demi-page maximum hors schéma). Vous expliquerez comment vous avez organisé le travail au cours du temps (qu’est ce qui a été fait quand ?) et entre vous (qui a fait quoi ?). Cette explication s’appuiera sur un diagramme de Gantt fidèle à la réalité (rappelez-vous que nous étions là !). 
+
+\fbox{au maximum une demi page hors schéma}
+
+
+\section{Architecture, protocole de communication et échange de données}
+
+\fbox{2 pages maximum hors extrait de code}
+Dans votre projet, trois grandes entités communiquent : le serveur node, 
+le serveur react, et le client (navigateur). 
+\subsection{} Dans cette partie, vous expliquerez tout d’abord le rôle de chacun des serveurs en 
+illustrant sur des exemples issus du projet. 
+\subsection{} Vous expliquerez ensuite comment ces deux serveurs communiquent : avec quels 
+protocoles et en échangeant quels types de données. Ce dernier point sera illustré 
+avec des extraits de votre code. Normalement, vous avez utilisé deux types de 
+protocoles : websocket et http. Si ce n’est pas le cas, vous expliquerez quelles 
+communications auraient pu être remplacées par de l’http. A l’issue de la lecture de 
+cette partie, nous devons être convaincus que :
+\subsubsection{} Vous avez compris le mécanisme des websockets
+\subsubsection{} Vous avez compris le mécanisme des requêtes http
+\subsubsection{} Vous savez dans quels cas utiliser l’un ou l’autre.
+
+\section{Utilisation de React}
+
+\fbox{2 pages maximum hors extrait de code}
+Dans cette section, après une  introduction générale d’une ou deux lignes de React, vous présenterez les aspects saillants de cette technologie en les illustrant par un ou deux composants React issus de votre projet. Si, en cours de rédaction, vous vous rendez compte que vous n’avez pleinement tiré parti des facilités offertes par React, vous pouvez signaler à quels endroits de votre code des 
+modifications auraient été judicieuses
+
+\section{Bilan}
+
+Cette partie présente un bilan et une analyse rétrospective et difficultés rencontrées 
+(une page maximum). Ce bilan peut aborder à la fois les aspects organisationnels et 
+techniques
+
+    \end{document}
+
