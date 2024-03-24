@@ -17,8 +17,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
     if(centre[data.playerId] !== null && centre[data.playerId].length === 0){ // si le joueur joue sa première carte
         console.log("le joueur joue sa première carte");
         archive = await (resetArchive(archive, data, db)); // on remet à -1 les anciens coups joués par l'ancien joueur
-        
-        //infoGameOut archive
+        io.to(data.idPartie).emit('infoGameOut', {archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});//infoGameOut archive
         if (archive[data.carte] == 0) {
             console.log("Le joueur n'est pas censé choisir une paire déjà trouvée !");
         } else if (archive[data.carte] == -1){
@@ -27,7 +26,8 @@ const playerActionMemory = async function(io, db, data, donneesDB){
             archive[data.carte] = pioche[data.carte]; 
             await (updateCentre(centre, data, db)); // on le met dans la db
             await (updateArchive(archive, data, db)); // pareil
-            // infoGameOut, archive, tour
+            
+            io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)}); // infoGameOut, archive, tour
             io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length)});
             console.log("Le joueur doit jouer à nouveau");
         };
@@ -46,7 +46,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                 winnedCards = [pioche[data.carte],pioche[ancienneCarte]];
                 await (updateWinnedCards(data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
 
-                // infoGameOut archive, centre[data.playerId], tour, gagnees,  envoyerInfos
+                io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});
 
                 if(await (checkEndMemory(archive))) { // 1 => si archive n'a plus de cartes à -1, la game est finie, emit fin de game 
                     io.emit('endGameMemory'); // faire une fonction qui récupère les infos globales de la partie et les envoies
@@ -63,8 +63,8 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                 archive[data.carte] = pioche[data.carte];
                 archive[ancienneCarte] = pioche[ancienneCarte]; // on setup l'archive à envoyer
 
-                // infoGameOut archive, centre[data.playerId], tour
-
+                io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});
+                
                 nextPlayerTurn(io, db, data.idPartie); 
                 centre[data.playerId] = [];
                 await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
@@ -80,6 +80,7 @@ function updateWinnedCards(data, winnedCards, db){
         db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
             if(err)throw(err);
             winnedCardsDB = [JSON.parse(donneesDB[0]['gagnees']), winnedCards];
+            io.to(data.playerId).emit('infoGameOut', {gagnees: winnedCardsDB});
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
 
             db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie],async(err,result)=>{
