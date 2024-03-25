@@ -69,10 +69,45 @@ Ce rapport a été écrit avant la réalisation de la troisème semaine, et est 
 
 \fbox{2 pages maximum hors extrait de code}
 Dans votre projet, trois grandes entités communiquent : le serveur node, 
-le serveur react, et le client (navigateur). 
+le serveur react, et le client (navigateur).
 \subsection{} Dans cette partie, vous expliquerez tout d’abord le rôle de chacun des serveurs en 
-illustrant sur des exemples issus du projet. 
-\subsection{} Vous expliquerez ensuite comment ces deux serveurs communiquent : avec quels 
+illustrant sur des exemples issus du projet.
+\subsubsection{} Le serveur NodeJS réalise toute la partie "back-end" du projet. C'est lui qui exécute les algorithmes des différents jeux, interagit avec la base de données et communique avec les clients.
+\part{Base de données}
+[expliquer la connexion à la base de données]
+Un exemple d'appel à la base de données se situe dans le fichier \texttt{Server/Scripts/GameLogic/utils/functions.js}, des lignes 31 à 46 :\\
+\begin{verbatim}
+function recupererInfosJoueurs(db, idParty){
+    return new Promise((resolve, reject) => {
+        db.query('SELECT pseudo,centre,archive,pioche,main,score,tour from parties p,joue j,
+            joueurs jo where p.idPartie=j.idPartie and j.idJ=jo.idJ and p.idPartie =?',
+            [idParty],async(err,result)=>{
+            if(err)reject(err);
+            const infosJoueurs=[];
+            for(i=0;i<result.length;i++){
+                infosJoueurs.push({
+                    "nbCards":JSON.parse(result[i].main).length,
+                    "pseudo":result[i].pseudo,
+                    "score":result[i].score,
+                })
+            }
+            resolve(infosJoueurs);
+        });
+    });
+};
+\end{verbatim}
+On effectue une requête à la base de données en utilisant la méthode \texttt{db.query(requête, [paramètres], callback)}. Le code a exécuter une fois les données reçues se situe donc dans la fonction de callback.
+Dans la fonction recupererInfosJoueurs, utilisée dans plusieurs jeux, on retourne une promesse, qui sera résolue une fois la réponse de la base de données reçue et traitée.
+L'utilisation de cette fonction permet de simplifier la récupération des informations des joueurs, comme illustré par l'exemple d'appel ci-dessous :
+\begin{verbatim}
+    recupererInfosJoueurs(db, "ABCD123").then((infoJoueurs) => {
+        // les informations des joueurs sont accessibles dans la variable infoJoueurs
+        ...
+    }
+\end{verbatim}
+
+\subsection{} 
+Vous expliquerez ensuite comment ces deux serveurs communiquent : avec quels 
 protocoles et en échangeant quels types de données. Ce dernier point sera illustré 
 avec des extraits de votre code. Normalement, vous avez utilisé deux types de 
 protocoles : websocket et http. Si ce n’est pas le cas, vous expliquerez quelles 
