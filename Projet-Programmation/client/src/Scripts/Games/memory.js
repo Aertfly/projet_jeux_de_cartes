@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
-import {cardImgName,importImages,generatePointCards,circlePoints,quadrillagePoints} from '../Shared/gameShared.js'
+import {importImages,quadrillagePoints} from '../Shared/gameShared.js'
 
 function Card(props) {
-    console.log("carte affichée :", props.id, ": ", props);
-    console.log("test");
+    //console.log("carte affichée :", props.id, ": ", props);
+
     const { images } = useOutletContext();
     const imagePath = (props.card === "dos") ? images['./dos.png'] : images[`./${props.card}.png`];
     
@@ -48,12 +48,12 @@ function Center() {
 
     console.log("Board", board);
     if (!board) return null;
-    console.log("ce quon a dans images :", images);
+    //console.log("ce quon a dans images :", images);
 
     const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
         console.log("Carte du centre cliquée :", card === null ? "dos" : card, rowIndex);
-        if (myAction === "jouerCarte" ){ 
+        if (myAction === "jouerCarte" && Info.archive[rowIndex] === -1) { // Pour pas que l'on puisse sélectionner une carte qui est visible
             console.log("Affichage du bouton:",rowIndex);
             setSelectedCardIndex(rowIndex); // Sélection de la carte
         }
@@ -134,6 +134,7 @@ function Center() {
                     {rowCards}
                 </div>
             ))}
+            <p style={buttonContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
             {showValidateButton && (
                 <div style={buttonContainerStyle}>
                     <button style={buttonContainerStyle} onClick={handleValidateClick}>Valider</button>
