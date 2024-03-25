@@ -62,21 +62,18 @@ function Home(){
 
     const [score, setScore] = useState([]);
     const [selectedGame, setSelectedGame] = useState('')
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    function openModal(){
-        setIsModalOpen(true);
-    }
     function showScores(gameName){
         socket.emit('getScores', gameName);
         setSelectedGame(gameName);
         
     }
-    const closeModal = () => setIsModalOpen(false);
+
 
     useEffect(() => {
         socket.on("globalScores", (globalScores) => {
             setScore(globalScores);
         });
+        showScores("Bataille");
         const cleanup = () => {
             socket.off('globalScores');
         }

@@ -303,22 +303,6 @@ function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
 
 
 
-/**
- * Récupère le pseudo d'un joueur dans la BDD à partir de son idJoueur
- * @param {*} db 
- * @param {*} idJoueur 
- * @returns Promesse de renvoyer le pseudo du joueur
- */
-function recupererPseudo(db, idJoueur) {
-    return new Promise((resolve, reject) => {
-        db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
-            if (err) {
-                reject(err);
-            }
-            resolve(result[0]["pseudo"]);
-        });
-    });
-};
 
 /**
  * Met à jour les scores des joueurs d'une partie
@@ -337,4 +321,4 @@ function mettreAJourScores(db, idPartie){
     });
 }
 
-module.exports = { playerActionBataille, recupererPseudo, recupererMains };
+module.exports = { playerActionBataille, recupererMains };

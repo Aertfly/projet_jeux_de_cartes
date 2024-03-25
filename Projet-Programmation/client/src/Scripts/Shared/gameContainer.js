@@ -107,11 +107,16 @@ function GameContainer(){
                 console.log("Cartes reçues via dealingCards",data);
                 setCards(data.Cards);
             });
-
-
             socket.on('infoGameOut', (data) => {
                 console.log("Info de la partie", data);
-                setInfo(data);
+                setInfo(prevInfo =>{
+                    let copy = {...prevInfo}
+                    const params = ['center','archive','draw','infoPlayers','nbTour']
+                    for (const p of params){
+                        if(data[p])copy[p]=data[p];
+                    }
+                    return copy;
+                });
             });
             
             socket.on('newTurn', (data) => {

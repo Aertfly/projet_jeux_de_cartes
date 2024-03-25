@@ -9,7 +9,7 @@ import ListPartySaved from "./Scripts/Page/listParty/listPartySaved.js";
 import { SocketProvider } from './Scripts/Shared/socket.js';
 import GameContainer from "./Scripts/Shared/gameContainer.js";
 import {Battle} from './Scripts/Games/battle.js';
-import SQP from './Scripts/Games/SQP.js';
+import {SQP} from './Scripts/Games/SQP.js';
 import Regicide from "./Scripts/Games/regicide.js";
 import Memory from "./Scripts/Games/memory.js"
 import ReactDOM from 'react-dom/client';

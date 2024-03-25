@@ -1,4 +1,4 @@
-const { ajouterScores, recupererInfosJoueurs, envoyerInfos, currentPlayerTurn, nextPlayerTurn } = require("../utils/functions.js");
+const { ajouterScores, recupererInfosJoueurs, envoyerInfos, recupererPseudo, nextPlayerTurn } = require("../utils/functions.js");
 
 /**
 * Quand on reçoit une action de la part d'un joueur, et qu'on est dans une partie de Memory
@@ -28,7 +28,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
             await (updateArchive(archive, data, db)); // pareil
             
             io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)}); // infoGameOut, archive, tour
-            io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length)});
+            io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length),pseudos:await recupererPseudo(db,data.playerId)});
             console.log("Le joueur doit jouer à nouveau");
         };
     } else if (centre[data.playerId] !== null && centre[data.playerId].length === 1){
@@ -72,7 +72,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                     await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
                     archive[data.carte] = 0; archive[ancienneCarte] = 0;
                     await updateArchive(archive, data, db);
-                    io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length)});
+                    io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length),pseudos:await recupererPseudo(db,data.playerId)});
                 };
                 
             } else { // si le joueur ne trouve pas de paire 

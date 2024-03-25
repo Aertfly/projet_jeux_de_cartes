@@ -201,7 +201,7 @@ function Player(props) {
             console.log("dadada",Info,props.pseudo,Info.center[props.pseudo])
             card = (props.pseudo in Info.center ? <Card  y={250} card={Info.center[props.pseudo]}/> :<img src={props.dosImg} alt="Dos de carte" style={cardStyle} />);
         }else{
-            msg = getMsgOther(OtherPlayerAction[props.pseudo]);
+            if(props.pseudo != pseudo) msg = getMsgOther(OtherPlayerAction[props.pseudo]);
         }
     }
 
@@ -209,6 +209,7 @@ function Player(props) {
         <>
         <div style={playerContainerStyle}>
             <img src={img} alt="Bonhomme" style={imageStyle} />
+            <p>{msg}</p>
             <p style={props.pseudo === pseudo?{color:'red'}:{}}>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.score} Points</p>
             {card}
@@ -259,7 +260,7 @@ function GameBoard() {
 
 
 
-function SixQuiPrend() {
+function SQP() {
     return (
         <div>
             <GameBoard />
@@ -271,5 +272,5 @@ function SixQuiPrend() {
 }
 
 
-export default SixQuiPrend;
+export  {SQP,GameBoard};
 

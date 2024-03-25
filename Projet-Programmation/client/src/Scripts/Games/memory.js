@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
 import {importImages,quadrillagePoints} from '../Shared/gameShared.js'
+import { GameBoard } from './SQP.js';
 
 function Card(props) {
     //console.log("carte affichée :", props.id, ": ", props);
@@ -53,7 +54,7 @@ function Center() {
     const handleCardClick = (card,rowIndex) => {
         // Gérez le clic sur la carte ici
         console.log("Carte du centre cliquée :", card === null ? "dos" : card, rowIndex);
-        if (myAction === "jouerCarte" && Info.archive[rowIndex] === -1) { // Pour pas que l'on puisse sélectionner une carte qui est visible
+        if (myAction === "jouerCarte" ) {
             console.log("Affichage du bouton:",rowIndex);
             setSelectedCardIndex(rowIndex); // Sélection de la carte
         }
@@ -129,12 +130,13 @@ function Center() {
     
     return (
         <div className="center-container">
+            <p style={buttonContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
             {centerRows.map((rowCards, rowIndex) => (
                 <div key={rowIndex} className="row-container">
                     {rowCards}
                 </div>
             ))}
-            <p style={buttonContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
+
             {showValidateButton && (
                 <div style={buttonContainerStyle}>
                     <button style={buttonContainerStyle} onClick={handleValidateClick}>Valider</button>
@@ -145,77 +147,7 @@ function Center() {
     
 }
 
-function Player(props) {
-    const icon = props.icon
-    const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
-    const playerColor = colors[props.index % colors.length];
 
-    const playerContainerStyle = {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        marginBottom: '20px',
-        marginRight: '5px',
-        borderColor: playerColor,
-        borderWidth: '2px',
-        borderStyle: 'solid',
-        padding: '10px',
-        borderRadius: '5px',
-    };
-
-    const imageStyle = {
-        width: '50px',
-        height: '50px',
-        marginBottom: '10px',
-    };
-
-    // si props.score est le nombre carte accumulé, alors faire divisé par deux pour le nombre de pairs
-    return (
-        <>
-        <div style={playerContainerStyle}>
-            <img src={icon} alt="Bonhomme" style={imageStyle} />
-            <p>{props.pseudo}</p>
-            <p>{props.score} Pairs</p>
-        </div></>
-    );
-}
-
-
-function GameBoard() {
-    const { Info } = useOutletContext();
-    const icon = require('../../Assets/img/SQP/bonhomme.png');
-    const boardStyle = {
-        position: 'absolute',
-        top: '10px',
-        right: '1%',
-        transform: 'translateX(-50%)',
-        border: '1px solid black',
-        borderRadius: '5px',
-        padding: '10px',
-        backgroundColor: '#FFF',
-    };
-
-    const playersListStyle = {
-        display: 'flex', // Aligner les joueurs horizontalement
-    };
-
-    return (
-        <div style={boardStyle}>
-            <div className="players-list" style={playersListStyle}>
-                {Info.infoPlayers &&
-                    Info.infoPlayers.map((player, index) => ( // Faut voir si le score c'est le nombre de pair accumulé ou le nombre de cartes accumulé
-                        <Player
-                            key={index}
-                            index={index}
-                            pseudo={player.pseudo}
-                            score={player.score}
-                            icon = {icon}
-                        />
-                    ))}
-            </div>
-        </div>
-    );
-}
 
 function Memory(){
     const {setImages} = useOutletContext();

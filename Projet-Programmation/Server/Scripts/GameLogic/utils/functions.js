@@ -1,5 +1,10 @@
 
-
+/**
+ * Récupère le pseudo des joueur dans la BDD à partir d'une liste d'idJoueur
+ * @param {*} db 
+ * @param {*} idList liste d'idJoueur
+ * @returns Promesse de renvoyer la liste des  pseudo des joueurs
+ */
 function recupererPseudos(db,idList){
     return new Promise((resolve,reject)=>{
         const idString = idList.join(',');
@@ -11,6 +16,24 @@ function recupererPseudos(db,idList){
         });
     });
 }
+
+/**
+ * Récupère le pseudo d'un joueur dans la BDD à partir de son idJoueur
+ * @param {*} db 
+ * @param {*} idJoueur 
+ * @returns Promesse de renvoyer le pseudo du joueur
+ */
+function recupererPseudo(db, idJoueur) {
+    return new Promise((resolve, reject) => {
+        db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(result[0]["pseudo"]);
+        });
+    });
+};
+
 
 /**
  * Ajoute les scores des joueurs d'une partie aux statistiques dans la base de données
@@ -166,7 +189,7 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
             db.query('Update parties SET sens=?,tour=? where idPartie=?',[JSON.stringify(playerOrder),turn,idParty],async(err,result)=>{
                 if (err)reject(err);
                 setTimeout(async()=>{
-                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length),pseudos:await recupererPseudos(db,playerOrder)});
+                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length),pseudos:await recupererPseudo(db,playerOrder[0])});
                     resolve(result.changedRow === 3);
                 },timeOut)
             });
@@ -176,4 +199,4 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
 
 
 
-module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos};
+module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo};
