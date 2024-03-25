@@ -44,18 +44,35 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                 centre[data.playerId].push(data.carte); // deuxième carte 
 
                 winnedCards = [pioche[data.carte],pioche[ancienneCarte]];
-                await (updateWinnedCards(data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
+                await (updateWinnedCards(io, data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
 
                 io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});
+                if((checkEndMemory(archive))) { // 1 => si archive n'a plus de cartes à -1, la game est finie, emit fin de game 
+                    ajouterScores(db, data.idPartie).then(() => {
 
-                if(await (checkEndMemory(archive))) { // 1 => si archive n'a plus de cartes à -1, la game est finie, emit fin de game 
-                    io.emit('endGameMemory'); // faire une fonction qui récupère les infos globales de la partie et les envoies
+                        db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [data.idPartie], (err3, result3) => {
+                            if(err3) throw err3;
+
+                            db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score ASC LIMIT 1; ", [data.idPartie], (err4, result4) => {
+                                if(err4) throw err4;
+
+                                console.log("On va envoyer les infos")
+                                envoyerInfos(db, io, data.idPartie);
+                                setTimeout(() => {
+                                    io.to(data.idPartie).emit('endGame', {looser: {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]}, winner: {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]}});
+                                }, 2000);
+                            });
+                        });
+                    });
+
                     console.log("Partie finie!");
                 } else {  // 2 => newTurn, next player turn
                     
                     centre[data.playerId] = [];
                     await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
-                    nextPlayerTurn(io, db, data.idPartie); 
+                    archive[data.carte] = 0; archive[ancienneCarte] = 0;
+                    await updateArchive(archive, data, db);
+                    io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length)});
                 };
                 
             } else { // si le joueur ne trouve pas de paire 
@@ -74,16 +91,16 @@ const playerActionMemory = async function(io, db, data, donneesDB){
     };
 };
 
-function updateWinnedCards(data, winnedCards, db){
+function updateWinnedCards(io, data, winnedCards, db){
     return new Promise((resolve,reject)=>{
 
         db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
             if(err)throw(err);
-            winnedCardsDB = [JSON.parse(donneesDB[0]['gagnees']), winnedCards];
+            winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             io.to(data.playerId).emit('infoGameOut', {gagnees: winnedCardsDB});
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
 
-            db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie],async(err,result)=>{
+            db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ? and idJ = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie, data.playerId],async(err,result)=>{
                 if(err)reject(err);
                 console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
                 resolve(result.changedRows === 1);
@@ -129,8 +146,8 @@ function updateArchive(archive, data, db){
 };
 
 function checkEndMemory(archive){ // check si l'archive n'a plus de carte face cachée, si c'est le cas, toutes les paires ont été trouvées
-    for (let i=0;i<=archive.lenght;i++){
-        if(archive[i] == -1){
+    for (let i=0;i<archive.length;i++){
+        if(archive[i] === -1){
             return false;
         };
     };
