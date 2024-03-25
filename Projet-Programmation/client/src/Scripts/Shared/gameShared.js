@@ -17,6 +17,39 @@ function importImages(gameName){
     }
 }
 
+function getMsg(action){
+    switch(action){
+        case "jouerCarte"||'retournerCarte':
+            return "A vous de jouer !";
+        case "choisirLigne":
+            return "Récupérer une ligne!"
+        case 'piocherCarte':
+            return "Piochez une carte !";
+        case 'defausserCarte':
+            return "Défausser une carte !";
+        default :
+            return "Veuillez attendre votre tour...";
+    }
+}
+
+function getMsgOther(action){
+    switch(action){
+        case "doitJouer":
+            return "Ce joueur doit jouer";
+        case 'piocherCarte':
+            return "a pioché une carte";
+        case 'defausserCarte':
+            return "a défaussé une carte";
+        case "passerTour":
+            return "a passé son tour";
+        case 'retournerCarte':
+            return "a retourné une carte";
+        default :
+            return "fait une action inconnue";
+    }
+
+}
+
 function circlePoints(r, nb) {
     const radius = r;
     const angleIncrement = (2 * Math.PI) / nb;
@@ -140,4 +173,4 @@ function quadrillagePoints(x, y, cardSpacingX, cardSpacingY) {
 }*/
 
 
-export  {cardImgName,importImages,generatePointCards,generatePointWonCards,circlePoints,quadrillagePoints}
+export  {cardImgName,importImages,generatePointCards,generatePointWonCards,circlePoints,quadrillagePoints,getMsg,getMsgOther}

@@ -1,4 +1,4 @@
-const { recupererInfosJoueurs, envoyerInfos,joueursPossibles } = require("../utils/functions.js");
+const { recupererPseudos, envoyerInfos,joueursPossibles } = require("../utils/functions.js");
 
 async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket){
     // Si archive est vide : on n'est pas dans une bataille
@@ -294,12 +294,13 @@ function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
         
     // envoyerInfos(db, io, idPartie);
 
-    setTimeout(() => {
-        io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs });
+    setTimeout(async() => {
+        io.to(idPartie).emit('newTurn', { "numeroTour": numeroTour, "joueurs": listeJoueurs , "pseudos":await recupererPseudos(db,listeJoueurs)});
         console.log("On a envoyé newTurn aux joueurs " + JSON.stringify(listeJoueurs));
         envoyerInfos(db, io, idPartie);
     }, 500);
 }
+
 
 
 /**

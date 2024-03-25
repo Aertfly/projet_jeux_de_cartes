@@ -67,7 +67,7 @@ function GameContainer(){
   const [cards, setCards] = useState([]);
   const [Info, setInfo] = useState([]);
   const [myAction, setMyAction] = useState(null);
-  const [OtherPlayerAction, setOtherPlayerAction] = useState([]);
+  const [OtherPlayerAction, setOtherPlayerAction] = useState({});
   const [images,setImages] = useState({"./":imgPlaceholder});
   const [resultGame, setResultGame] = useState('');
   const contextValue = {
@@ -115,19 +115,26 @@ function GameContainer(){
             });
             
             socket.on('newTurn', (data) => {
+                setOtherPlayerAction(()=>{
+                    let copy = {}
+                    for(const p of data.pseudos){
+                        copy[p] = "doitJouer";
+                    }
+                    return copy;
+                });
                 if (data.joueurs.includes(idJ)) {
                     console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    OtherPlayerAction.length = 0;
-                    setOtherPlayerAction([]);
                     setMyAction("jouerCarte");
                 }
             });
 
             socket.on('conveyAction', (data) => {
                 console.log("conveyAction reçu",data);
-                OtherPlayerAction.push(data.pseudoJoueur);
-                let li = [...OtherPlayerAction]//permet forcément à react de détecter le changement et de correctement re-render
-                setOtherPlayerAction(li);
+                setOtherPlayerAction(prevOtherPlayerAction => {
+                    let copy = {...prevOtherPlayerAction};
+                    copy[data.pseudoJoueur] = data.natureAction;
+                    return copy;
+                });
             });
 
             socket.on('loser',(data)=>{

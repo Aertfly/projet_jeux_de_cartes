@@ -1,7 +1,7 @@
 const { playerActionSQP, ligneSQP } = require('./sqp/playerActionSQP.js');
 const { scores, scoreMoyenJoueur } = require('../Global/scores.js');
 const { playerActionBataille, recupererPseudo, recupererMains } = require('./Battle/bataille.js');
-const { envoyerCartesGagnees,envoyerInfos,joueursPossibles, currentPlayerTurn, nextPlayerTurn } = require('./utils/functions.js');
+const { envoyerCartesGagnees,envoyerInfos,joueursPossibles, recupererPseudos } = require('./utils/functions.js');
 const {playerActionRegicide,playerDiscardRegicide} = require('./Regicide/playerActionRegicide.js');
 const {playerActionMemory} = require('./Memory/memory.js')
 
@@ -50,7 +50,7 @@ const gestionTours = function (io, socket, db) {
             }else{
                 joueurs=[JSON.parse(result[0]['sens'])[0]];
             }
-            socket.emit('newTurn', { "numeroTour":result[0]['tour'], "joueurs": joueurs });
+            socket.emit('newTurn', { "numeroTour":result[0]['tour'], "joueurs": joueurs , "pseudos":await recupererPseudos(db,joueurs)});
         }); 
     });
 

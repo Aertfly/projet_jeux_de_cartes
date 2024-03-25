@@ -1,6 +1,7 @@
 const { query } = require("express");
 const { reDealCardsSQP } = require("../startGame.js");
-const { ajouterScores, recupererInfosJoueurs, envoyerInfos } = require("../utils/functions.js");
+const { ajouterScores, recupererInfosJoueurs, envoyerInfos,recupererPseudos } = require("../utils/functions.js");
+const { recupererPseudo } = require("../Battle/bataille.js");
 
 /**
  * Permet de récuperer une ligne dans la base de données
@@ -97,7 +98,7 @@ var declencherLogique = function(io, db, idPartie, centre){
                                 reDealCardsSQP(io, joueurs.length, db, idPartie, joueurs);
                             } else {
                                 // On dit aux joueurs qu'on est dans un nouveau tour
-                                io.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs });
+                                io.to(idPartie).emit('newTurn', { "numeroTour": nbTour, "joueurs": joueurs ,"pseudos":await recupererPseudos(db,joueurs)});
                             }
                         });
                     });

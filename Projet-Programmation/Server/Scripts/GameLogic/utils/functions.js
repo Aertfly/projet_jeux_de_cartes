@@ -1,4 +1,17 @@
 
+
+function recupererPseudos(db,idList){
+    return new Promise((resolve,reject)=>{
+        const idString = idList.join(',');
+        db.query(`SELECT pseudo FROM joueurs WHERE idj IN (${idString})`,[],(err, result) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(result.map(row => row.pseudo));
+        });
+    });
+}
+
 /**
  * Ajoute les scores des joueurs d'une partie aux statistiques dans la base de données
  * @param {mysql.Connection} db La connexion à la base de données
@@ -152,9 +165,8 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
             turn++;
             db.query('Update parties SET sens=?,tour=? where idPartie=?',[JSON.stringify(playerOrder),turn,idParty],async(err,result)=>{
                 if (err)reject(err);
-                console.log("On emit newTurn avec la fonction nextPlayerTurn",{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
-                setTimeout(()=>{
-                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length)});
+                setTimeout(async()=>{
+                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length),pseudos:await recupererPseudos(db,playerOrder)});
                     resolve(result.changedRow === 3);
                 },timeOut)
             });
@@ -164,4 +176,4 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
 
 
 
-module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn};
+module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos};

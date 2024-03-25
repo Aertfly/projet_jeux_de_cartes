@@ -2,23 +2,10 @@ import React, { useState, useEffect,  } from 'react';
 import { useOutletContext } from "react-router-dom";
 import {cardImgName,importImages,generatePointCards,generatePointWonCards,circlePoints} from '../Shared/gameShared.js'
 import Modal from 'react-modal';
+import {GameBoard,CardHand,Card} from './battle.js'
 
 function HowToplay(){
     const [showModal, setShowModal] = useState(false);
-    const styles = {
-        body: {
-            fontFamily: 'Arial, sans-serif'
-        },
-        h1: {
-            color: '#FF0000'
-        },
-        h2: {
-            color: '#0000FF'
-        },
-        p: {
-            color: '#008000'
-        }
-    };
     return(
         <>
             <button onClick={()=>{setShowModal(true)}} >Comment jouer</button >
@@ -134,66 +121,10 @@ function HowToplay(){
     )
 }
 
-
-function GameBoard() {
-    const [playerPositions, setPlayerPositions] = useState([]);
-    const { Info } = useOutletContext();
-    const infoPlayers = Info.infoPlayers
-    var numberOfPlayers = infoPlayers ? infoPlayers.length : 0;
-
-    useEffect(() => {
-        const handleResize = () => {
-            setPlayerPositions(circlePoints(300, numberOfPlayers));
-        };
-        window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, [numberOfPlayers]);
-
-    return (
-        <div className="battle-game-board">
-            {playerPositions.map((position, index) => (
-                <Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} />
-            ))}
-        </div>
-    );
-};
-
-function CardHand(props) {
-    const { socket, idJ, images, myAction, setMyAction, idParty , cards} = useOutletContext();
-
-    function play() {
-        if (myAction==='jouerCarte'|myAction==='defausserCarte') {
-            console.log("On joue la carte :", props.value);
-            socket.emit('playerAction', { "carte": props.value, "action": myAction, "playerId": idJ, "idPartie" : idParty });
-            setMyAction(null);
-            cards.splice(cards.indexOf(props.value),1);
-        }
-    }
-
-    const cardStyle = {
-        position: 'absolute',
-        left: `${props.x}px`,
-        top: `${props.y}px`,
-        width: '100px', // Ajustez la largeur selon vos besoins
-        height: '150px', // Ajustez la hauteur selon vos besoins
-        textAlign: 'center',
-        padding: '10px',
-    };
-    return (
-        <div>
-            <img src={images[cardImgName(props.value)]} onClick={play} alt={"image de" + cardImgName(props.value)} style={cardStyle} className='CardHand' />
-        </div>
-    );
-}
-
 function CardsHand() {
     const { cards   } = useOutletContext();
     var nbCards = cards ? cards.length : 0; 
     const [pointsCards, setPointCards] = useState(generatePointCards(nbCards+1, 75, 100));
-
     useEffect(() => {
         const handleResize = () => {
             setPointCards(generatePointCards(nbCards+1, 75, 100));
@@ -204,9 +135,6 @@ function CardsHand() {
             window.removeEventListener('resize', handleResize);
         };
     }, [nbCards]);
-
-    console.log("point",pointsCards.x,cards);
-
     return (
         <div>
             {cards.map((card, index) =>
@@ -242,38 +170,6 @@ function PassCard(props){
     
 }
 
-function Player(props) { 
-    const { pseudo, OtherPlayerAction, myAction, Info} = useOutletContext();
-    const playerStyle = {
-        position: 'absolute',
-        left: `${props.x}px`,
-        top: `${props.y}px`,
-    };
-    return (
-        <div className="battle-player" style={playerStyle}>
-            {(props.pseudo === pseudo)? <p>{myAction === "jouerCarte" ? "A vous de jouer !" :myAction === "defausserCarte"? "défausser des cartes pour vous proteger!":"Veuillez attendre votre tour..."}</p> : <></>}
-            <p>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
-            <p>{props.nbCards} cartes</p>
-            {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card x={100} y={100} value={Info.center[props.pseudo]}/> :<Card x={100} y={100}/> : <></> }
-        </div>);
-};
-
-function Card(props) {
-    const { images } = useOutletContext();
-    const src = props.value ? images[cardImgName(props.value)] : images['./dos.png'];
-    const cardStyle = {
-        position: 'absolute',
-        left: `${props.x}px`,
-        top: `${props.y}px`,
-        width: '100px', 
-        height: '150px', 
-        textAlign: 'center',
-        padding: '10px',
-    };
-    return (
-        <img style={cardStyle} src={src} alt={props.value ? "image de" + props.value.valeur + " " + props.value.enseigne : "dos de carte"} />
-    );
-}
 
 function Draw() {
     const { Info, myAction,setMyAction,idJ, idParty,socket} = useOutletContext()

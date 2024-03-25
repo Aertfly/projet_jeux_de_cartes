@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
 
-import {generatePointCards,quadrillagePoints} from '../Shared/gameShared.js'
+import {generatePointCards,quadrillagePoints,getMsg,getMsgOther} from '../Shared/gameShared.js'
 
 
 
@@ -86,9 +86,9 @@ function CardsHand() {
 
     return (
         <div>
-            <Countdown style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 100}px`,position:'absolute',fontSize: '25px'}}/>
+            {/*<Countdown style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 100}px`,position:'absolute',fontSize: '25px'}}/>*/}
             <p style={{left: `${pointsCards.x[nbCards-1]/2}px`,top: `${pointsCards.y - 75}px`,position:'absolute',fontSize: '25px'}}>{
-            myAction==="jouerCarte"? "A vous de jouer !" : myAction==="choisirLigne" ? "Choissisez une ligne à récupérer":"Veuillez patienter..."}</p>
+            myAction==="jouerCarte"? "A vous de jouer !" :getMsg(myAction)}</p>
             {cards.map((card,index) => 
                 <CardHand key={index} value={card} x={pointsCards.x[index]} y={pointsCards.y} />
             )}
@@ -165,9 +165,8 @@ function Center() {
 
 
 function Player(props) {
-    const { Info, OtherPlayerAction} = useOutletContext();
+    const { Info, OtherPlayerAction,pseudo} = useOutletContext();
     const img = props.img
-    const dosImg = props.dosImg;
     const colors = ['#FF5733', '#33FF57', '#5733FF', '#FF33A1', '#33B5FF', '#FFB533', '#A133FF', '#33FFEC', '#FF3344', '#8C33FF'];
     const playerColor = colors[props.index % colors.length];
 
@@ -195,14 +194,24 @@ function Player(props) {
         height: '75px',
         marginBottom: '10px',
     };
+    let msg="";
+    let card = <></>
+    if(OtherPlayerAction[props.pseudo]){
+        if(OtherPlayerAction[props.pseudo]==="jouerCarte"){
+            console.log("dadada",Info,props.pseudo,Info.center[props.pseudo])
+            card = (props.pseudo in Info.center ? <Card  y={250} card={Info.center[props.pseudo]}/> :<img src={props.dosImg} alt="Dos de carte" style={cardStyle} />);
+        }else{
+            msg = getMsgOther(OtherPlayerAction[props.pseudo]);
+        }
+    }
 
     return (
         <>
         <div style={playerContainerStyle}>
             <img src={img} alt="Bonhomme" style={imageStyle} />
-            <p>{props.pseudo}</p>
+            <p style={props.pseudo === pseudo?{color:'red'}:{}}>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.score} Points</p>
-            {OtherPlayerAction.includes(props.pseudo) ? props.pseudo in Info.center ? <Card  y={250} card={Info.center[props.pseudo]}/> :<img src={dosImg} alt="Dos de carte" style={cardStyle} /> : <></> }
+            {card}
         </div></>
     );
 }
