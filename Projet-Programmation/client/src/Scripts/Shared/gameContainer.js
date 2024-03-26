@@ -131,8 +131,8 @@ function GameContainer(){
                                 p = indexOf(playerD,copy['infoPlayers']);
                                 console.log("bruh",p,playerD,copy['infoPlayers'])
                                 if(p!=-1){
-                                    for (const p of paramsPlayer){
-                                        if(playerD[p])copy['infoPlayers'][p]=playerD[p];
+                                    for (const param of paramsPlayer){
+                                        if(playerD[param])copy['infoPlayers'][p][param]=playerD[param];
                                     }
                                 }else{
                                     copy['infoPlayers'].push(playerD)
