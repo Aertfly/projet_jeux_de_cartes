@@ -41,7 +41,7 @@ function recupererPseudo(db, idJoueur) {
  * @param {Number} idPartie L'ID de la partie
  * @returns Promesse d'envoyer une résolution vide quand les scores auront été ajoutés
  */
-function ajouterScores(db, idPartie){
+async function ajouterScores(db, idPartie){
     return new Promise((resolve, reject) => {
         // On ajoute les joueurs à 0
         db.query("INSERT IGNORE INTO statistiques (idJ, jeu, totalPoints, nombreParties) SELECT j.idJ, p.type, 0, 0 FROM joue j CROSS JOIN parties p WHERE p.idPartie=?;", [idPartie], (err, result) => { if(err) throw err; 
@@ -87,7 +87,7 @@ function recupererInfosJoueurs(db, idParty){
  * @param {Server} io Le serveur pour communiquer avec les clients
  * @param {Number} idPartie L'ID de la partie 
  */
-const envoyerInfos = function(db, io, idPartie){
+const envoyerInfos = async function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
     db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur,p.pioche FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
@@ -134,11 +134,15 @@ const envoyerCartesGagnees = function(db, socket, data){
  * @param {Number} idPartie L'ID de la partie
  * @returns {Promise} Promesse de renvoyer la liste des joueurs qui peuvent jouer dans la partie
  */
-async function joueursPossibles(db, idPartie){
+async function recupererJoueursPossibles(db, idPartie){
     return new Promise((resolve) => {
         // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
         db.query("SELECT jo.idJ, p.centre from joue jo,parties p where jo.idPartie = p.idPartie AND p.idPartie=? AND jo.main!= '[]';", [idPartie, idPartie], async (err3, result3) => {
             if (err3) throw err3;
+            if(result3.length == 0){
+                resolve([]);
+                return;
+            }
             // On fait la liste des joueurs qui ont une main non vide
             let joueursPossibles = [];
             for (let index = 0; index < result3.length; index++) {
@@ -202,4 +206,4 @@ async function requestAction(io,db,idParty,idJ,action){
     setTimeout(()=>io.to(idParty).emit('requestAction',{'idJ':idJ,'action':action,'pseudo':pseudo}),1000);
 }
 
-module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo,requestAction};
+module.exports = {ajouterScores, recupererInfosJoueurs,recupererJoueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo,requestAction};

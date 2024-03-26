@@ -1,10 +1,11 @@
-const { recupererPseudos, envoyerInfos,joueursPossibles } = require("../utils/functions.js");
+const { recupererPseudos, envoyerInfos,joueursPossibles, ajouterScores, recupererJoueursPossibles } = require("../utils/functions.js");
 
 async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket){
     // Si archive est vide : on n'est pas dans une bataille
     if (JSON.stringify(archive) == "{}") {
         console.log("On n'est pas dans une bataille");
-        let unionJoueursPossibles = await joueursPossibles(db, data.idPartie);
+
+        let unionJoueursPossibles = await recupererJoueursPossibles(db, data.idPartie);
 
         if (unionJoueursPossibles.length <= 1) {
             finDePartie(io, db, data.idPartie);
@@ -16,7 +17,7 @@ async function playerActionBataille(io, db, centre, archive, cartesJoueurs, data
     } else { // Si archive n'est pas vide : on est dans une bataille
         console.log("On est dans une bataille")
         // le nombre de joueurs qui peuvent jouer correspond à la taille de la liste retournée par joueursBataille2(archive)
-        let joueursPossibles = joueursBataille2(archive)
+        let joueursPossibles = Array.from(new Set([...joueursBataille2(archive)].filter(async x => new Set(await recupererJoueursPossibles(db, data.idPartie)).has(x))));
 
         if (joueursPossibles.length <= 1) {
             finDePartie(io, db, data.idPartie); 
@@ -116,7 +117,6 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
         if(valeurs.includes("1")){ // S'il y a un as, c'est la valeur la plus grande
             valeurLaPlusGrande = 1;
         } else { // Sinon, la liste étant triée, la dernière valeur est forcément la plus grande
-            console.log("Pas d'as détecté, voici les valeurs : " + JSON.stringify(valeurs));
             valeurLaPlusGrande = valeurs[valeurs.length - 1];
         }
 
@@ -128,7 +128,6 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                     gagnantDeLaBataille = clé;
                 }
             }
-            // console.log("Pli remporté par " + gagnantDeLaBataille + " sur la base de " + JSON.stringify(centre) + " ; valeurs = " + JSON.stringify(valeurs) + " ; valeurLaPlusGrande = " + JSON.stringify(valeurLaPlusGrande));
             // On ajoute à ses cartes gagnées toutes les cartes des deux centres
             db.query("SELECT gagnees FROM joue WHERE idJ=? AND idPartie=?", [gagnantDeLaBataille, idPartie], async (err, result) => {
                 if (err) throw err;
@@ -162,8 +161,14 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
                     db.query("SELECT tour FROM parties WHERE idPartie=?", [idPartie], async (err3, result3) => {
                         if (err3) throw err3;
 
-                        // On annonce un nouveau tour
-                        annoncerJoueurs(io, db, joueurs, result3[0]["tour"], idPartie)
+                        partieFinie(db, idPartie).then((booleenPartieFinie) => {
+                            if(booleenPartieFinie){
+                                finDePartie(io, db, idPartie);
+                            } else {
+                                // On annonce un nouveau tour
+                                annoncerJoueurs(io, db, joueurs, result3[0]["tour"], idPartie)
+                            }
+                        })
                     });
                 });
             });
@@ -240,9 +245,10 @@ function suite(io, db, idPartie, nbJoueursPossibles, centre, archive, cartesJoue
  * @param {*} idPartie 
  * @param {*} cartesJoueurs 
  */
-function finDePartie(io, db, idPartie) {
-    mettreAJourScores(db, idPartie);
-    ajouterScores(db, idPartie);
+async function finDePartie(io, db, idPartie) {
+    await mettreAJourScores(db, idPartie);
+    await envoyerInfos(db, io, idPartie);
+    await ajouterScores(db, idPartie);
 
     // On récupère le pseudo et les cartes gagnées par le vainqueur
     db.query("SELECT jo.pseudo as pseudo, j.main as main, j.gagnees as gagnees FROM joue j, joueurs jo WHERE j.score != 0 AND j.idPartie=? AND j.idJ=jo.idJ", [idPartie], (err, result) => {
@@ -305,18 +311,48 @@ function annoncerJoueurs(io, db, listeJoueurs, numeroTour, idPartie) {
 
 
 /**
- * Met à jour les scores des joueurs d'une partie
- * Le score d'un joueur correspond à la somme du nombre de cartes dans sa main et du nombre de ses cartes gagnées 
+ * Met à jour les scores des joueurs d'une partie.
+ * Le score d'un joueur correspond à la somme du nombre de cartes dans sa main et du nombre de ses cartes gagnées.
  * @param {mysql.Connection} db La connexion à la base de données
  * @param {Number} idPartie L'ID de la partie
+ * @returns Promesse résolue quand l'exécution s'est terminée
  */
-function mettreAJourScores(db, idPartie){
-    db.query("SELECT idJ, main, gagnees FROM joue WHERE idPartie=?", [idPartie], (err, result) => {
-        if(err) throw err;
-        result.forEach(ligne => {
-            main = JSON.parse(ligne["main"]);
-            gagnees = JSON.parse(ligne["gagnees"]);
-            db.query("UPDATE joue SET score = ? WHERE idPartie=? AND idJ=?", [main.length+gagnees.length, idPartie, ligne["idJ"]], (err2, result2) => { if(err2) throw err2; });
+async function mettreAJourScores(db, idPartie){
+    return new Promise((resolve) => {
+        db.query("SELECT idJ, main, gagnees FROM joue WHERE idPartie=?", [idPartie], (err, result) => {
+            if(err) throw err;
+            result.forEach(ligne => {
+                main = JSON.parse(ligne["main"]);
+                gagnees = JSON.parse(ligne["gagnees"]);
+                db.query("UPDATE joue SET score = ? WHERE idPartie=? AND idJ=?", [main.length+gagnees.length, idPartie, ligne["idJ"]], (err2, result2) => { 
+                    if(err2) throw err2; 
+                });
+            });
+            setTimeout(() => {
+                resolve();
+            }, 500);
+        });
+    })
+}
+
+/**
+ * Teste si une partie est finie (un joueur n'a plus aucune carte)
+ * @param {mysql.Connection} db La connexion à la base de données
+ * @param {Number} idPartie L'ID de la partie
+ * @returns Promesse de renvoyer un booléen indiquant si la partie est finie
+ */
+function partieFinie(db, idPartie){
+    return new Promise((resolve, reject) => {
+        db.query("SELECT main, gagnees FROM joue WHERE idPartie=?", [idPartie], (err, result) => {
+            if(err) throw err;
+            result.forEach(joueur => {
+                main = JSON.parse(joueur["main"]);
+                gagnees = JSON.parse(joueur["gagnees"]);
+                if(main.length + gagnees.length == 0){
+                    resolve(true)
+                }
+            })
+            resolve(false);
         });
     });
 }

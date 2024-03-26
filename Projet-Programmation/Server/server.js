@@ -36,23 +36,23 @@ const db = mysql.createConnection({
 
 //base de données rate :
 
-const db = mysql.createConnection({
+/*const db = mysql.createConnection({
     host: 'rateapp.fr',
     user: 'cp2253952p22_projetprogrammation',
     password: 'azertyu123!',
     database: 'cp2253952p22_projetprogrammation'
-});
+});*/
 
 
 // base de données maison :
-/*
+
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'e20220005227'
 });
-*/
+
 
 db.connect((err) => {
     if (err) {
