@@ -111,20 +111,21 @@ const playerActionMemory = async function(io, db, data, donneesDB){
 function updateWinnedCards(io, data, winnedCards, db){
     return new Promise((resolve,reject)=>{
 
-        db.query("SELECT * FROM joue WHERE idPartie = ? and idJ = ?", [data.idPartie, data.playerId],(err,donneesDB) => {
+        db.query("SELECT joue.gagnees, joue.score, joueurs.pseudo FROM joue,joueurs WHERE joue.idJ = joueurs.idJ and joue.idPartie = ? and joue.idJ = ?", [data.idPartie, data.playerId],(err,donneesDB) => {
             if(err)throw(err);
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
+            pseudo = (donneesDB[0]['pseudo']);
             const infoJoueurs=[
                 {   
-                    "pseudo": data.playerId,
+                    "pseudo": pseudo,
                     "score": currentScore
             }];
             io.to(data.idPartie).emit('infoGameOut', {infoPlayers: infoJoueurs});
             db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ? and idJ = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie, data.playerId],async(err,result)=>{
                 if(err)reject(err);
-                console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
-                resolve(result.changedRows === 1);
+                console.log((result.changedRows === 2) ? 'Paramètres enregistrés dans la db, updateWinnedCards':"Erreur paramètres invalides, updateWinnedCards");
+                resolve(result.changedRows === 2);
             });
         });
 
@@ -140,7 +141,7 @@ function resetArchive(archive, data, db) {
         };
         db.query("UPDATE parties SET archive = ? where idPartie = ?",[JSON.stringify(archive), data.idPartie],async(err,result)=>{
             if(err)reject(err);
-            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
+            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db, archive à été reset':"Erreur paramètres invalides, archive non reset");
             resolve(archive);
         });
     });
@@ -150,7 +151,7 @@ function updateCentre(centre, data, db){
     return new Promise((resolve,reject)=>{
         db.query("UPDATE parties SET centre = ? where idPartie = ?",[JSON.stringify(centre), data.idPartie],async(err,result)=>{
             if(err)reject(err)
-            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
+            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db, centre à été update':"Erreur paramètres invalides, centre non update");
             resolve(result.changedRows === 1);
         });
     });
@@ -160,7 +161,7 @@ function updateArchive(archive, data, db){
     return new Promise((resolve,reject)=>{
         db.query("UPDATE parties SET archive = ? where idPartie = ?",[JSON.stringify(archive), data.idPartie],async(err,result)=>{
             if(err)reject(err)
-            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
+            console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db, archive à été update':"Erreur paramètres invalides, archive non update");
             resolve(result.changedRows === 1);
         });
     });
