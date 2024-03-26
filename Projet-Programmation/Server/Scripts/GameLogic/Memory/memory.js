@@ -97,8 +97,8 @@ function updateWinnedCards(io, data, winnedCards, db){
         db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
             if(err)throw(err);
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
-            io.to(data.playerId).emit('infoGameOut', {gagnees: winnedCardsDB});
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
+            io.to(data.playerId).emit('infoGameOut', {gagnees: winnedCardsDB, score: currentScore});
 
             db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ? and idJ = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie, data.playerId],async(err,result)=>{
                 if(err)reject(err);
