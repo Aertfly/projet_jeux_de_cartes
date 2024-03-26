@@ -76,6 +76,13 @@ function Center() {
         transform: 'translateX(-50%)',
     };
 
+    const textContainerStyle = {
+        position: 'absolute',
+        top: '50%',
+        left: '10%',
+        transform: 'translateY(-50%)',
+    };    
+    
     const countShowedCard = (value) => {
         return Info.archive.filter(cardValue => cardValue === value && cardValue !== 0 && cardValue !== -1).length;
         // la vérification de 0 et -1 c'est pour ne pas mettre une bordure verte si les cartes sont cachés (car elles sont plusieurs à avoir -1)
@@ -129,19 +136,21 @@ function Center() {
     });
     
     return (
-        <div className="center-container">
-            <p style={buttonContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
-            {centerRows.map((rowCards, rowIndex) => (
-                <div key={rowIndex} className="row-container">
-                    {rowCards}
-                </div>
-            ))}
+        <div>
+            <p style={textContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
+            <div className="center-container">
+                {centerRows.map((rowCards, rowIndex) => (
+                    <div key={rowIndex} className="row-container">
+                        {rowCards}
+                    </div>
+                ))}
 
-            {showValidateButton && (
-                <div style={buttonContainerStyle}>
-                    <button style={buttonContainerStyle} onClick={handleValidateClick}>Valider</button>
-                </div>
-            )}
+                {showValidateButton && (
+                    <div style={buttonContainerStyle}>
+                        <button style={buttonContainerStyle} onClick={handleValidateClick}>Valider</button>
+                    </div>
+                )}
+            </div>
         </div>
     );
     
@@ -164,8 +173,8 @@ function Memory(){
 
     return (
         <div>
-            <Center />
             <GameBoard />
+            <Center />
         </div>
     )
 }
