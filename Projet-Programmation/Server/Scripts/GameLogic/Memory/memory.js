@@ -59,7 +59,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                                 console.log("On va envoyer les infos")
                                 envoyerInfos(db, io, data.idPartie);
                                 setTimeout(() => {
-                                    io.to(data.idPartie).emit('endGame', {looser: {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]}, winner: {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]}});
+                                    io.to(data.idPartie).emit('endGame', {tri: "croissant", looser: {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]}, winner: {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]}});
                                 }, 2000);
                             });
                         });
@@ -98,7 +98,6 @@ function updateWinnedCards(io, data, winnedCards, db){
             if(err)throw(err);
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
-            io.to(data.playerId).emit('infoGameOut', {gagnees: winnedCardsDB, score: currentScore});
 
             db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ? and idJ = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie, data.playerId],async(err,result)=>{
                 if(err)reject(err);

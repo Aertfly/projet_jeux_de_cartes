@@ -74,6 +74,9 @@ const gestionTours = function (io, socket, db) {
                 case "Bataille":
                     envoyerCartesGagnees(db, socket, data);
                     break;
+                case "Memory":
+                    envoyerCartesGagnees(db, socket, data);
+                    break;
                 default:
                     throw "Jeu inconnu";
             }

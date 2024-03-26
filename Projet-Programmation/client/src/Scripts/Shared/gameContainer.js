@@ -12,7 +12,8 @@ import imgPlaceholder from '../../Assets/img/NoImagePlaceholder.png';//Ranjithsi
 function EndGame(props) {
     const Info  =  props.Info;
     const resultGame = props.resultGame;
-    Info.infoPlayers.sort((a, b) => a.score - b.score);
+    if (resultGame.tri === "croissant") Info.infoPlayers.sort((a, b) => b.score - a.score);
+    else Info.infoPlayers.sort((a, b) => a.score - b.score);
 
     return (
         <div className="result-container">
