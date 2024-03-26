@@ -20,6 +20,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
         io.to(data.idPartie).emit('infoGameOut', {archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});//infoGameOut archive
         if (archive[data.carte] == 0) {
             console.log("Le joueur n'est pas censé choisir une paire déjà trouvée !");
+            io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length),pseudos:[await recupererPseudo(db,data.playerId)]}); // on refait jouer
         } else if (archive[data.carte] == -1){
             console.log("Première carte jouée par " + data.playerId);
             centre[data.playerId].push(data.carte); // on initialise l'index de la première carte jouée dans centre
@@ -36,6 +37,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
         ancienneCarte = centre[data.playerId][0];
         if (archive[data.carte] >= 0){
             console.log("Le joueur n'est pas censé choisir une paire déjà trouvée où celle qu'il à choisit juste avant!");
+            io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length),pseudos:[await recupererPseudo(db,data.playerId)]}); // on refait jouer
         } else if (archive[data.carte] == -1){
             console.log("Deuxième carte jouée par " + data.playerId);
             if (pioche[data.carte] == pioche[ancienneCarte]){ // si le joueur trouve une paire 
