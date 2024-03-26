@@ -7,7 +7,7 @@ import Deconnection from '../Components/deconnection.js';
 import Chat from '../Components/chatComponent.js';
 import Save from '../Components/saveComponent.js';
 import Leave from '../Components/Leave.js';
-import imgPlaceholder from '../../Assets/img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
+
 
 
 function NbTurn(props){
@@ -76,7 +76,7 @@ function GameContainer(){
   const [Info, setInfo] = useState([]);
   const [myAction, setMyAction] = useState(null);
   const [OtherPlayerAction, setOtherPlayerAction] = useState({});
-  const [images,setImages] = useState({"./":imgPlaceholder});
+  const [images,setImages] = useState({});
   const [resultGame, setResultGame] = useState('');
   const contextValue = {
       idJ,

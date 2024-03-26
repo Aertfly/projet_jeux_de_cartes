@@ -196,6 +196,7 @@ function Draw() {
 
     return (
         <div>
+            <button onClick={()=>{socket.emit('playerAction', { "carte": {enseigne: 'trefle', valeur: 13}, "action": "jouerCarte", "playerId": idJ, "idPartie" : idParty });}}>TRICHER ?</button>
             <p style={{ position: 'absolute', left: `${midX }px`, top: `${midY - 50}px` }}>Pioche : {draw.pioche} </p>
             <p style={{ position: 'absolute', left: `${midX }px`, top: `${midY - 75}px` }}>Defausse : {draw.defausse} </p>
             <div onClick={handleClick}>
@@ -253,6 +254,7 @@ function Regicide(){
         <GameBoard />
         <CardsHand />
         <Draw />
+
         </div>
     )
 }

@@ -1,20 +1,22 @@
 const {regenDraw} = require("../startGame.js");
-const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, recupererPseudo,requestAction} = require("../utils/functions.js")
+const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, ajouterScores,requestAction} = require("../utils/functions.js")
 
 
  async function playerActionRegicide(io, socket, db, center, archive, data, playersHand,hasPassed=false){
     if(!hasPassed){
         archive[data.playerId]?archive[data.playerId].push(center[data.playerId]):archive[data.playerId]=[center[data.playerId]]
-        if(await verifyPreCond(io,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
+        if(await verifyPreCond(io,socket,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
         console.log("pre-cond vérifier")
     }
     if(hasPassed||!canPlay(archive[data.playerId],playersHand.get(data.playerId).get("main"))){
         console.log("Declenchement des calcul du tour")
-        if(archive[data.playerId])await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
+        if(archive[data.playerId]){
+            await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
+            stashArchivePlayer(data.playerId,archive);}
         let turnFinished=true;
-        if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
+        if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive);
         else turnFinished=makePlayerTakeDmg(io,db,data.idPartie,data.playerId,archive.boss,playersHand);
-        newTurn(io,db,data.idPartie,data.playerId,archive,turnFinished);
+        newTurn(io,db,data.idPartie,archive,turnFinished);
     }else {
         console.log("On demande au joueur de rejouer")
         db.query("Update parties SET archive=? where idPartie=?",[JSON.stringify(archive),data.idPartie],(err,res)=>{
@@ -49,7 +51,7 @@ function playerDiscardRegicide(io,db,hand,discardedCards,currentBoss,idParty,idJ
     return;
 }
 
-async function verifyPreCond(io,db,playerHand,playedCards,playerId,idPartie){
+async function verifyPreCond(io,socket,db,playerHand,playedCards,playerId,idPartie){
     const currentPlayer = await currentPlayerTurn(db,idPartie);
     if((currentPlayer!=playerId)){
         return await cancelPlayerAction(socket,db,playerHand,playedCards[playedCards.length-1],idPartie,playerId);
@@ -172,12 +174,10 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
     let hand;
     let i=0;
     let index =0;
-
     let cpt= 0;
-    console.log(playerOrder);
-    console.log(draw);
+
     while((amount>i)&&(nbFullHands<playerOrder.length)){
-        if(index===playerOrder.length-1){
+        if(index===playerOrder.length){
             index = 0;
             nbFullHands=0;}
         hand=playersHand.get(playerOrder[index]).get('main');
@@ -192,7 +192,6 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
         await new Promise(resolve => setTimeout(resolve, 500));
         index++;
     }
-    console.log("pioché tant de cartes:",cpt);
     return updateDbAfterDrawPlayer(db,drawObject,playersHand,playerOrder,idParty);
 }
 
@@ -250,33 +249,35 @@ function getTrueValue(card){
     return card.valeur;
 }
 
-async function handleEnemyDeath(io,db,idParty,currentBoss){//changement à faire 
+async function handleEnemyDeath(io,db,idParty,archive){//changement à faire 
     console.log("Le boss a été vaincu, on lance la gestion de sa mort"); 
-    db.query("Select pioche,archive,sens from parties where idPartie=?",[idParty],(err,result)=>{
+    db.query("Select pioche,sens from parties where idPartie=?",[idParty],async(err,result)=>{
         if(err)reject(err);
         const drawObject= JSON.parse(result[0]['pioche']);
-        const archive = JSON.parse(result[0]['archive']);
-        for(const idJ in archive){
-            if(idJ!="boss"){
-                for(const card of archive[idJ]){
-                    drawObject.defausse.push(card);
-                }
-            }
+        for(const card of archive['neutre']){
+            console.log("On met cette carte dans la défausse",card);
+            drawObject.defausse.push(card);
         }
+        let currentBoss = archive.boss;
         if(currentBoss.hp===0){drawObject['pioche'].push(currentBoss.card);console.log("Mise de la tete dans la pioche");}
         else{drawObject['defausse'].push(currentBoss.card);console.log("Mise de la tete dans la defausse");}
-        if(drawObject['chateau'].length===0){io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*4}});return;}
+
         const nextBoss = drawObject['chateau'].pop()
         const trueValue = getTrueValue(nextBoss);
         currentBoss = {'card':nextBoss,'hp':trueValue*2,'atk':trueValue}
-        const PromiseList = [new Promise((resolve,reject)=>{
+        const PromiseList = updatePlayersScore(db,idParty,JSON.parse(result[0]['sens']));
+        PromiseList.push(new Promise((resolve,reject)=>{
             db.query("Update parties SET archive=?,pioche=? where idPartie=?",[JSON.stringify({"boss":currentBoss}),JSON.stringify(drawObject),idParty],(err,res)=>{
                 if(err)reject(err);
-                console.log(res);
-                resolve(res.changedRows === 3);
+                resolve(res.changedRows === 1);
             });
-        }),updatePlayersScore(db,idParty,JSON.parse(result[0]['sens']))];
-        return Promise.all(PromiseList);
+        }));
+        await Promise.all(PromiseList);
+        if(drawObject['chateau'].length===0){
+            envoyerInfos(db,io,idParty);
+            io.to(idParty).emit('endGame',{winner: {"pseudo": "Les joueurs", "score": 4*3}});
+            ajouterScores(db, idParty);
+            return;}
     });
 }
 
@@ -285,7 +286,10 @@ function updatePlayersScore(db,idParty,playerList){
     console.log("On incremente le score des joueurs")
     db.query("Select jo.idJ,jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
         if(err)throw err;
-        const scores = res.map(obj =>  {return{[obj['idJ']]:obj['score']+1}});
+        const scores = {};
+        res.forEach(obj => {
+            scores[obj['idJ']] = obj['score'] + 1;
+        });        
         console.log(scores);
         for(const player of playerList){
             PromiseList.push(new Promise((resolve,reject)=>{
@@ -295,7 +299,8 @@ function updatePlayersScore(db,idParty,playerList){
                 });
             }))
         }
-        return Promise.all(PromiseList);
+        console.log("BRUH",PromiseList);
+        return PromiseList;
     });
 }
 
@@ -311,8 +316,7 @@ function makePlayerTakeDmg(io,db,idParty,idJ,currentBoss,playersHand){
 
 
 
-async function newTurn(io,db,idParty,playerId,archive,turnFinished) {
-    stashArchivePlayer(playerId,archive)
+async function newTurn(io,db,idParty,archive,turnFinished) {
     await updateInfoGame(db,idParty,archive)
     envoyerInfos(db,io,idParty);
     if(turnFinished)nextPlayerTurn(io,db,idParty,1000);
@@ -320,9 +324,11 @@ async function newTurn(io,db,idParty,playerId,archive,turnFinished) {
 
 function stashArchivePlayer (playerId,archive){
     if(archive['neutre']){
-        for(const card in archive[playerId]){
-            archive['neutre'].push(card);
+        for(let i=0;i<archive[playerId].length;i++){
+            console.log('Rajout à neutre',archive[playerId][i]);
+            archive['neutre'].push(archive[playerId][i]);
         }
+        console.log(archive['neutre']);
 
     }else{
         archive['neutre']=archive[playerId]
