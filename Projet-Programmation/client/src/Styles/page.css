@@ -321,6 +321,9 @@ hr{
 #home {
     margin: auto;
 }
+#home > *{
+    height: 500px;
+}
 
 #nbJoueurs {
     display: flex;
