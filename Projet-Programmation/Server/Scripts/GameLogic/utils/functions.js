@@ -189,7 +189,7 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
             db.query('Update parties SET sens=?,tour=? where idPartie=?',[JSON.stringify(playerOrder),turn,idParty],async(err,result)=>{
                 if (err)reject(err);
                 setTimeout(async()=>{
-                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length),pseudos:await recupererPseudo(db,playerOrder[0])});
+                    io.to(idParty).emit('newTurn',{joueurs:[playerOrder[0]],numeroTour:Math.floor(turn/playerOrder.length),pseudos:[await recupererPseudo(db,data.playerId)]});
                     resolve(result.changedRow === 3);
                 },timeOut)
             });
