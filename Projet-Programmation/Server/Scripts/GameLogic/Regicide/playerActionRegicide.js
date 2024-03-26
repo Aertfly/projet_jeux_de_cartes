@@ -13,7 +13,7 @@ const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, recupererPseudo,requestAct
         if(archive[data.playerId])await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
         let turnFinished=true;
         if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
-        else turnFinished=makePlayerTakeDmg(io,db,data.idPartie,data.playerId,archive.boss,playersHand.get(data.playerId).get("main"));
+        else turnFinished=makePlayerTakeDmg(io,db,data.idPartie,data.playerId,archive.boss,playersHand);
         newTurn(io,db,data.idPartie,data.playerId,archive,turnFinished);
     }else {
         console.log("On demande au joueur de rejouer")
@@ -299,10 +299,10 @@ function updatePlayersScore(db,idParty,playerList){
     });
 }
 
-function makePlayerTakeDmg(io,db,idParty,idJ,currentBoss,playerHand){
+function makePlayerTakeDmg(io,db,idParty,idJ,currentBoss,playersHand){
     if(currentBoss.atk>0){
-        if(playerHand===0) io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}});
-        else requestAction(io,db,idParty,idJ,"defausserCarte")
+        if(playersHand.get(idJ))requestAction(io,db,idParty,idJ,"defausserCarte")//si le joueur a une main, on lui demande de défausser une carte
+        else io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}});
         return false;
         }
         return true;

@@ -89,7 +89,7 @@ function recupererInfosJoueurs(db, idParty){
  */
 const envoyerInfos = function(db, io, idPartie){
     // On récupère les infos utiles sur la BDD
-    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.tour,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur,p.pioche FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
+    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,j.score,p.type,FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0)) as scoreMoyenJoueur,p.pioche FROM parties p JOIN joue j ON p.idPartie = j.idPartie JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
         if(err)reject(err);
         const infoJoueurs=[];
         for(i=0;i<result.length;i++){
@@ -109,7 +109,7 @@ const envoyerInfos = function(db, io, idPartie){
         const draw = JSON.parse(result[0]["pioche"]);
         let nbdraw = draw['pioche']? {'pioche':draw['pioche'].length,'defausse':draw['defausse'].length}: draw.length;
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs, nbTour: result[0]["tour"]});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs});
     });
 }
 

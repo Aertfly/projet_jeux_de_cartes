@@ -117,22 +117,32 @@ function GameContainer(){
             socket.on('infoGameOut', (data) => {
                 console.log("Info de la partie", data);
                 setInfo(prevInfo =>{
+                    //On update seulement les informations que le serveur nous demande de mettre à jour;
                     let copy = {...prevInfo}
                     const params = ['center','archive','draw']
                     for (const p of params){
                         if(data[p])copy[p]=data[p];
                     }
                     if(data['infoPlayers']){
-                        const paramsPlayer = ['nbCards','pseudo','score','scoreMoyenJoueur']
-                        for(let i=0;i<copy['infoPlayers'].length;i++){
-                            for(const p of paramsPlayer){
-                                if(data['infoPlayers'][i][p]) copy['infoPlayers'][i][p] = data['infoPlayers'][i][p];
+                        if(copy['infoPlayers']){
+                            for(let i=0;i<data['infoPlayers'].length;i++){
+                                if(copy['infoPlayers'][i]){
+                                    const paramsPlayer = ['nbCards','pseudo','score','scoreMoyenJoueur'];
+                                    for(const p of paramsPlayer){
+                                        if(data['infoPlayers'][i][p]) copy['infoPlayers'][i][p] = data['infoPlayers'][i][p];
+                                    }
+                                }else{
+                                    copy['infoPlayers'][i] = data['infoPlayers'][i];
+                                }
                             }
+                        }else{
+                            copy['infoPlayers'] = data['infoPlayers'];
                         }
                     }
                     return copy;
                 });
             });
+
             
             socket.on('newTurn', (data) => {
                 console.log('newTurn', data);
