@@ -113,13 +113,22 @@ function GameContainer(){
                 console.log("Cartes reçues via dealingCards",data);
                 setCards(data.Cards);
             });
+
             socket.on('infoGameOut', (data) => {
                 console.log("Info de la partie", data);
                 setInfo(prevInfo =>{
                     let copy = {...prevInfo}
-                    const params = ['center','archive','draw','infoPlayers']
+                    const params = ['center','archive','draw']
                     for (const p of params){
                         if(data[p])copy[p]=data[p];
+                    }
+                    if(data['infoPlayers']){
+                        const paramsPlayer = ['nbCards','pseudo','score','scoreMoyenJoueur']
+                        for(let i=0;i<copy['infoPlayers'].length;i++){
+                            for(const p of paramsPlayer){
+                                if(data['infoPlayers'][i][p]) copy['infoPlayers'][i][p] = data['infoPlayers'][i][p];
+                            }
+                        }
                     }
                     return copy;
                 });
