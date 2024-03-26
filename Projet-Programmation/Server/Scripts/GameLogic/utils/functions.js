@@ -197,6 +197,9 @@ function nextPlayerTurn(io,db,idParty,timeOut=0){
     });
 }
 
+async function requestAction(io,db,idParty,idJ,action){
+    const pseudo = await recupererPseudo(db,idJ);
+    setTimeout(()=>io.to(idParty).emit('requestAction',{'idJ':idJ,'action':action,'pseudo':pseudo}),1000);
+}
 
-
-module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo};
+module.exports = {ajouterScores, recupererInfosJoueurs,joueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo,requestAction};

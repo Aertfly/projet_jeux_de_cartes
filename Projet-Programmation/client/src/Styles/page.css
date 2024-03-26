@@ -338,3 +338,15 @@ hr{
     margin: 0 5px;
   }
   
+  .tour-info {
+    position: fixed;
+    bottom: 250px; /* Change 'top' to 'bottom' */
+    right: 10px;
+    background-color: #FF5733; 
+    color: white; 
+    padding: 10px 20px; 
+    border-radius: 25px; 
+    font-size: larger; 
+}
+
+

@@ -119,4 +119,4 @@ const ICD = function(io,socket,db){
     abandon(io, socket, db);
 };
 
-module.exports = ICD;
+module.exports = {ICD,asso};

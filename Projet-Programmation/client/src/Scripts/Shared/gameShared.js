@@ -34,7 +34,7 @@ function getMsg(action){
 
 function getMsgOther(action){
     switch(action){
-        case "doitJouer":
+        case "doitJouer"||"doitRetournerCarte":
             return "Ce joueur doit jouer";
         case 'piocherCarte':
             return "a pioché une carte";
@@ -44,19 +44,25 @@ function getMsgOther(action){
             return "a passé son tour";
         case 'retournerCarte':
             return "a retourné une carte";
+        case 'doitpiocherCarte':
+            return "Ce joueur doit piocher";
+        case 'doitdefausserCarte':
+            return "Ce joueur doit défausser une carte";
+        case 'doitchoisirLigne':
+            return "Ce joueur selectionne une ligne a récupérer"
         default :
             return "fait une action inconnue";
     }
 
 }
 
-function circlePoints(r, nb) {
+function circlePoints(r , nb ) {
     const radius = r;
     const angleIncrement = (2 * Math.PI) / nb;
     const positions = [];
 
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
+    const centerX = window.innerWidth / 2 -100;
+    const centerY = window.innerHeight / 2  - 150;
 
     for (let i = 0; i < nb; i++) {
         const angle = i * angleIncrement;
@@ -64,8 +70,10 @@ function circlePoints(r, nb) {
         const y = centerY + Math.sin(angle) * radius;
         positions.push({ x, y });
     }
+
     return positions;
 }
+
 
 function generatePointWonCards(nb, widthCards, heightCards) {
     const listPoints = [];

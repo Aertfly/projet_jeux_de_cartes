@@ -59,7 +59,7 @@ function Chat({ data }) {
     color:'black',
     backgroundColor: 'gray',
     width: '300px',
-    height: '200px',
+    height: '100px',
     overflowY: 'auto',
     border: '2px solid black'
   };

@@ -9,6 +9,13 @@ import Save from '../Components/saveComponent.js';
 import Leave from '../Components/Leave.js';
 import imgPlaceholder from '../../Assets/img/NoImagePlaceholder.png';//Ranjithsiji, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons
 
+
+function NbTurn(props){
+    const nb = props.nbTurn;
+    console.log("TOUR")
+    return (<p className="tour-info">On est au tour : {nb}</p>)
+}
+
 function EndGame(props) {
     const Info  =  props.Info;
     const resultGame = props.resultGame;
@@ -87,8 +94,6 @@ function GameContainer(){
       setCards,   
       socket,
       navigate,
-      resultGame, 
-      setResultGame
   };
 
 
@@ -112,7 +117,7 @@ function GameContainer(){
                 console.log("Info de la partie", data);
                 setInfo(prevInfo =>{
                     let copy = {...prevInfo}
-                    const params = ['center','archive','draw','infoPlayers','nbTour']
+                    const params = ['center','archive','draw','infoPlayers']
                     for (const p of params){
                         if(data[p])copy[p]=data[p];
                     }
@@ -121,6 +126,7 @@ function GameContainer(){
             });
             
             socket.on('newTurn', (data) => {
+                console.log('newTurn', data);
                 setOtherPlayerAction(()=>{
                     let copy = {}
                     for(const p of data.pseudos){
@@ -128,10 +134,12 @@ function GameContainer(){
                     }
                     return copy;
                 });
-                if (data.joueurs.includes(idJ)) {
-                    console.log("C'est mon tour de jouer ! - Tour " + data.numeroTour);
-                    setMyAction("jouerCarte");
-                }
+                setInfo((prev)=>{
+                    let copy = {...prev}
+                    copy['nbTour'] = data.numeroTour
+                    return copy;
+                })
+                if (data.joueurs.includes(idJ))setMyAction("jouerCarte");
             });
 
             socket.on('conveyAction', (data) => {
@@ -152,6 +160,13 @@ function GameContainer(){
                 if(data.idJ === idJ){
                     setMyAction(data.action);
                     console.log("Je dois faire un truc");
+                }
+                else{
+                    setOtherPlayerAction(prev =>{
+                        let copy = {...prev};
+                        copy[data.pseudo] = "doit" + data.action;
+                        return copy;
+                    });
                 }
             });
             
@@ -189,6 +204,7 @@ function GameContainer(){
         <Leave idj={idJ} socket={socket} />
         <Chat data={{ party: idParty }} />
         {resultGame ?<EndGame resultGame={resultGame} Info={Info}/>:<><Save data={{ party: idParty }}/><Outlet context={contextValue} /></>}
+        {Info['nbTour']>=0?<NbTurn nbTurn={Info['nbTour']}/>:<></>}
         </>
     );
 }

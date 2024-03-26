@@ -1,4 +1,4 @@
-
+const {asso} = require('../UserInterface/ICD');
 const startGame = function(io,socket,db){
     socket.on('start', data => {
         console.log("Tentative de lancement de la partie :", data.idParty, " par : ", data.idPlayer);

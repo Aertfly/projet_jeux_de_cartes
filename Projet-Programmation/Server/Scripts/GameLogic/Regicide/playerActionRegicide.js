@@ -1,10 +1,11 @@
 const {regenDraw} = require("../startGame.js");
-const {currentPlayerTurn,nextPlayerTurn,envoyerInfos} = require("../utils/functions.js")
+const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, recupererPseudo,requestAction} = require("../utils/functions.js")
+
 
  async function playerActionRegicide(io, socket, db, center, archive, data, playersHand,hasPassed=false){
     if(!hasPassed){
         archive[data.playerId]?archive[data.playerId].push(center[data.playerId]):archive[data.playerId]=[center[data.playerId]]
-        if(await verifyPreCond(socket,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
+        if(await verifyPreCond(io,db,playersHand.get(data.playerId).get("main"),archive[data.playerId],data.playerId,data.idPartie))return;
         console.log("pre-cond vérifier")
     }
     if(hasPassed||!canPlay(archive[data.playerId],playersHand.get(data.playerId).get("main"))){
@@ -12,18 +13,18 @@ const {currentPlayerTurn,nextPlayerTurn,envoyerInfos} = require("../utils/functi
         if(archive[data.playerId])await activateCardPower(io,db,data.idPartie,fuseCards(archive[data.playerId]),archive.boss,playersHand);
         let turnFinished=true;
         if(archive.boss.hp<=0)await handleEnemyDeath(io,db,data.idPartie,archive.boss);
-        else turnFinished=makePlayerTakeDmg(socket,data.playerId,archive.boss,playersHand.get(data.playerId).get("main"));
+        else turnFinished=makePlayerTakeDmg(io,db,data.idPartie,data.playerId,archive.boss,playersHand.get(data.playerId).get("main"));
         newTurn(io,db,data.idPartie,data.playerId,archive,turnFinished);
     }else {
         console.log("On demande au joueur de rejouer")
         db.query("Update parties SET archive=? where idPartie=?",[JSON.stringify(archive),data.idPartie],(err,res)=>{
             if(err)throw err;
-            socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
+            requestAction(io,db,data.idPartie,data.playerId,"jouerCarte");
         });
     }
 }
 
-function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idParty,idJ){
+function playerDiscardRegicide(io,db,hand,discardedCards,currentBoss,idParty,idJ){
     let sum=0;
     for(const card of discardedCards){
         sum+=card.valeur;
@@ -38,7 +39,7 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
         if(sum>=currentBoss.atk){
             nextPlayerTurn(io,db,idParty,1000);
         }else{
-            if(hand.length!=0){socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"})}
+            if(hand.length!=0)requestAction(io,db,idParty,idJ,"defausserCarte");
             else{
                 io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}})
             }
@@ -48,13 +49,13 @@ function playerDiscardRegicide(io,socket,db,hand,discardedCards,currentBoss,idPa
     return;
 }
 
-async function verifyPreCond(socket,db,playerHand,playedCards,playerId,idPartie){
+async function verifyPreCond(io,db,playerHand,playedCards,playerId,idPartie){
     const currentPlayer = await currentPlayerTurn(db,idPartie);
     if((currentPlayer!=playerId)){
         return await cancelPlayerAction(socket,db,playerHand,playedCards[playedCards.length-1],idPartie,playerId);
     }
     if(!verifyDuplicate(playedCards)){//si la personne se trompe dans son double, elle peut rejouer
-        socket.emit('requestAction',{idJ:data.playerId,action:"jouerCarte"});
+        requestAction(io,db,idPartie,playerId,"jouerCarte");
     }
     return false;
 }
@@ -298,10 +299,10 @@ function updatePlayersScore(db,idParty,playerList){
     });
 }
 
-function makePlayerTakeDmg(socket,idJ,currentBoss,playerHand){
+function makePlayerTakeDmg(io,db,idParty,idJ,currentBoss,playerHand){
     if(currentBoss.atk>0){
         if(playerHand===0) io.to(idParty).emit('endGame',{winner: {"pseudo": "Le roi", "score": 0}});
-        else socket.emit('requestAction',{idJ:idJ,action:"defausserCarte"});
+        else requestAction(io,db,idParty,idJ,"defausserCarte")
         return false;
         }
         return true;

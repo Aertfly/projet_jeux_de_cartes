@@ -13,7 +13,7 @@ const { startGame } = require('./Scripts/GameLogic/startGame.js');
 const { scores } = require('./Scripts/Global/scores.js');
 const chat = require('./Scripts/UserInterface/chat.js');
 const sauvegardePartie = require('./Scripts/UserInterface/sauvegardePartie.js');
-const ICD = require ('./Scripts/UserInterface/ICD.js');
+const {ICD} = require ('./Scripts/UserInterface/ICD.js');
 app.use(cors);
 
 const io = new Server(server, {

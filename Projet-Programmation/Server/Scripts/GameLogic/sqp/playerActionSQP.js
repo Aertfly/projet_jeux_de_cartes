@@ -1,7 +1,6 @@
 const { query } = require("express");
 const { reDealCardsSQP } = require("../startGame.js");
-const { ajouterScores, recupererInfosJoueurs, envoyerInfos,recupererPseudos } = require("../utils/functions.js");
-const { recupererPseudo } = require("../Battle/bataille.js");
+const { ajouterScores, recupererInfosJoueurs, envoyerInfos,recupererPseudos,requestAction } = require("../utils/functions.js");
 
 /**
  * Permet de récuperer une ligne dans la base de données
@@ -123,7 +122,7 @@ var declencherLogique = function(io, db, idPartie, centre){
                                 
                 if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
                     // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
-                    io.to(idPartie).emit('requestAction', {idJ: parseInt(carteActuelle[0]),action:"choisirLigne"});  // Dico vide : a priori pas de détails à envoyer ?
+                    requestAction(io,db,idPartie,parseInt(carteActuelle[0]),"choisirLigne")// Dico vide : a priori pas de détails à envoyer ?
                     clearInterval(intervalle);
                 } else {  // Sinon : une ligne peut accueillir la carte
                     // Si la ligne a une longueur de 5 : le joueur remplace la ligne

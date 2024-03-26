@@ -187,7 +187,7 @@ function defausserCarte(io,socket,db,data){
         await updateDraw(db,data.idPartie,drawObject);
         switch(result[0]["type"]){
             case 'Régicide':
-                playerDiscardRegicide(io,socket,db,hand,discardedCards,archive.boss,data.idPartie,data.playerId)
+                playerDiscardRegicide(io,db,hand,discardedCards,archive.boss,data.idPartie,data.playerId)
                 break;
             default:
                 throw 'jeu inconnu'

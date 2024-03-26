@@ -51,13 +51,6 @@ function CreatePartyForm() {
     setEstSoumis(!estSoumis);
   };
 
-  useEffect(()=>{
-    socket.on('joinGame',data=>{
-      setPlayerList(data.playerList);
-      setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
-    })
-    return () => {socket.off('joinGame')};
-  },[]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
