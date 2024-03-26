@@ -13,7 +13,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
     pioche = JSON.parse(donneesDB[0]['pioche']);
     currentSens = JSON.parse(donneesDB[0]['sens']);
     currentTour = JSON.parse(donneesDB[0]['tour']);
-    envoyerInfos(db, io, data.idPartie);
+    
     if(centre[data.playerId] !== null && centre[data.playerId].length === 0){ // si le joueur joue sa première carte
         console.log("le joueur joue sa première carte");
         archive = await (resetArchive(archive, data, db)); // on remet à -1 les anciens coups joués par l'ancien joueur
@@ -75,6 +75,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                     archive[data.carte] = 0; archive[ancienneCarte] = 0;
                     await updateArchive(archive, data, db);
                     io.to(data.idPartie).emit('newTurn',{joueurs:[data.playerId],numeroTour:Math.floor(currentTour/currentSens.length),pseudos:[await recupererPseudo(db,data.playerId)]});
+                    envoyerInfos(db, io, data.idPartie);
                 };
                 
             } else { // si le joueur ne trouve pas de paire 
@@ -88,6 +89,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                 centre[data.playerId] = [];
                 await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
                 console.log("Au prochain joueur de jouer !")
+                envoyerInfos(db, io, data.idPartie);
             };
         };
     };
