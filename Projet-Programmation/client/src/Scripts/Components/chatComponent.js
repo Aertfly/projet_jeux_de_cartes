@@ -61,6 +61,7 @@ function Chat({ data }) {
     width: '300px',
     height: '200px',
     overflowY: 'auto',
+    border: '2px solid black'
   };
 
   return (

@@ -13,7 +13,7 @@ function Card(props) {
         position: 'absolute',
         ...(props.x !== undefined ? { left: `${props.x}px` } : {}),
         top: `${props.y}px`,
-        width: '30px',
+        width: '25px',
         height: '50px',
         border: `2px solid ${props.border}`, // Soit vert soit rouge soit gris
         textAlign: 'center',
@@ -78,10 +78,21 @@ function Center() {
 
     const textContainerStyle = {
         position: 'absolute',
-        top: '50%',
-        left: '10%',
+        top: '45%',
+        right: '130px',
         transform: 'translateY(-50%)',
-    };    
+        border: '2px solid',
+        padding: '10px',
+        borderRadius: '5px',
+        backgroundColor: 'white',
+        color: 'black',
+    };
+    
+    if (myAction === "jouerCarte") {
+        textContainerStyle.border = '2px solid red';
+        textContainerStyle.color = 'red';
+    }
+    
     
     const countShowedCard = (value) => {
         return Info.archive.filter(cardValue => cardValue === value && cardValue !== 0 && cardValue !== -1).length;
@@ -137,7 +148,9 @@ function Center() {
     
     return (
         <div>
-            <p style={textContainerStyle}>{myAction==="jouerCarte"? "A vous de jouer !" : "Veiller patienter ..."}</p>
+            <div style={textContainerStyle}>
+                {myAction === "jouerCarte" ? "A vous de jouer !" : "Veiller patienter ..."}
+            </div>
             <div className="center-container">
                 {centerRows.map((rowCards, rowIndex) => (
                     <div key={rowIndex} className="row-container">
@@ -153,7 +166,6 @@ function Center() {
             </div>
         </div>
     );
-    
 }
 
 

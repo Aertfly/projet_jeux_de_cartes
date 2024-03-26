@@ -224,15 +224,17 @@ function GameBoard() {
     const img = require('../../Assets/img/SQP/bonhomme.png');
     const dosImg = require('../../Assets/img/SQP/dos.png')
     const boardStyle = {
-        position: 'absolute',
-        top: '10px',
-        right: '1%',
-        transform: 'translateX(-50%)',
+        position: 'fixed',
+        top: '140px',
+        right: '60px',
+        transform: 'translateY(-50%)',
         border: '1px solid black',
         borderRadius: '5px',
         padding: '10px',
         backgroundColor: '#FFF',
     };
+    
+    
 
     const playersListStyle = {
         display: 'flex', // Aligner les joueurs horizontalement
