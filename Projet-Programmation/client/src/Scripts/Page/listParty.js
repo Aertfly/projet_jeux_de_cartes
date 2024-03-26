@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
-import { SocketContext } from '../../Shared/socket.js';
-import { usePlayer } from '../../../index.js';
+import { SocketContext } from '../Shared/socket.js';
+import { usePlayer } from '../../index.js';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,33 +38,28 @@ function Party(props) {
   );
 }
 
-function Hide(){
-    const navigate = useNavigate();
-    function clicked(){
-        setTimeout(() => navigate('/Home'), 250);
-    };
-    return (
-        <button type='button' onClick={clicked}>Masquer la liste</button>
-    );
-}
 
-function ListParty() {
+
+function ListParty(props) {
+  const {idJ} = usePlayer()
   const [parties, setParties] = useState([]);
   const { socket } = useContext(SocketContext);
   const [error,setError] = useState("")
 
   useEffect(() => {
     const fetchParties = async () => {
-      console.log("fetchParties");
       socket.on('joinableListOut', (data) => {
-        setParties(data);
+          setParties(data);
       });
-      socket.emit('joinableList');
+      socket.on('savedListOut', (data) => {
+          setParties(data);
+      });
+      props.save ? socket.emit('savedList', idJ) : socket.emit('joinableList');
     };
     
     const cleanup = () => {
-      console.log("Cleanup");
       socket.off('joinableListOut');
+      socket.off('savedListOut');
     };
 
     fetchParties();
@@ -109,7 +104,7 @@ function ListParty() {
           />
         ))}
       </table>
-      <Hide />
+      <button type='button' onClick={props.hide}>Masquer la liste</button>
     </div>
   );
 }

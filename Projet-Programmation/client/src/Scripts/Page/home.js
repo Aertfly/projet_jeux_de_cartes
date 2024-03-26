@@ -5,7 +5,7 @@ import { SocketContext } from '../Shared/socket.js';
 import { usePlayer } from '../../index.js';
 import { Outlet } from "react-router-dom";
 import { CreatePartyForm } from "./createParty.js";
-
+import ListParty from './listParty.js';
 /*function CreateButton(props){
     const navigate = useNavigate();
     function clicked(){
@@ -17,13 +17,19 @@ import { CreatePartyForm } from "./createParty.js";
 }*/
 
 function PrintButton(props){
-    const navigate = useNavigate();
+  const [hidden,setHidden] = useState(true);
     function clicked(){
-        setTimeout(() => navigate('/Home/'+props.path), 250);
+      setHidden(false);
     }    
-    return(
-        <button type="button" onClick={clicked} disabled={props.disabled}>{props.text}</button>
+    if(hidden)return(
+      <button type="button" onClick={clicked} disabled={props.disabled}>{props.text}</button>
+
+
     );
+    else
+      return(
+        <ListParty save={props.save} hide={()=> setHidden(true)}/>
+      );
 }
 
 
@@ -71,13 +77,13 @@ function JoinGame(){
     disabled={isSubmit}
   /><hr>*/}
   <PrintButton
-  path="listParty"
+  save={false}
   text="Afficher les parties en cours"
   disabled={isSubmit}
   />
   <hr></hr>
   <PrintButton
-  path="listPartySaved"
+  save={true}
   text="Afficher mes parties sauvegardées"
   disabled={isSubmit}
   />

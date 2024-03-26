@@ -3,9 +3,7 @@ import IC from './Scripts/Page/IC.js'
 import CreateParty from './Scripts/Page/createParty.js';
 import Home from './Scripts/Page/home.js';
 import WaitingRoom from './Scripts/Page/waitingRoom.js';
-import ListParty from "./Scripts/Page/listParty/listParty.js";
 import NotFound from "./Scripts/Page/notFound.js";
-import ListPartySaved from "./Scripts/Page/listParty/listPartySaved.js";
 import { SocketProvider } from './Scripts/Shared/socket.js';
 import GameContainer from "./Scripts/Shared/gameContainer.js";
 import {Battle} from './Scripts/Games/battle.js';
@@ -42,10 +40,7 @@ root.render(
         <Router>
           <Routes>
             <Route exact path="/" element={<IC />} />
-            <Route path="/Home" element={<Home />}>
-              <Route path="listParty" element={<ListParty/>}/>
-              <Route path="listPartySaved" element={<ListPartySaved />}/>
-            </Route>
+            <Route path="/Home" element={<Home />} />
             <Route path="/Home/createParty" element={<CreateParty />} />
             <Route path="/Home/waitingRoom/:idParty" element={<WaitingRoom />} />
             <Route path="/Home/Games" element={<GameContainer />}>
@@ -53,7 +48,7 @@ root.render(
               <Route path="6 qui prend/:idParty" element={<SQP />} />
               <Route path="Memory/:idParty" element={<Memory />} />    
               <Route path="Régicide/:idParty" element={<Regicide />} />
-            </Route>
+            </Route> 
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
