@@ -116,7 +116,7 @@ function updateWinnedCards(io, data, winnedCards, db){
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
             const infoJoueurs=[
-                {   "nbCards": winnedCardsDB,
+                {   
                     "pseudo": data.playerId,
                     "score": currentScore
             }];
