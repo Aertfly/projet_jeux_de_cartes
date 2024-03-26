@@ -78,7 +78,7 @@ function ListParty(props) {
 
   return (
     <div>
-      <h3>Parties disponibles :</h3>
+      <h3>{props.save?"Vos parties sauvegardées":"Parties disponibles"}</h3>
       <p style={{color:"red"}}>{error}</p>
       <table border="1">
         <thead>
@@ -105,6 +105,7 @@ function ListParty(props) {
         ))}
       </table>
       <button type='button' onClick={props.hide}>Masquer la liste</button>
+      <button type='button' onClick={()=>{props.save ? socket.emit('savedList', idJ) : socket.emit('joinableList');}}>Actualiser</button>
     </div>
   );
 }
