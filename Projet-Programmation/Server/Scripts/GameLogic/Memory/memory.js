@@ -1,3 +1,4 @@
+
 const { ajouterScores, recupererInfosJoueurs, envoyerInfos, recupererPseudo, nextPlayerTurn } = require("../utils/functions.js");
 
 /**
@@ -15,7 +16,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
     currentTour = JSON.parse(donneesDB[0]['tour']);
     
     if(centre[data.playerId] !== null && centre[data.playerId].length === 0){ // si le joueur joue sa première carte
-        
+
         console.log("le joueur joue sa première carte");
         archive = await (resetArchive(archive, data, db)); // on remet à -1 les anciens coups joués par l'ancien joueur
         io.to(data.idPartie).emit('infoGameOut', {archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});//infoGameOut archive
@@ -58,7 +59,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
                 archive[data.carte] = pioche[data.carte];
                 centre[data.playerId].push(data.carte); // deuxième carte 
                 winnedCards = [pioche[data.carte],pioche[ancienneCarte]];
-                await (updateWinnedCards(data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
+                await (updateWinnedCards(io, data, winnedCards, db)); // mettre dans 'gagnees' les cartes gagnees par le joueur;
                 io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});
 
                 if((checkEndMemory(archive))) { // 1 => si archive n'a plus de cartes à -1, la game est finie, emit fin de game 
@@ -83,7 +84,6 @@ const playerActionMemory = async function(io, db, data, donneesDB){
 
                 } else {  // 2 => newTurn, next player turn
 
-                    envoyerInfos(db, io, data.idPartie);
                     centre[data.playerId] = [];
                     await (updateCentre(centre, data, db)); // le joueur à fini de jouer ses deux cartes, on remet le centre à vide
                     archive[data.carte] = 0; archive[ancienneCarte] = 0;
@@ -95,7 +95,6 @@ const playerActionMemory = async function(io, db, data, donneesDB){
             } else { // si le joueur ne trouve pas de paire 
 
                 console.log("Pas de paire trouvée");
-                envoyerInfos(db, io, data.idPartie);
                 archive[data.carte] = pioche[data.carte];
                 archive[ancienneCarte] = pioche[ancienneCarte]; // on setup l'archive à envoyer
                 io.to(data.idPartie).emit('infoGameOut', {center: centre, archive: archive, numeroTour:Math.floor(currentTour/currentSens.length)});
@@ -109,14 +108,19 @@ const playerActionMemory = async function(io, db, data, donneesDB){
     };
 };
 
-function updateWinnedCards(data, winnedCards, db){
+function updateWinnedCards(io, data, winnedCards, db){
     return new Promise((resolve,reject)=>{
 
         db.query("SELECT * FROM joue WHERE idPartie = ? and idJ = ?", [data.idPartie, data.playerId],(err,donneesDB) => {
             if(err)throw(err);
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
-
+            const infoJoueurs=[
+                {   "nbCards": winnedCardsDB,
+                    "pseudo": data.playerId,
+                    "score": currentScore
+            }];
+            io.to(data.idPartie).emit('infoGameOut', {infoPlayers: infoJoueurs});
             db.query("UPDATE joue SET gagnees = ?, score = ? where idPartie = ? and idJ = ?",[JSON.stringify(winnedCardsDB), JSON.stringify(currentScore), data.idPartie, data.playerId],async(err,result)=>{
                 if(err)reject(err);
                 console.log((result.changedRows === 1) ? 'Paramètres enregistrés dans la db':"Erreur paramètres invalides");
