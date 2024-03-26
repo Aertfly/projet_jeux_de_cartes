@@ -125,14 +125,17 @@ function GameContainer(){
                     }
                     if(data['infoPlayers']){
                         if(copy['infoPlayers']){
-                            for(let i=0;i<data['infoPlayers'].length;i++){
-                                if(copy['infoPlayers'][i]){
-                                    const paramsPlayer = ['nbCards','pseudo','score','scoreMoyenJoueur'];
-                                    for(const p of paramsPlayer){
-                                        if(data['infoPlayers'][i][p]) copy['infoPlayers'][i][p] = data['infoPlayers'][i][p];
+                            const paramsPlayer = ['nbCards','pseudo','score','scoreMoyenJoueur'];
+                            let p;
+                            for(const playerD of data['infoPlayers']){
+                                p = indexOf(playerD,copy['infoPlayers']);
+                                console.log("bruh",p,playerD,copy['infoPlayers'])
+                                if(p!=-1){
+                                    for (const p of paramsPlayer){
+                                        if(playerD[p])copy['infoPlayers'][p]=playerD[p];
                                     }
                                 }else{
-                                    copy['infoPlayers'][i] = data['infoPlayers'][i];
+                                    copy['infoPlayers'].push(playerD)
                                 }
                             }
                         }else{
@@ -226,6 +229,17 @@ function GameContainer(){
         {Info['nbTour']>=0?<NbTurn nbTurn={Info['nbTour']}/>:<></>}
         </>
     );
+}
+
+
+function indexOf(elem,list){
+    let e ;
+    for(let i=0;i<list.length;i++){
+        e = list[i];
+        if(e && e.pseudo===elem.pseudo)return i;
+   
+    }
+    return -1;
 }
 
 export default GameContainer;
