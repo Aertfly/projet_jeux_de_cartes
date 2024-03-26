@@ -34,23 +34,27 @@ function JoinGame(){
   const [isSubmit,setIsSubmit] = useState(false);
   const [error,setError] = useState("")
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    socket.on('joinGame',(data)=>{
+      if(data.message){
+        setTimeout(() =>{
+          setError(data.message);
+          setIsSubmit(false);
+        }, 500);
+      }else{
+        setPlayerList(data.playerList);
+        setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
+      }
+    })
+    return ()=>{socket.off('joinGame')}
+  },[])
   
   function submit(event){
     event.preventDefault();
     if(idPartyRequested){
       socket.emit('joinRequest',{'idPlayer':idJ,'idParty':idPartyRequested});
       setIsSubmit(true);
-      socket.on('joinGame',(data)=>{
-        if(data.message){
-          setTimeout(() =>{
-            setError(data.message);
-            setIsSubmit(false);
-          }, 500);
-        }else{
-          setPlayerList(data.playerList);
-          setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
-        }
-      })
     }
     else{
       alert("Veuillez rentrer un identifiant valide");
@@ -177,6 +181,7 @@ function Stat(){
 
 
 function Home(){
+
   return (
     <div>
     <h1>Jeu de cartes - HAI405I</h1>
