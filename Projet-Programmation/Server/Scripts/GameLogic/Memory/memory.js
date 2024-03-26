@@ -96,7 +96,7 @@ const playerActionMemory = async function(io, db, data, donneesDB){
 function updateWinnedCards(io, data, winnedCards, db){
     return new Promise((resolve,reject)=>{
 
-        db.query("SELECT * FROM joue WHERE idPartie = ?", [data.idPartie],(err,donneesDB) => {
+        db.query("SELECT * FROM joue WHERE idPartie = ? and idJ = ?", [data.idPartie, data.playerId],(err,donneesDB) => {
             if(err)throw(err);
             winnedCardsDB = JSON.parse(donneesDB[0]['gagnees']).concat(winnedCards);
             currentScore = JSON.parse(donneesDB[0]['score']) + 2;
