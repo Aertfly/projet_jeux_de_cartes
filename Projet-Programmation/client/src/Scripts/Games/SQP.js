@@ -233,8 +233,6 @@ function GameBoard() {
         padding: '10px',
         backgroundColor: '#FFF',
     };
-    
-    
 
     const playersListStyle = {
         display: 'flex', // Aligner les joueurs horizontalement

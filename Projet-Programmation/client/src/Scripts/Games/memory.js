@@ -1,7 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from "react-router-dom";
-import {importImages,quadrillagePoints} from '../Shared/gameShared.js'
+import {importImages,quadrillagePoints,generatePointWonCards} from '../Shared/gameShared.js'
 import { GameBoard } from './SQP.js';
+import Modal from 'react-modal';
+
+function WonCardComponent(){
+    const {socket, idParty , idJ} = useOutletContext();
+    const [showModal, setShowModal] = useState(false);
+    const [wonCards,setWonCards] = useState([]);
+    const pointsCards = generatePointWonCards(wonCards.length, 100, 150);
+
+    const customStyles = {
+        content: {
+          top: '50%',
+          left: '50%',
+          right: 'auto',
+          bottom: 'auto',
+          marginRight: '-50%',
+          transform: 'translate(-50%, -50%)',
+          width: '500px',
+          height: '500px'
+        }
+      };
+
+    const handleClick = () => {
+        socket.on('dealingWonCards',(data)=>{
+            console.log("Cartes gagnées reçu",data);
+            setWonCards(data.Cards);
+            setShowModal(true);
+        });
+        socket.emit('requestWonCards',{"idParty":idParty,"idJ":idJ});
+    }
+
+
+    return(
+        <>
+            <button onClick={handleClick} >Carte gagnées </button >
+            <Modal isOpen={showModal} onRequestClose={()=>{setShowModal(false)}} style={customStyles} ariaHideApp={false}>
+                <h2>Liste de vos cartes gagnées</h2>
+                {wonCards&&pointsCards.length>0?wonCards.map((card, index) =>
+                <Card key={index} card={card} x={pointsCards[index].x} y={pointsCards[index].y} />
+                ):<p>Vous n'avez gagné aucune carte</p>}
+                <button onClick={()=>{setShowModal(false)}}>Fermer</button>
+            </Modal>
+        </>
+    )
+}
 
 function Card(props) {
     //console.log("carte affichée :", props.id, ": ", props);
@@ -187,6 +231,7 @@ function Memory(){
         <div>
             <GameBoard />
             <Center />
+            <WonCardComponent />
         </div>
     )
 }
