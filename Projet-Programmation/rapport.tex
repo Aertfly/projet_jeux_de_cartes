@@ -123,6 +123,91 @@ cette partie, nous devons être convaincus que :
 Dans cette section, après une  introduction générale d’une ou deux lignes de React, vous présenterez les aspects saillants de cette technologie en les illustrant par un ou deux composants React issus de votre projet. Si, en cours de rédaction, vous vous rendez compte que vous n’avez pleinement tiré parti des facilités offertes par React, vous pouvez signaler à quels endroits de votre code des 
 modifications auraient été judicieuses
 
+\subsection{Introduction à React}
+React est une bibliothèque JavaScript puissante et flexible pour construire des interfaces utilisateur. Elle permet de créer des applications web complexes et interactives grâce à son système de composants réutilisables et son approche déclarative. Dans le cadre de notre projet, React a joué un rôle crucial dans la structuration de l'application de jeu, offrant une expérience utilisateur fluide et réactive.
+
+\subsection{Architecture basée sur les composants}
+
+Dans le cadre de notre projet, nous avons adopté une architecture basée sur les composants pour concevoir et développer notre application de jeu. Cette approche repose sur le principe fondamental de diviser l'interface utilisateur en composants réutilisables et indépendants, offrant ainsi une structure modulaire et évolutive.
+
+Chaque composant dans notre application représente une unité fonctionnelle spécifique, encapsulant à la fois son propre état et sa logique. Cette modularité permet une gestion efficace de la complexité de l'application, facilitant le développement, la maintenance et l'extension des fonctionnalités.
+
+En structurant notre application autour de composants, nous avons pu rationaliser le processus de développement, favoriser la réutilisation du code et améliorer la cohérence de l'interface utilisateur. De plus, cette approche nous a permis de mieux organiser notre code, de faciliter la collaboration entre les membres de l'équipe et d'assurer une meilleure évolutivité de l'application. Grâce à ce système modulaire de composants, nous avons pu éviter de faire du code en doublon.
+
+\subsubsection{Exemple : Le composant \texttt{GameContainer}}
+
+Le composant \texttt{GameContainer} est un élément central de notre application de jeu, responsable de la gestion des différentes parties de l'interface utilisateur et de la coordination des interactions entre les différents composants. Ce composant encapsule les éléments globeux des jeux, c'est à dire les données des joueurs et les actions en cours.
+
+Dans notre implémentation, le composant \texttt{GameContainer} utilise le contexte React pour gérer les informations partagées entre les différents composants de l'application. Par exemple il utilise le hook \texttt{useContext} pour accéder au contexte de la socket et communiquer avec le serveur.
+
+L'une des fonctionnalités clés du composant est sa capacité à écouter les événements du serveur, tels que la distribution des cartes, les mises à jour du centre du jeu (où sont affichés toutes les cartes communes). Lorsqu'un événement tel que 'dealingCards' est émis par le serveur via Socket.io, le composant \texttt{GameContainer} réagit en mettant à jour les informations du jeu concernant les cartes, et en informant les autres composants de l'interface des changements pour que l'affichage se mette à jour tout autant.
+
+Ce composant joue un rôle essentiel dans la gestion de l'état global du jeu, la synchronisation des actions des joueurs et la mise à jour dynamique de l'interface utilisateur en fonction des événements du jeu. Sa conception modulaire et sa capacité à orchestrer les interactions entre les différents éléments de l'application en font un pilier central de notre architecture basée sur les composants.
+
+\begin{verbatim}
+function GameContainer(){
+  const { socket } = useContext(SocketContext);
+  const [cards, setCards] = useState([]);
+  const [Info, setInfo] = useState([]);
+  // D'autres états et logiques...
+  
+  useEffect(() => {
+    socket.on('dealingCards', (data) => {
+      console.log("Cartes reçues via dealingCards",data);
+      setCards(data.Cards);
+    });
+    // Autres écouteurs d'événements...
+  }, [socket]);
+
+  // Rendu du composant...
+}
+\end{verbatim}
+
+\subsection{Communication en temps réel avec Socket.io}
+
+La communication en temps réel est un aspect essentiel des applications de jeu multijoueur, permettant une interaction fluide et synchronisée entre les joueurs et le serveur. Dans notre projet, nous avons mis en œuvre la communication en temps réel en utilisant la bibliothèque Socket.io, qui offre des fonctionnalités de communication via des WebSockets.
+
+Socket.io facilite l'établissement de connexions en temps réel entre les clients et le serveur, permettant des échanges de données instantanés et une synchronisation efficace des actions des joueurs. Cette approche a été cruciale pour assurer une expérience de jeu immersive et interactive, où les actions des joueurs sont rapidement transmises et traitées en temps réel.
+
+En intégrant Socket.io dans notre architecture, nous avons pu mettre en place des mécanismes de communication efficaces et gérer les événements en temps réel. Cette méthode a joué un rôle clé dans la réussite de notre projet en offrant une communication en temps réel fiable et robuste. La communication entre les clients et le serveur grâce avec cette bibliothèque nous a aussi permis de aisément diviser le travail et les tâches, sachant à l'avance les informations attendus côté serveur et coté client.
+
+\subsubsection{Exemple : Initialisation de Socket.io dans React}
+
+Dans notre implémentation, nous avons créé un module dédié à la gestion de la connexion Socket.io dans React. Nous utilisons le package `socket.io-client` pour établir une connexion avec le serveur Socket.io en spécifiant l'URL du serveur ('http://localhost:3001').
+
+Le composant \texttt{SocketProvider} agit comme un fournisseur de contexte, permettant de transmettre l'instance de la socket à l'ensemble de l'application React. Cela garantit que tous les composants de l'application peuvent accéder à la socket dans l'ensemble des fichiers clients pour communiquer avec le serveur.
+
+\begin{verbatim}
+import io from 'socket.io-client';
+const URL = 'http://localhost:3001';
+const socket = io(URL);
+
+const SocketProvider = ({ children }) => {
+  return (
+    <SocketContext.Provider value={{ socket }}>
+      {children}
+    </SocketContext.Provider>
+  );
+};
+\end{verbatim}
+
+\subsection{Gestion de l'état et des effets}
+
+La gestion de l'état et des effets est un aspect essentiel du développement d'applications React, permettant de contrôler le comportement dynamique des composants et de réagir aux changements de données et d'événements provenant du serveur. Les Hooks \texttt{useState} et \texttt{useEffect} offrent des fonctionnalités pour gérer la communication client/serveur et exécuter des mise à jour graphiques de manière efficace.
+
+\subsubsection{Exemple : Utilisation de \texttt{useEffect} pour écouter les événements du serveur}
+
+Dans cet exemple, la fonction \texttt{useEffect} est utilisée pour s'abonner à l'événement 'dealingCards' émis par le serveur via la socket. Lorsque cet événement est reçu, la fonction de rappel met à jour l'état local des cartes du jeu en fonction des données reçues. En retour, cela déclenche une mise à jour de l'interface utilisateur pour refléter les nouvelles informations, assurant ainsi une expérience de jeu réactive et synchronisée.
+
+\begin{verbatim}
+useEffect(() => {
+  socket.on('dealingCards', (data) => {
+    setCards(data.Cards);
+  });
+  return () => socket.off('dealingCards');
+}, [socket]);
+\end{verbatim}
+
 \section{Bilan}
 
 Cette partie présente un bilan et une analyse rétrospective et difficultés rencontrées 
