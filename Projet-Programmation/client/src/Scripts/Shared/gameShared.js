@@ -50,6 +50,8 @@ function getMsgOther(action){
             return "Ce joueur doit défausser une carte";
         case 'doitchoisirLigne':
             return "Ce joueur selectionne une ligne a récupérer"
+        case "doitjouerCarte":
+            return "Ce joueur doit rejouer"
         default :
             return "fait une action inconnue";
     }

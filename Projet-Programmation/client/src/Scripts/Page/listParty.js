@@ -48,12 +48,13 @@ function ListParty(props) {
 
   useEffect(() => {
     const fetchParties = async () => {
-      socket.on('joinableListOut', (data) => {
-          setParties(data);
-      });
-      socket.on('savedListOut', (data) => {
-          setParties(data);
-      });
+      props.save ?
+          socket.on('savedListOut', (data) => {
+            setParties(data);
+        })
+        :socket.on('joinableListOut', (data) => {
+            setParties(data);
+        });
       props.save ? socket.emit('savedList', idJ) : socket.emit('joinableList');
     };
     

@@ -24,11 +24,11 @@ function Deco(props) {
       handleDeconnection();
       e.returnValue = 'Déconnecté';
     };
-    /*
+    
     socket.on('firstConnection', () => {
       setEstConnecte("Déconnecté");
       navigate('/');
-    });*/
+    });
 
     // Clean up the event listener when the component unmounts
     return () => {

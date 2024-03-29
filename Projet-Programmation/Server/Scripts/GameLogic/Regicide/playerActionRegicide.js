@@ -265,13 +265,13 @@ async function handleEnemyDeath(io,db,idParty,archive){//changement à faire
         const nextBoss = drawObject['chateau'].pop()
         const trueValue = getTrueValue(nextBoss);
         currentBoss = {'card':nextBoss,'hp':trueValue*2,'atk':trueValue}
-        const PromiseList = updatePlayersScore(db,idParty,JSON.parse(result[0]['sens']));
-        PromiseList.push(new Promise((resolve,reject)=>{
+        const PromiseList = [updatePlayersScore(db,idParty,JSON.parse(result[0]['sens'])),
+        new Promise((resolve,reject)=>{
             db.query("Update parties SET archive=?,pioche=? where idPartie=?",[JSON.stringify({"boss":currentBoss}),JSON.stringify(drawObject),idParty],(err,res)=>{
                 if(err)reject(err);
                 resolve(res.changedRows === 1);
             });
-        }));
+        })]
         await Promise.all(PromiseList);
         if(drawObject['chateau'].length===0){
             envoyerInfos(db,io,idParty);
@@ -282,25 +282,25 @@ async function handleEnemyDeath(io,db,idParty,archive){//changement à faire
 }
 
 function updatePlayersScore(db,idParty,playerList){
-    const PromiseList = [];
-    console.log("On incremente le score des joueurs")
-    db.query("Select jo.idJ,jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
-        if(err)throw err;
-        const scores = {};
-        res.forEach(obj => {
-            scores[obj['idJ']] = obj['score'] + 1;
-        });        
-        console.log(scores);
-        for(const player of playerList){
-            PromiseList.push(new Promise((resolve,reject)=>{
-                db.query("Update joue   SET score=? where idPartie=? AND idJ=? ",[scores[player],idParty,player],(errU,resU)=>{
-                    if(errU)reject(resU);
-                    resolve(resU.changedRows===1);
-                });
-            }))
-        }
-        console.log("BRUH",PromiseList);
-        return PromiseList;
+    return new Promise((resolve,reject)=>{
+        const PromiseList = [];
+        db.query("Select jo.idJ,jo.score from joue jo,parties p,joueurs j where j.idJ=jo.idJ AND jo.idPartie=p.idPartie AND p.idPartie=? ",[idParty],(err,res)=>{
+            if(err)reject(err);
+            const scores = {};
+            res.forEach(obj => {
+                scores[obj['idJ']] = obj['score'] + 1;
+            });        
+            console.log(scores);
+            for(const player of playerList){
+                PromiseList.push(new Promise((resolve,reject)=>{
+                    db.query("Update joue   SET score=? where idPartie=? AND idJ=? ",[scores[player],idParty,player],(errU,resU)=>{
+                        if(errU)reject(errU);
+                        resolve(resU.changedRows===1);
+                    });
+                }))
+            }
+            resolve(Promise.all(PromiseList))
+        });
     });
 }
 
