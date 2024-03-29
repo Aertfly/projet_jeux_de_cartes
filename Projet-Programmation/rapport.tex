@@ -1,5 +1,5 @@
 % Une ligne commentaire débute par le caractère « % »
-
+\usepackage{graphicx}
 \documentclass[a4paper]{article}
 
 % Options possibles : 10pt, 11pt, 12pt (taille de la fonte)
@@ -23,11 +23,6 @@
 \vspace*{1.5cm}
 \begin{center}               % pour centrer 
 	
-	\framebox[8cm]{
-  %\includegraphics[width=10cm]{logo.pdf}   % insertion d'une image
-	ici un logo si vous le souhaitez.
-	}
-
 \end{center}
 \vspace*{1.5cm}
 
@@ -47,35 +42,72 @@
 \begin{center}
   L2 informatique\\
   Faculté des Sciences\\
-Université de Montpellier.
+    Université de Montpellier\\
+    \vspace{12pt}
+    Rapport portant sur la période allant\\
+    du 11 décembre 2023 au 29 mars 2024
 \end{center}
 
 \newpage
-Le nombre de pages s'entend en police de taille 11, sans compter les figures tout en restant lisible.  Dans tout le rapport, chaque extrait de code fourni référencera clairement d’où est extrait le code : fichier avec son chemin et numéros de lignes. 
 
 \section{Introduction}
-Ce projet a été réalisé au cours de la deuxième année de licence 2023-2024 à l'université de Montpellier. Au travers de l'unité d'enseignement HAI405I 'Projet de prgrammation', furent réalisées deux semaines de programmation intensives : celle du  11  décembre et celle du 22 janvier, avec l'accompagnement des enseignants. Nous avions pour mission de réaliser un site web proposant différents jeux de cartes utilisant JavaScript. 
+Ce projet a été réalisé au cours de la deuxième année de licence 2023-2024 à l'université de Montpellier. Au travers de l'unité d'enseignement HAI405I 'Projet de programmation', furent réalisées deux semaines de programmation intensives : celle du  11  décembre et celle du 22 janvier, avec l'accompagnement des enseignants. Nous avions pour mission de réaliser un site web proposant différents jeux de cartes. L'objectif du projet est de développer notre maîtrise de l'architecture client-serveur, et de nous initier à l'utilisation de react, un framework javaScript couramment utilisé dans le monde professionnel.
 
-
-Ce rapport a été écrit avant la réalisation de la troisème semaine, et est un témoignage de notre compréhension technique du projet .
+Ce rapport a été écrit entre la deuxième et la troisième semaine, et est un témoignage de notre compréhension technique du projet. Nous commencerons par décrire la repartition du travail au sein de notre groupe, puis nous présenterons l'architecture et les protocoles employés, ensuite nous entrerons en détail au milieu des fonctionalités de react, et enfin nous reviendrons sur les difficultés rencontrées lors de la réalisation du projet. 
 
 \section{Organisation et répartition du travail}
- Cette partie doit rester courte (une demi-page maximum hors schéma). Vous expliquerez comment vous avez organisé le travail au cours du temps (qu’est ce qui a été fait quand ?) et entre vous (qui a fait quoi ?). Cette explication s’appuiera sur un diagramme de Gantt fidèle à la réalité (rappelez-vous que nous étions là !). 
+Sont disponibles en annexe les diagrammes de Gantt des 3 périodes distinctes de travail sur le projet.
 
-\fbox{au maximum une demi page hors schéma}
-
+Les contributions apportées au projet final peuvent être résumées ainsi :
+\begin{itemize}
+    \item Menus/Comptes utilisateurs : Jean-Matthieu, Enzo
+    \item Bataille :
+    \begin{itemize}
+        \item Création de parties : Enzo
+        \item Lancement de parties :  Jean-Matthieu 
+        \item Affichage côté client : Jean-Matthieu 
+        \item Déroulement de la partie : Pierre
+        \item Sauvegarde des parties : Killian
+    \end{itemize}
+    \item 6 Qui Prend :
+    \begin{itemize}
+        \item Adaptation lancement de parties depuis la bataille : Jean-Matthieu
+        \item Adaptation client depuis la bataille :  Jean-Mathieu (principal), Killian (détails)
+        \item Déroulement de la partie : Pierre
+    \end{itemize}
+    \item Memory :
+    \begin{itemize}
+        \item Adaptation lancement de parties :Enzo 
+        \item Adaptation client : Killian (principal), Jean-Matthieu  (détails) 
+        \item Déroulement de la partie : Enzo
+    \end{itemize}
+\end{itemize}
 
 \section{Architecture, protocole de communication et échange de données}
 
-\fbox{2 pages maximum hors extrait de code}
-Dans votre projet, trois grandes entités communiquent : le serveur node, 
-le serveur react, et le client (navigateur).
-\subsection{} Dans cette partie, vous expliquerez tout d’abord le rôle de chacun des serveurs en 
-illustrant sur des exemples issus du projet.
-\subsubsection{} Le serveur NodeJS réalise toute la partie "back-end" du projet. C'est lui qui exécute les algorithmes des différents jeux, interagit avec la base de données et communique avec les clients.
-\part{Base de données}
-[expliquer la connexion à la base de données]
-Un exemple d'appel à la base de données se situe dans le fichier \texttt{Server/Scripts/GameLogic/utils/functions.js}, des lignes 31 à 46 :\\
+\subsection{Serveurs utilisés} Dans ce projet, pour que le client puisse fonctionner correctement, trois entités doivent exister : le serveur NodeJS, qui communique avec le client, le serveur React, qui compile les pages pour les envoyer au client, et la base de données, qui stocke les informations liées aux différents utilisateurs et jeux.
+\subsubsection{Serveur NodeJS} Le serveur NodeJS réalise toute la partie "back-end" du projet. C'est lui qui exécute les algorithmes des différents jeux, interagit avec la base de données et communique avec les clients.
+\subsubsection{Serveur React}
+Le serveur React agit en tant que serveur "front-end" dans notre architecture, fournissant une interface utilisateur interactive et réactive. Il envoit un fichier html et la fusion de tous les scripts en bundle.js. Le client se charge ensuite d'executer le javaScript et de générer la page. 
+
+\subsection{Base de données}
+Le projet utilise une base de données MySQL gérée par l'outil Sapiens de l'université de Montpellier. Cette base de données est constituée de 4 tables :
+\begin{itemize}
+\item La table \texttt{joueurs} comporte l'identifiant du joueur (attribué lors de la création du compte), son pseudo (chaîne de caractères) et son mot de passe (hashé). 
+\item On ajoute à la table \texttt{joue} une ligne à chaque fois qu'un joueur rejoint un jeu, et on supprime cette ligne quand il le quitte. L'attribut \texttt{main} contient la liste des cartes qu'il a en main, tandis que l'attribut \texttt{gagnees} contient les cartes qu'il a remportées mais auxquelles il n'a pas accès. Dans la bataille, ses cartes gagnées lui reviennent quand sa main est vide.
+\item La table \texttt{parties} contient la liste des parties actives.
+\item Enfin, la table \texttt{statistiques} contient le total de points accumulés et le nombre de parties terminées, pour chaque jeu et pour chaque joueur. La moyenne est calculée dynamiquement en divisant les points par le nombre de parties terminées.
+\end{itemize}
+
+\graphicspath{ {./} } % Chemin d'accès au dossier des images
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{bdd.png}
+\caption{Schéma de la base de données MySQL.}
+\label{fig:bdd}
+\end{figure}
+
+Un exemple d'appel à la base de données se situe dans le fichier \texttt{Server/Scripts/GameLogic/utils/functions.js}, des lignes 31 à 46. C'est donc un appel effectué par le serveur NodeJS.\\
 \begin{verbatim}
 function recupererInfosJoueurs(db, idParty){
     return new Promise((resolve, reject) => {
@@ -106,76 +138,63 @@ L'utilisation de cette fonction permet de simplifier la récupération des infor
     }
 \end{verbatim}
 
-\subsection{} 
-Vous expliquerez ensuite comment ces deux serveurs communiquent : avec quels 
-protocoles et en échangeant quels types de données. Ce dernier point sera illustré 
-avec des extraits de votre code. Normalement, vous avez utilisé deux types de 
-protocoles : websocket et http. Si ce n’est pas le cas, vous expliquerez quelles 
-communications auraient pu être remplacées par de l’http. A l’issue de la lecture de 
-cette partie, nous devons être convaincus que :
-\subsubsection{} Vous avez compris le mécanisme des websockets
-\subsubsection{} Vous avez compris le mécanisme des requêtes http
-\subsubsection{} Vous savez dans quels cas utiliser l’un ou l’autre.
 
-\section{Utilisation de React}
 
-\fbox{2 pages maximum hors extrait de code}
-Dans cette section, après une  introduction générale d’une ou deux lignes de React, vous présenterez les aspects saillants de cette technologie en les illustrant par un ou deux composants React issus de votre projet. Si, en cours de rédaction, vous vous rendez compte que vous n’avez pleinement tiré parti des facilités offertes par React, vous pouvez signaler à quels endroits de votre code des 
-modifications auraient été judicieuses
+\subsection{Communication des serveurs} 
+\subsubsection{WebSockets}
+Plusieurs routes sont utilisées pour communiquer via des WebSockets entre le client et le serveur, en voici une liste non exhaustive.
 
-\subsection{Introduction à React}
-React est une bibliothèque JavaScript puissante et flexible pour construire des interfaces utilisateur. Elle permet de créer des applications web complexes et interactives grâce à son système de composants réutilisables et son approche déclarative. Dans le cadre de notre projet, React a joué un rôle crucial dans la structuration de l'application de jeu, offrant une expérience utilisateur fluide et réactive.
+Du client vers le serveur :
+\begin{itemize}
+    \item \texttt{playerAction} est envoyé quand un joueur effectue une action. Le client envoie alors le type d'action effectuée, ainsi que les informations spécifiques. Il envoie également son identifiant de joueur ainsi que celui de sa partie.
+    \item \texttt{infoGame} est utilisé par le client pour demander au serveur des informations sur la partie dans laquelle il se trouve ; le serveur envoie ensuite les informations par la route \texttt{infoGameOut}.
+    \item En Six Qui Prend, lorsqu'un joueur place une carte à faible valeur et qu'il doit ramasser une ligne pour la remplacer par sa carte, la route \texttt{ligne} est utilisée pour informer le serveur du choix effectué par le joueur.
+\end{itemize}
 
-\subsection{Architecture basée sur les composants}
-
-Dans le cadre de notre projet, nous avons adopté une architecture basée sur les composants pour concevoir et développer notre application de jeu. Cette approche repose sur le principe fondamental de diviser l'interface utilisateur en composants réutilisables et indépendants, offrant ainsi une structure modulaire et évolutive.
-
-Chaque composant dans notre application représente une unité fonctionnelle spécifique, encapsulant à la fois son propre état et sa logique. Cette modularité permet une gestion efficace de la complexité de l'application, facilitant le développement, la maintenance et l'extension des fonctionnalités.
-
-En structurant notre application autour de composants, nous avons pu rationaliser le processus de développement, favoriser la réutilisation du code et améliorer la cohérence de l'interface utilisateur. De plus, cette approche nous a permis de mieux organiser notre code, de faciliter la collaboration entre les membres de l'équipe et d'assurer une meilleure évolutivité de l'application. Grâce à ce système modulaire de composants, nous avons pu éviter de faire du code en doublon.
-
-\subsubsection{Exemple : Le composant \texttt{GameContainer}}
-
-Le composant \texttt{GameContainer} est un élément central de notre application de jeu, responsable de la gestion des différentes parties de l'interface utilisateur et de la coordination des interactions entre les différents composants. Ce composant encapsule les éléments globeux des jeux, c'est à dire les données des joueurs et les actions en cours.
-
-Dans notre implémentation, le composant \texttt{GameContainer} utilise le contexte React pour gérer les informations partagées entre les différents composants de l'application. Par exemple il utilise le hook \texttt{useContext} pour accéder au contexte de la socket et communiquer avec le serveur.
-
-L'une des fonctionnalités clés du composant est sa capacité à écouter les événements du serveur, tels que la distribution des cartes, les mises à jour du centre du jeu (où sont affichés toutes les cartes communes). Lorsqu'un événement tel que 'dealingCards' est émis par le serveur via Socket.io, le composant \texttt{GameContainer} réagit en mettant à jour les informations du jeu concernant les cartes, et en informant les autres composants de l'interface des changements pour que l'affichage se mette à jour tout autant.
-
-Ce composant joue un rôle essentiel dans la gestion de l'état global du jeu, la synchronisation des actions des joueurs et la mise à jour dynamique de l'interface utilisateur en fonction des événements du jeu. Sa conception modulaire et sa capacité à orchestrer les interactions entre les différents éléments de l'application en font un pilier central de notre architecture basée sur les composants.
+Du serveur vers le client :
+\begin{itemize}
+    \item La route \texttt{newTurn} est utilisée pour envoyer des informations basiques sur le nouveau tour.
+    \item Pour des informations plus complètes, c'est la route \texttt{infoGameOut} qui est utilisée.
 
 \begin{verbatim}
-function GameContainer(){
-  const { socket } = useContext(SocketContext);
-  const [cards, setCards] = useState([]);
-  const [Info, setInfo] = useState([]);
-  // D'autres états et logiques...
-  
-  useEffect(() => {
-    socket.on('dealingCards', (data) => {
-      console.log("Cartes reçues via dealingCards",data);
-      setCards(data.Cards);
-    });
-    // Autres écouteurs d'événements...
-  }, [socket]);
+const envoyerInfos = async function(db, io, idPartie){
+    // On récupère les infos utiles sur la BDD
+    db.query('SELECT jo.pseudo as pseudo, jo.idJ as idJ,p.centre,p.archive,j.main,
+    j.score,p.type,    FLOOR(COALESCE(s.totalPoints/s.nombreParties, 0))
+    as scoreMoyenJoueur,p.pioche FROM parties p JOIN joue j ON p.idPartie = j.idPartie
+    JOIN joueurs jo ON j.idJ = jo.idJ LEFT JOIN statistiques s ON j.idJ = s.idJ 
+    AND s.jeu = p.type WHERE p.idPartie = ?',[idPartie],async(err,result)=>{
+        if(err)reject(err);
+        const infoJoueurs=[];
+        for(i=0;i<result.length;i++){
+            infoJoueurs.push({
+                "nbCards":JSON.parse(result[i].main).length,
+                "pseudo":result[i].pseudo,
+                "score":result[i].score,
+                "scoreMoyenJoueur":result[i].scoreMoyenJoueur
+            })
+        }
 
-  // Rendu du composant...
+        let centre2 = JSON.parse(result[0]["centre"]);
+        for(ligne of result){
+            centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
+            delete centre2[ligne["idJ"]];
+        }
+        const draw = JSON.parse(result[0]["pioche"]);
+        let nbdraw = draw['pioche']? {'pioche':draw['pioche'].length,
+        defausse':draw['defausse'].length}: draw.length;
+        // On envoie les informations aux joueurs
+        io.to(idPartie).emit('infoGameOut', {center: centre2, 
+        archive: JSON.parse(result[0]["archive"]), 
+        draw: nbdraw, infoPlayers: infoJoueurs});
+    });
 }
 \end{verbatim}
+Dans la fonction envoyerInfos définie dans le fichier \texttt{Server/Scripts/GameLogic/utils/functions.js} des lignes 90 à 114, on récupère les données utiles dans la base de données, avant de les envoyer au client. Dans la ligne \texttt{io.to(idPartie).emit(...)} on constate que la donnée envoyée est un objet ayant des attributs \texttt{center}, \texttt{archive}, \texttt{draw} et \texttt{infoPlayers}.
 
-\subsection{Communication en temps réel avec Socket.io}
+Après avoir vu la connexion du côté du serveur (NodeJS), penchons-nous sur la connexion du côté du client (React).
 
-La communication en temps réel est un aspect essentiel des applications de jeu multijoueur, permettant une interaction fluide et synchronisée entre les joueurs et le serveur. Dans notre projet, nous avons mis en œuvre la communication en temps réel en utilisant la bibliothèque Socket.io, qui offre des fonctionnalités de communication via des WebSockets.
-
-Socket.io facilite l'établissement de connexions en temps réel entre les clients et le serveur, permettant des échanges de données instantanés et une synchronisation efficace des actions des joueurs. Cette approche a été cruciale pour assurer une expérience de jeu immersive et interactive, où les actions des joueurs sont rapidement transmises et traitées en temps réel.
-
-En intégrant Socket.io dans notre architecture, nous avons pu mettre en place des mécanismes de communication efficaces et gérer les événements en temps réel. Cette méthode a joué un rôle clé dans la réussite de notre projet en offrant une communication en temps réel fiable et robuste. La communication entre les clients et le serveur grâce avec cette bibliothèque nous a aussi permis de aisément diviser le travail et les tâches, sachant à l'avance les informations attendus côté serveur et coté client.
-
-\subsubsection{Exemple : Initialisation de Socket.io dans React}
-
-Dans notre implémentation, nous avons créé un module dédié à la gestion de la connexion Socket.io dans React. Nous utilisons le package `socket.io-client` pour établir une connexion avec le serveur Socket.io en spécifiant l'URL du serveur ('http://localhost:3001').
-
-Le composant \texttt{SocketProvider} agit comme un fournisseur de contexte, permettant de transmettre l'instance de la socket à l'ensemble de l'application React. Cela garantit que tous les composants de l'application peuvent accéder à la socket dans l'ensemble des fichiers clients pour communiquer avec le serveur.
+Le composant \texttt{SocketProvider} agit comme un fournisseur de connexion, permettant de transmettre l'instance de la socket à l'ensemble de l'application React. Cela garanti que chaque componant puisse utiliser la même connection au serveur et d'éviter d'en recréer une à chaque communication avec le serveur. 
 
 \begin{verbatim}
 import io from 'socket.io-client';
@@ -189,30 +208,218 @@ const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   );
 };
+
 \end{verbatim}
 
-\subsection{Gestion de l'état et des effets}
+ le composant React appelé `ListParty`  est utilisé pour afficher une liste de parties en attente de joueur ou mise en pause par le joueur et pour cela il se doit de communiquer avec le serveur. Et donc voici un exemple de comment un componant react commmunique avec le serveur :
+\begin{verbatim}
+function ListParty(props) {
+  const {idJ} = usePlayer()
+  const [parties, setParties] = useState([]);
+  const { socket } = useContext(SocketContext);
+  const [error,setError] = useState("")
 
-La gestion de l'état et des effets est un aspect essentiel du développement d'applications React, permettant de contrôler le comportement dynamique des composants et de réagir aux changements de données et d'événements provenant du serveur. Les Hooks \texttt{useState} et \texttt{useEffect} offrent des fonctionnalités pour gérer la communication client/serveur et exécuter des mise à jour graphiques de manière efficace.
+  useEffect(() => {
+    const fetchParties = async () => {
+      props.save ?
+          socket.on('savedListOut', (data) => {
+            setParties(data);
+        })
+        :socket.on('joinableListOut', (data) => {
+            setParties(data);
+        });
+      props.save ? socket.emit('savedList', idJ) : socket.emit('joinableList');
+    };
+    
+    const cleanup = () => {
+      socket.off('joinableListOut');
+      socket.off('savedListOut');
+    };
 
-\subsubsection{Exemple : Utilisation de \texttt{useEffect} pour écouter les événements du serveur}
+    fetchParties();
+    return cleanup;
+  }, [socket]);
+  //rendu
+  }
+\end{verbatim}
 
-Dans cet exemple, la fonction \texttt{useEffect} est utilisée pour s'abonner à l'événement 'dealingCards' émis par le serveur via la socket. Lorsque cet événement est reçu, la fonction de rappel met à jour l'état local des cartes du jeu en fonction des données reçues. En retour, cela déclenche une mise à jour de l'interface utilisateur pour refléter les nouvelles informations, assurant ainsi une expérience de jeu réactive et synchronisée.
+Le composant récupère l'identifiant unique du joueur et la connexion au serveur. Puis, il crée un crochet particulier appelé 'useEffect' qui prend une fonction et une liste de variables. Il surveille le changement de ces variables et se déclenche lorsqu'elles sont modifiées. Ici, lorsque le composant est chargé pour la première fois ou lorsque la connexion change, selon le type de parties spécifiées en paramètre, le useEffect appelle une fonction qui met un écouteur sur une route de sortie et ensuite demande des informations au serveur.
+
+Par exemple, si nous voulons récupérer les parties sauvegardées (c'est-à-dire que l'attribut save est passé à true), nous mettons en place un écouteur sur la route 'savedListOut' et demandons des informations sur 'savedList'. Lorsque des données sont reçues par 'savedListOut', une fonction de callback est déclenchée pour mettre à jour la liste des parties affichées
+
+
+Une fois le composant démonté, le useEffect va appeler une autre fonction qui va supprimé les écouteur d'évenement, ansi on évite des écoutes multiples et d'écouter lorsque ce n'est plus indispensable.
+
+
+\end{itemize}
+\subsubsection{Requêtes HTTP} Nous n'avons pas utilisé de requêtes HTTP dans le projet, pour garder un fonctionnement homogène dans le traitement de toutes les requêtes.
+\subsubsection{Préférences WebSockets/Requêtes HTTP} Nous aurions pu utiliser des requêtes HTTP lors de la soumission de données entrainant un changement de page, par exemple lors de la connexion, ou de la création d'une partie. En revanche, cela n'aurait pas été adapté pour l'envoi de messages dans le chat ou en cas de clic sur une carte.
+
+
+\section{Utilisation de React}
+
+%Dans cette section, après une  introduction générale d’une ou deux lignes de React, vous %présenterez les aspects saillants de cette technologie en les illustrant par un ou deux composants %React issus de votre projet. Si, en cours de rédaction, vous vous rendez compte que vous n’avez %pleinement tiré parti des facilités offertes par React, vous pouvez signaler à quels endroits de %votre code des 
+%modifications auraient été judicieuses
+%2 pages maximum hors extrait de code
+
+
+
+
+React.js est un framework JavaScript, développé par Facebook et déployé en 2011, qui permet de créer efficacement des interfaces utilisateur. Il est populaire pour son architecture basée sur des composants, qui se mettent à jour de manière indépendante, optimisant ainsi le rendu des pages HTML.
+
+L'architecture de React permet une modularité intéressante car elle facilite la séparation de la création de composants entre plusieurs personnes. Voici une illustration de ceci :
+
+Nous avons créé des fichiers différents pour chaque jeu avec un composant principal qui décrit son affichage spécifique réalisé par différentes personnes. Par souci de factorisation, tout ce qui était en commun a été extrait et mis dans un composant parent appelé 'GameContainer'. Il réunit toutes les variables globales, le traitement des données envoyées par le serveur et enfin l'affichage de composants nécessaires en tout temps. 'GameContainer' est un composant assez riche et il est difficile à présenter dans son intégralité. L'idée derrière lui est de faciliter l'intégration de nouveaux jeux. Voici une version simplifiée (extrait de \texttt{client/src/Scripts/Shared/gameContainer.js} de la ligne 70 à 231) :
 
 \begin{verbatim}
-useEffect(() => {
-  socket.on('dealingCards', (data) => {
-    setCards(data.Cards);
-  });
-  return () => socket.off('dealingCards');
-}, [socket]);
+
+function GameContainer(){
+  const { socket } = useContext(SocketContext);
+  const { idParty } = useParams();
+  const [cards, setCards] = useState([]);
+  const [Info, setInfo] = useState([]);
+  const [OtherPlayerAction, setOtherPlayerAction] = useState({});
+  const navigate = useNavigate();
+  // D'autres états et logiques...
+  const contextValue = {
+      idParty,
+      OtherPlayerAction,
+      setOtherPlayerAction,
+      Info,
+      setInfo,
+      cards,
+      setCards,   
+      socket,
+      navigate,
+      //reste des états
+  }
+  useEffect(() => {
+    const fetchInfoServ = async () => {
+        socket.on('dealingCards', (data) => {
+          console.log("Cartes reçues via dealingCards",data);
+          setCards(data.Cards);
+        });
+        //Exemple de mise à jour d'un crochet dans une fonction de callback
+        socket.on('conveyAction', (data) => {
+            console.log("conveyAction reçu",data);
+            setOtherPlayerAction(prevOtherPlayerAction => {
+                //création d'une copie pour faire une modification propre
+                let copy = {...prevOtherPlayerAction};
+                
+                //soit on créé un nouvel attribut soit on le met à jour
+                copy[data.pseudoJoueur] = data.natureAction;
+
+                //ceci est la nouvelle valeur de otherPlayerAction
+                return copy;
+            });
+        });
+        // Autres écouteurs d'événements
+        socket.emit('infoGame', idParty);
+        socket.emit("requestCards", { "idJ": idJ, "idParty": idParty });//le serveur renvoit sa réponse sur 'dealingCards'
+    }
+    const cleanup = () => {
+        socket.removeAllListeners();
+    }
+    fetchInfoServ();//fonction exécutée quand le componant est monté
+    return cleanup;//fonction a exécuter quand le componant est démonté 
+  }, []);//liste des dependences vide afin que cela soit executer seulement à son 1er affichage
+
+    return(
+    <>
+        <Deconnection />
+        <Leave idj={idJ} socket={socket} />
+        <Chat data={{ party: idParty }} />
+        {resultGame ?
+            <EndGame resultGame={resultGame} Info={Info}/>
+            :<>
+            <Save data={{ party: idParty }}/>
+             <Outlet context={contextValue} />//
+            </>}
+        {Info['nbTour']>=0?<NbTurn nbTurn={Info['nbTour']}/>:<></>}
+    </>
+    )
+}
 \end{verbatim}
+
+Chaque composant peut prendre en paramètre un objet qui va correspondre à un ensemble de paramètres appelés propriétés. Dans ce que retourne le composant, nous pouvons en apercevoir un exemple :
+\begin{verbatim}
+ <Leave idj={idJ} socket={socket} /> //idj={idJ} et socket={socket} sont des propriétés
+\end{verbatim}
+
+Pour éviter de devoir transmettre des valeurs communes à différents composants par ces propriétés, 'GameContainer' commence par créer un contexte. Les contextes sont l'équivalent en React des variables globales, tout enfant du contexte peut y accéder. Ils facilitent donc largement la transmission d'information. Pour cela, le composant va récupérer diverses variables des contextes employés avant lui, puis il va instancier des crochets React. Les crochets sont les éléments les plus importants de React car ils sont ce qui fait le dynamisme de React, puisqu'ils sont responsables de l'actualisation des éléments de la page lorsqu'ils sont modifiés. Il va ensuite mettre en place 10 écouteurs d'événements envoyés par le serveur dans un useEffect.\\
+
+Nous avons déjà pu discuter de comment un composant communique avec le serveur dans la partie \textbf{3.3 Communication des serveurs}, mais pour faire un rappel rapide, une première fonction est appelée lors du premier montage du composant mettant en place les écouteurs et une deuxième est appelée lors du démontage pour enlever ces écouteurs une fois obsolètes. Dans la première fonction, il demande au serveur des informations sur les parties avec 'infoGame' (correspond à toutes les informations à afficher) et la liste des cartes que le joueur possède dans sa main. Chaque écouteur va appeler une fonction qui va ensuite mettre à jour un des crochets, relançant un affichage de gameContainer. C'est ici que nous pourrions noter une fragilité de notre code, puisque gameContainer est le composant principal de la page, à chaque changement on relance l'affichage de toute la page sauf que React est sélectif dans son actualisation et les composants qui ne dépendent pas de ce crochets ne sont pas actualisés. Donc le composant est à la fois modulaire et techniquement efficace.\\
+
+Donc, à ce stade, nous avons un composant contenant une connexion au serveur et des écouteurs, ainsi qu'un dictionnaire appelé contextValue contenant lui-même divers crochets et variables. Il affiche un bouton pour se déconnecter, un chat, un bouton pour quitter la partie et le nombre de tours effectués.\\
+
+Mais maintenant, comment afficher un jeu particulier ? Pour cela, nous utilisons la bibliothèque React-Router qui permet, à partir de l'adresse HTTP, de rendre un composant particulier et de récupérer des paramètres dans cette adresse. Nous récupérons ainsi l'identifiant de la partie avec la fonction 'useParams()'. Pour se déplacer entre les différentes routes, nous utilisons 'navigate()'. Ainsi, dans la salle d'attente, une fois la partie lancée, nous envoyons l'utilisateur à l'adresse du jeu. Un exemple serait :
+
+\begin{verbatim}
+setTimeout(() => navigate('/Home/Games/Bataille/'+data.idParty), 250);
+\end{verbatim}
+
+Ceci déclenche l'affichage du composant parent de la route 'gameContainer' qui, grâce au composant fourni par la bibliothèque :
+
+\begin{verbatim}
+ <Outlet context={contextValue} />//
+\end{verbatim}
+
+indique où et quand le composant enfant de la route doit s'afficher. De plus, nous passons en propriété la valeur du contexte créé précédemment, permettant à 'Outlet' de créer le contexte utilisable ensuite dans les différents fichiers des jeux.
+
+Nous avons donc pu créer un composant encapsulant la plupart des éléments de logique derrière les jeux facilitant leur ajout tout en maintenant les qualités de React. Il suffit de créer un affichage ou de réutiliser ceux déjà existants et de rendre interactifs les éléments de jeu.
+
+\begin{verbatim}
+setTimeout(() => navigate('/Home/Games/Bataille/'+data.idParty), 250);
+\end{verbatim}
+
+Ceci déclenche l'affichage du composant parent de la route 'gameContainer' qui, grâce au composant fourni par la bibliothèque :
+
+\begin{verbatim}
+ <Outlet context={contextValue} />//
+\end{verbatim}
+
+indique où et quand le composant enfant de la route doit s'afficher. De plus, nous passons en propriété la valeur du contexte créé précédemment, permettant à 'Outlet' de créer le contexte utilisable ensuite dans les différents fichiers des jeux.
+
+Nous avons donc pu créer un composant encapsulant la plupart des éléments de logique derriére les jeux facilitant leur ajout tout en maintenant les qualitées de reac. Il suffit de créer un affichage ou de réutiliser ceux déja existant et de rendre interactif les éléments de jeu.
+
+
+
+
 
 \section{Bilan}
 
-Cette partie présente un bilan et une analyse rétrospective et difficultés rencontrées 
-(une page maximum). Ce bilan peut aborder à la fois les aspects organisationnels et 
-techniques
+La première semaine, nous n'avons pas été capables de remplir le cahier des charges. En effet, nous n'avons pas réussi à obtenir un affichage fonctionnel de la bataille. Cela a été dû à plusieurs facteurs et a permis une introspection et une amélioration lors de la deuxième semaine. Nous attribuons cet échec à notre manque d'expérience. Il a été difficile de s'organiser, ne connaissant pas le temps nécessaire à chaque tâche, et nous n'avions jamais utilisé GitHub dans le cadre d'un projet de groupe. De plus, nous découvrions aussi React, un framework très riche et très complexe, qui emploie des concepts tout à fait nouveaux. Il nous a donc fallu du temps pour apprendre à coder avec React, utiliser GitHub, mais aussi pour gérer notre temps, à la fois personnel et collectif. Pour la deuxième semaine, nous avons alors formé deux groupes de deux, l'un sur le serveur React, l'autre sur le serveur Node.js. Et nous avons constaté un net progrès puisque cette fois-ci, nous avons fini dans les temps tout en limitant le travail effectué à la maison.
 
+Au fur et à mesure du projet, nous avons réécrit plusieurs fois des extraits de code pour les améliorer et les simplifier. Nous avons ainsi constaté une nette amélioration de la qualité du code entre celui produit lors de la première semaine du projet et celui écrit plus récemment. De plus, nous avons mieux réparti le travail entre les membres du groupe, et ainsi mieux tiré parti des fonctionnalités de l'architecture de gestion de versions proposée par GitHub.
+
+\newpage
+\section{Annexe}
+\subsection{Ce qui n'a pas été implémenté}
+\begin{itemize}
+    \item Requêtes HTTP (tout est en websocket)
+    \item Délai pour le choix de carte
+    \item Client responsive
+\end{itemize}
+\subsection{Diagrammes de Gantt}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{semaine1.png}
+\caption{Organisation de la première semaine.}
+\label{fig:bdd}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{semaine2.png}
+\caption{Organisation de la deuxième semaine.}
+\label{fig:bdd}
+\end{figure}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{intermede.png}
+\caption{Organisation de l'intermède.}
+\label{fig:bdd}
+\end{figure}
     \end{document}
 
