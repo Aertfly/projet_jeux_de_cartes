@@ -31,7 +31,7 @@ function Party(props) {
           <td>{props.idParty}</td>
           <td>{props.type}</td>
           <td>{props.min}</td>
-          <td>{props.nbPlayer +"/"+ props.max}</td>
+          {props.nbPlayer?<td>{props.nbPlayer +"/"+ props.max}</td>:<></>}
           <td><button type='button' onClick={joinGame} disabled={props.disabled}>Rejoindre</button></td>
         </tr>
       </tbody>
@@ -87,7 +87,7 @@ function ListParty(props) {
             <th>Identifiant</th>
             <th>Jeu</th>
             <th>Joueurs Requis</th>
-            <th>Nombre de joueurs</th>
+            {props.save ?<></>:<th>Nombre de joueurs</th>}
             <th style={{ color: 'transparent' }}>Rejoindre</th>
           </tr>
         </thead>

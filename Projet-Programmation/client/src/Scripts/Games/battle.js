@@ -4,6 +4,16 @@ import {cardImgName,importImages,generatePointCards,generatePointWonCards,circle
 import Modal from 'react-modal';
 
 
+function isBattle(center){
+    const keys = Object.keys(center);
+    for(let i=0;i<keys.length;i++){
+        for(let j=i+1;j<keys.length;j++){
+            if(center[keys[i]].valeur === center[keys[j]].valeur)return [keys[i],keys[j]];
+        }
+    }
+    return null;
+}
+
 function WonCardComponent(){
     const {socket, idParty , idJ} = useOutletContext();
     const [showModal, setShowModal] = useState(false);
@@ -47,6 +57,32 @@ function WonCardComponent(){
     )
 }
 
+
+
+function BroadcastBattle(){
+    const { Info } = useOutletContext();
+    const [midX, setMidX] = useState(window.innerWidth / 2);
+    const [midY, setMidY,] = useState(window.innerHeight / 2);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setMidX(window.innerWidth / 2);
+            setMidY(window.innerHeight / 2);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+        return(
+            <div>
+                {isBattle(Info.center)?<p style={{ position: 'absolute',color:'red', left: `${midX -50}px`, top: `${midY-75}px` }}>BATAILLE !</p>:<></>}
+                <br/>
+            </div>
+    )
+}
+
+
 function GameBoard() {
     const [playerPositions, setPlayerPositions] = useState([]);
     const { Info } = useOutletContext();
@@ -64,10 +100,11 @@ function GameBoard() {
         };
     }, [numberOfPlayers,Info.infoPlayers]);
 
+    const resIsBattle= isBattle(Info.center);
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
-                infoPlayers[index]?<Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} />:<></>
+                infoPlayers[index]?<Player key={index} isBattle={resIsBattle} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards'] } />:<></>
             ))}
         </div>
     );
@@ -75,7 +112,11 @@ function GameBoard() {
 
 function Player(props) { 
     const { pseudo, OtherPlayerAction, myAction, Info} = useOutletContext();
+    let color = "black";
+    console.log("BATTLE : ",props.isBattle )
+    if(props.isBattle)if(props.isBattle.includes(props.pseudo))color='red'
     const playerStyle = {
+        border : `5px solid ${color}`,
         position: 'absolute',
         left: `${props.x}px`,
         top: `${props.y}px`,
@@ -89,6 +130,7 @@ function Player(props) {
             msg = getMsgOther(OtherPlayerAction[props.pseudo]);
         }
     }
+
     console.log("Action autres",OtherPlayerAction); 
     return (
         <div className="battle-player" style={playerStyle}>
@@ -195,6 +237,7 @@ function Battle() {
                     <GameBoard />
                     <CardsHand />
                     <WonCardComponent />
+                    <BroadcastBattle />
                 </>
             )}
         </div>
