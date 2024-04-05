@@ -152,7 +152,7 @@ function Center() {
         const rowCards = row.map((position, colIndex) => {
             const card = board[rowIndex] && board[rowIndex][colIndex];
             return card ? (
-                <Card key={colIndex} x={position.x} y={position.y} card={card} onClick={() => handleCardClick(card,rowIndex)} />
+                <Card key={colIndex} x={position.x} y={position.y-75} card={card} onClick={() => handleCardClick(card,rowIndex)} />
             ) : null;
         }).filter(Boolean); // Filtrer les éléments non définis
 

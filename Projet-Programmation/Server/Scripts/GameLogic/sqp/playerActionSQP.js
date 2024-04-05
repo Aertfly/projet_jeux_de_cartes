@@ -36,7 +36,6 @@ function queryLine(db, lineName, tableName, condition, value) {
 const playerActionSQP = function(io, db, centre, idPartie){    
     // Si tous les joueurs dans la partie ont joué
     db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (idPartie), (err, result) => {
-        console.log("Test SQP",result[0]["COUNT(*)"],Object.keys(centre).length)
         if (result[0]["COUNT(*)"] == Object.keys(centre).length){
             declencherLogique(io, db, idPartie, centre);
         }

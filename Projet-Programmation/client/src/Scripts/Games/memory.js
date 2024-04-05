@@ -193,7 +193,7 @@ function Center() {
     return (
         <div>
             <div style={textContainerStyle}>
-                {myAction === "jouerCarte" ? "A vous de jouer !" : "Veiller patienter ..."}
+                {myAction === "jouerCarte" ? "A vous de jouer !" : "Veuillez patienter ..."}
             </div>
             <div className="center-container">
                 {centerRows.map((rowCards, rowIndex) => (

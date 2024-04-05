@@ -5,13 +5,18 @@ import Modal from 'react-modal';
 
 
 function isBattle(center){
-    const keys = Object.keys(center);
-    for(let i=0;i<keys.length;i++){
-        for(let j=i+1;j<keys.length;j++){
-            if(center[keys[i]].valeur === center[keys[j]].valeur)return [keys[i],keys[j]];
+    const res = [];
+    if(center){
+        const keys = Object.keys(center);
+        for(let i=0;i<keys.length;i++){
+            for(let j=i+1;j<keys.length;j++){
+                if(center[keys[i]].valeur === center[keys[j]].valeur){
+                    res.push(keys[i],keys[j]);
+                }
+            }
         }
     }
-    return null;
+    return res;
 }
 
 function WonCardComponent(){
@@ -76,7 +81,7 @@ function BroadcastBattle(){
     }, []);
         return(
             <div>
-                {isBattle(Info.center)?<p style={{ position: 'absolute',color:'red', left: `${midX -50}px`, top: `${midY-75}px` }}>BATAILLE !</p>:<></>}
+                {isBattle(Info.center).length>0?<p style={{ position: 'absolute',color:'red', left: `${midX -50}px`, top: `${midY-75}px` }}>BATAILLE !</p>:<></>}
                 <br/>
             </div>
     )
@@ -113,8 +118,7 @@ function GameBoard() {
 function Player(props) { 
     const { pseudo, OtherPlayerAction, myAction, Info} = useOutletContext();
     let color = "black";
-    console.log("BATTLE : ",props.isBattle )
-    if(props.isBattle)if(props.isBattle.includes(props.pseudo))color='red'
+    if(props.isBattle.length>0)if(props.isBattle.includes(props.pseudo))color='red'
     const playerStyle = {
         border : `5px solid ${color}`,
         position: 'absolute',
@@ -131,7 +135,6 @@ function Player(props) {
         }
     }
 
-    console.log("Action autres",OtherPlayerAction); 
     return (
         <div className="battle-player" style={playerStyle}>
             {(props.pseudo === pseudo)? <p>{getMsg(myAction)}</p>:msg}

@@ -211,7 +211,7 @@ function Boss(){
     const [midX, setMidX] = useState(window.innerWidth / 2);
     const style = {
         position: 'absolute',
-        left: `${midX-75}px`,
+        left: `${midX + midX/2}px`,
         top: '10px',
     }
     useEffect(() => {

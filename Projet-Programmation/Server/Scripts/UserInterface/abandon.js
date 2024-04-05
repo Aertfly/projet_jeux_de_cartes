@@ -149,7 +149,7 @@ async function removePlayer(io,db, player, party,socket) {
                                             handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
                                             break;
                                         default:
-                                            throw "Jeu inconnu";
+                                            console.log("Jeu inconnu, fin abandon");
                                     }
                                 }
                             });
