@@ -271,20 +271,55 @@ async function finDePartie(io, db, idPartie) {
  * @returns L'ensemble des joueurs qui sont en bataille
  */
 function joueursBataille2(cartes) {
-    var idMax = -1;
-    Object.values(cartes).forEach((main) => {
-        if(main.length > idMax) idMax = main.length;
-    });
 
-    var retour = [];
-    // On compte combien de joueurs ont cette carte
-    for (var idJ of Object.keys(cartes)) {
-        if ((cartes[idJ].length) == idMax) {
-            retour.push(idJ)
+    var i = 0;
+    while (i < 10){
+        // On compte le nombre de joueurs qui ont joué la carte maximale
+        
+        var nbJoueursCarteMaxi = 0;
+        var valeurMax = -1;
+        Object.values(cartes).forEach((main) => {
+            if(main.length > i){
+                if(main[i].valeur > valeurMax && valeurMax != 1){
+                    valeurMax = main[i].valeur;
+                    nbJoueursCarteMaxi = 0;
+                } else if (main[i].valeur == 1 && valeurMax != 1){
+                    valeurMax = 1;
+                    nbJoueursCarteMaxi = 0;
+                }
+                if(main[i].valeur == valeurMax){
+                    nbJoueursCarteMaxi += 1;
+                }
+            } else {
+                console.log("La main " + JSON.stringify(main) + " a moins de " + i + " cartes");
+                // On est tombé sur un joueur qui n'a pas pu suivre dans la bataille : pas grave, on ne fait rien
+            }
+        });
+
+        var nbJoueursBatailleSuivante = 0;
+        Object.values(cartes).forEach((main) => {
+            if(main.length > i + 1){
+                nbJoueursBatailleSuivante += 1;
+            }
+        })
+
+        if(nbJoueursCarteMaxi > nbJoueursBatailleSuivante){
+            var retour = [];
+            for (var idJ of Object.keys(cartes)){
+                if(cartes[idJ][i].valeur == valeurMax){
+                    retour.push(idJ);
+                }
+            }
+            console.log("JoueursBataille2 retourne " + JSON.stringify(retour));
+            return retour;
+        } else {
+            i += 1;
+            console.log("JoueursBataille2 augmente avec i="+i + " valeurMax=" + valeurMax);
+            console.log(nbJoueursCarteMaxi + " <= " + nbJoueursBatailleSuivante);
         }
     }
-    return retour;
 }
+
 
 /**
  * Envoyer à tous les joueurs qui doivent jouer une annonce leur disant que c'est à eux de jouer

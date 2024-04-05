@@ -217,7 +217,7 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
                 db.query("UPDATE joue, parties SET score=? WHERE joue.idPartie = parties.idPartie AND joue.idJ=? AND parties.idPartie=?", [sommeTetes, idJ, idPartie], (err2, result2) => { if(err2) throw err2; });
                 
                 // Si le nombre de têtes du joueur est supérieur ou égal à 66
-                if(sommeTetes >= 2){
+                if(sommeTetes >= 66){
                     // Le joueur a perdu :
                     ajouterScores(db, idPartie).then(() => {
 
