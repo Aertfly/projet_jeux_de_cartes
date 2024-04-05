@@ -127,7 +127,7 @@ function jouerCarte(io,socket,db,data){
                                 playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket);
                                 break;
                             case "6 Qui Prend":
-                                playerActionSQP(io, db, centre, data);
+                                playerActionSQP(io, db, centre, data.idPartie);
                                 break;
                             case 'Régicide':
                                 playerActionRegicide(io,socket,db,centre,archive,data,cartesJoueurs);

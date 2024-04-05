@@ -33,11 +33,12 @@ function queryLine(db, lineName, tableName, condition, value) {
  * @param {*} centre 
  * @param {*} data La donnée envoyée par le client
  */
-const playerActionSQP = function(io, db, centre, data){    
+const playerActionSQP = function(io, db, centre, idPartie){    
     // Si tous les joueurs dans la partie ont joué
-    db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (data.idPartie), (err, result) => {
+    db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (idPartie), (err, result) => {
+        console.log("Test SQP",result[0]["COUNT(*)"],Object.keys(centre).length)
         if (result[0]["COUNT(*)"] == Object.keys(centre).length){
-            declencherLogique(io, db, data.idPartie, centre);
+            declencherLogique(io, db, idPartie, centre);
         }
     });
 }

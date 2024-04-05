@@ -1,4 +1,6 @@
-const { recupererPseudo, nextPlayerTurn, currentPlayerTurn } = require("../GameLogic/utils/functions");
+const { recupererPseudo} = require("../GameLogic/utils/functions");
+const { playerActionSQP } = require("../GameLogic/sqp/playerActionSQP");
+
 
 var abandon = function(io,db,socket, motif, player) {
     var data = {player : player};
@@ -121,7 +123,7 @@ async function removePlayer(io,db, player, party) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
+                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour,centre from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
                                 if (err) throw (err)
                                 console.log("Resultat derniére query:",nbRes);
                                 if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
@@ -132,10 +134,10 @@ async function removePlayer(io,db, player, party) {
                                     switch (nbRes[0].type){
                                         case "Bataille": 
                                             // On passe à une logique spécifique à la bataille
-                                            playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket);
+                                            playerActionBataille(io, db, nbRes[0].centre, archive, cartesJoueurs, data, socket);
                                             break;
                                         case "6 Qui Prend":
-                                            playerActionSQP(io, db, centre, data);
+                                            playerActionSQP(io, db, JSON.parse(nbRes[0].centre), party);
                                             break;
                                         case 'Régicide':
                                             handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
@@ -159,7 +161,7 @@ async function removePlayer(io,db, player, party) {
 
 async function handleNextPlayer(io,db,idParty,playerOrder,player,turn){
     console.log(idParty,playerOrder,player,turn);
-    if(player===playerOrder[0]){
+    if(player===playerOrder[0]){    
         console.log("On dit au prochain joueur de jouer");
         //au minimun on a deux joueurs donc cela ne devrait pas poser de probléme
         io.to(idParty).emit('newTurn',{joueurs:[playerOrder[1]],

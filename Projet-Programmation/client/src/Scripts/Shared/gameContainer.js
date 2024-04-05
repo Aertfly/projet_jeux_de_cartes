@@ -129,7 +129,7 @@ function GameContainer(){
                             let p;
                             for(const playerD of data['infoPlayers']){
                                 p = indexOf(playerD,copy['infoPlayers']);
-                                if(p!=-1){
+                                if(p!==-1){
                                     for (const param of paramsPlayer){
                                         if(playerD[param])copy['infoPlayers'][p][param]=playerD[param];
                                     }
