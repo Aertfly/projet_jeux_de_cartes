@@ -1,4 +1,4 @@
-const { recupererPseudo } = require("../GameLogic/utils/functions");
+const { recupererPseudo, nextPlayerTurn, currentPlayerTurn } = require("../GameLogic/utils/functions");
 
 var abandon = function(io,db,socket, motif, player) {
     var data = {player : player};
@@ -121,13 +121,31 @@ async function removePlayer(io,db, player, party) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(idJ)as nbJoueur,joueursMin from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
+                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
                                 if (err) throw (err)
+                                console.log("Resultat derniére query:",nbRes);
                                 if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
                                     io.to(party).emit('leave');
                                     resolve(removeAllPlayer(db,party));
                                 }else{
-
+                                    console.log("La type de partie est :",nbRes[0].type);
+                                    switch (nbRes[0].type){
+                                        case "Bataille": 
+                                            // On passe à une logique spécifique à la bataille
+                                            playerActionBataille(io, db, centre, archive, cartesJoueurs, data, socket);
+                                            break;
+                                        case "6 Qui Prend":
+                                            playerActionSQP(io, db, centre, data);
+                                            break;
+                                        case 'Régicide':
+                                            handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
+                                            break;
+                                        case 'Memory':
+                                            handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
+                                            break;
+                                        default:
+                                            throw "Jeu inconnu";
+                                    }
                                 }
                             });
                             resolve(true);
@@ -137,6 +155,29 @@ async function removePlayer(io,db, player, party) {
             }
         });
     });
+}
+
+async function handleNextPlayer(io,db,idParty,playerOrder,player,turn){
+    console.log(idParty,playerOrder,player,turn);
+    if(player===playerOrder[0]){
+        console.log("On dit au prochain joueur de jouer");
+        //au minimun on a deux joueurs donc cela ne devrait pas poser de probléme
+        io.to(idParty).emit('newTurn',{joueurs:[playerOrder[1]],
+            numeroTour:Math.floor(turn/playerOrder.length),
+            pseudos:[await recupererPseudo(db,playerOrder[1])]});
+    }
+    playerOrder.splice(playerOrder.indexOf(player),1);
+    await updatePlayerOrder(db,idParty,playerOrder);
+}
+
+function updatePlayerOrder(db,idParty,playerOrder){
+    return new Promise((resolve,reject)=>{
+        db.query("Update parties SET sens=? where idPartie=?",[JSON.stringify(playerOrder),idParty],(err,res)=>{
+            if(err)reject(err);
+            console.log(res.changedRows===1?"Update sens réussi":"Update raté");
+            resolve(true);
+        })
+    })
 }
 
 function removeAllPlayer(db,idParty){
