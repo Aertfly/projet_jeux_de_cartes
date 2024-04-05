@@ -138,7 +138,7 @@ var declencherLogique = function(io, db, idPartie, centre){
                         db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), idPartie], (err, result) => { if(err) throw err; });
                         
                         // 6 qui prend : le joueur remplace la ligne par sa carte
-                        remplacerLigne(io, db, parseInt(carteActuelle[0]), idPartie, ligne, {valeur: carteActuelle[1].valeur, nbBoeufs: carteActuelle[1].nbBoeufs}, centre).then(() => {
+                        remplacerLigne(io, db, parseInt(carteActuelle[0]), idPartie, ligne, {valeur: carteActuelle[1].valeur, nbBoeufs: carteActuelle[1].nbBoeufs}, archive).then(() => {
                             envoyerInfos(db, io, idPartie);
                         });
                     } else {  // Sinon : le joueur place simplement sa carte
@@ -196,60 +196,56 @@ function trierArchive(archive) {
  * @param {*} carte La carte qui viendra remplacer la ligne
  * @returns Une promesse de renvoyer un booléen qui dit si on peut continuer ou non
  */
-var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte){
+var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte, archive){
+    console.log("Appel de remplacerLigne : idJ=" + idJ + ", ligne=" + ligne + ", carte=" + JSON.stringify(carte));
        
     return new Promise((resolve, reject) => {
-        // On récupère l'archive depuis la base de données
-        queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive) => {
-            archive = JSON.parse(archive);
+        // On récupère le score du joueur dans la table joue
+        db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
+            if(err) throw err;
+            sommeTetes = result[0]["score"];
+            
+            // On ajoute les têtes des cartes ramassées au score du joueur
+            for(let carte2 of archive[ligne]){
+                sommeTetes += carte2.nbBoeufs;
+            }
 
-            // On récupère le score du joueur dans la table joue
-            db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
-                if(err) throw err;
-                sommeTetes = result[0]["score"];
-                
-                // On ajoute les têtes des cartes ramassées au score du joueur
-                for(let carte2 of archive[ligne]){
-                    sommeTetes += carte2.nbBoeufs;
-                }
+            // On met à jour le score du joueur dans la BD
+            db.query("UPDATE joue, parties SET score=? WHERE joue.idPartie = parties.idPartie AND joue.idJ=? AND parties.idPartie=?", [sommeTetes, idJ, idPartie], (err2, result2) => { if(err2) throw err2; });
+            
+            // Si le nombre de têtes du joueur est supérieur ou égal à 66
+            if(sommeTetes >= 66){
+                // Le joueur a perdu :
+                ajouterScores(db, idPartie).then(() => {
 
-                // On met à jour le score du joueur dans la BD
-                db.query("UPDATE joue, parties SET score=? WHERE joue.idPartie = parties.idPartie AND joue.idJ=? AND parties.idPartie=?", [sommeTetes, idJ, idPartie], (err2, result2) => { if(err2) throw err2; });
-                
-                // Si le nombre de têtes du joueur est supérieur ou égal à 66
-                if(sommeTetes >= 66){
-                    // Le joueur a perdu :
-                    ajouterScores(db, idPartie).then(() => {
+                    // On récupère le perdant
+                    db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [idPartie], (err3, result3) => {
+                        if(err3) throw err3;
 
-                        // On récupère le perdant
-                        db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score DESC LIMIT 1; ", [idPartie], (err3, result3) => {
-                            if(err3) throw err3;
+                        // On récupère le gagnant
+                        db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score ASC LIMIT 1; ", [idPartie], (err4, result4) => {
+                            if(err4) throw err4;
 
-                            // On récupère le gagnant
-                            db.query("SELECT pseudo, score FROM joue, joueurs WHERE joueurs.idJ = joue.idJ AND joue.idPartie=? ORDER BY joue.score ASC LIMIT 1; ", [idPartie], (err4, result4) => {
-                                if(err4) throw err4;
-
-                                // On envoie la fin de partie
-                                console.log("On va envoyer les infos")
-                                envoyerInfos(db, io, idPartie);
-                                setTimeout(() => {
-                                    io.to(idPartie).emit('endGame', {looser: {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]}, winner: {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]}});
-                                }, 2000);
-                            });
+                            // On envoie la fin de partie
+                            console.log("On va envoyer les infos")
+                            envoyerInfos(db, io, idPartie);
+                            setTimeout(() => {
+                                io.to(idPartie).emit('endGame', {looser: {"pseudo": result3[0]["pseudo"], "score": result3[0]["score"]}, winner: {"pseudo": result4[0]["pseudo"], "score": result4[0]["score"]}});
+                            }, 2000);
                         });
                     });
-                }
-                
-                // On remplace la ligne par la carte
-                archive[ligne] = [carte];
-                
-                // On met à jour la BDD à partir de la variable de l'archive
-                db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(trierArchive(archive)), idPartie], (err2, result2) => {
-                    if(err2) throw err2;
-                    resolve();
-                })
+                });
+            }
+            
+            // On remplace la ligne par la carte
+            archive[ligne] = [carte];
+            
+            // On met à jour la BDD à partir de la variable de l'archive
+            db.query("UPDATE parties SET archive=? WHERE idPartie=?", [JSON.stringify(trierArchive(archive)), idPartie], (err2, result2) => {
+                if(err2) throw err2;
+                resolve(trierArchive);
             })
-        });
+        })
     });    
 }
 
@@ -293,10 +289,12 @@ const ligneSQP = function(io, db, data){
         // On met à jour le centre dans la bd
         db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), data.idPartie], (err, result) => { if(err) throw err; });
         
-        // On remplace la ligne dans l'archive par la carte jouée
-        remplacerLigne(io, db, data.idJoueur, data.idPartie, data.ligne, carteActuelle).then( () => {
-            // On continue la logique du tour
-            declencherLogique(io, db, data.idPartie, centre);
+        queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {  
+            // On remplace la ligne dans l'archive par la carte jouée
+            remplacerLigne(io, db, data.idJoueur, data.idPartie, data.ligne, carteActuelle, JSON.parse(archive)).then( () => {
+                // On continue la logique du tour
+                declencherLogique(io, db, data.idPartie, centre);
+            });
         });
     });
 }
