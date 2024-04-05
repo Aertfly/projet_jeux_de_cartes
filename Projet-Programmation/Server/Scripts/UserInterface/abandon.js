@@ -1,4 +1,4 @@
-var abandon = function(db,socket, motif, player) {
+var abandon = function(io,db,socket, motif, player) {
     var data = {player : player};
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
     if(motif == 'playerLeaving') { // Quand c'est volontaire. data demande l'idJ
@@ -10,7 +10,7 @@ var abandon = function(db,socket, motif, player) {
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log(results[0].idPartie);
-                const resultatSuppression = await removePlayer(db, player, party)
+                const resultatSuppression = await removePlayer(io,db, player, party)
                 if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
@@ -60,7 +60,7 @@ async function after30s(io, socket, db, data) {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
         io.to(data.party).emit("otherPlayerLeft", data.username);
         delete disconnectedPlayers[data.player]; // On supprime de notre liste le joueur déco
-        const resultatSuppression = await removePlayer(db, data.player, data.party)
+        const resultatSuppression = await removePlayer(io,db, data.player, data.party)
         if(resultatSuppression) {
             console.log("le joueur a été supprimé des données de la partie avec succès")
         };
@@ -69,7 +69,7 @@ async function after30s(io, socket, db, data) {
     }
 }
 
-async function removePlayer(db, player, party) {
+async function removePlayer(io,db, player, party) {
     return new Promise((resolve, reject) => {
         // Vérifier d'abord si les données à supprimer existent vraiment
         db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
@@ -107,9 +107,7 @@ async function removePlayer(db, player, party) {
                             }
                         });
                     }
-                    db.query("SELECT count(idJ) from joue where idPartie = ?",[player],async (del, delRes) =>{
 
-                    });
                     // Supprimer le joueur
                     db.query("DELETE FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], async (deleteErr, deleteResults) => {
                         if (deleteErr) {
@@ -121,13 +119,13 @@ async function removePlayer(db, player, party) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(idJ)as nbJoueur from joue where idPartie = ?", [party], async (err, nbRes) => {
+                            db.query("SELECT count(idJ)as nbJoueur,joueursMin from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
                                 if (err) throw (err)
-                                if (nbRes[0].nbJoueur == 0) {
-                                    db.query("DELETE FROM parties where idPartie=?", [party], async (err, delRes) => {
-                                        if (err) throw (err)
-                                        delRes.affectedRows==1?console.log("La partie a été supprimé."):console.log("La partie n'a pas été supprimé avec succés");
-                                    });
+                                if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
+                                    io.to(party).emit('leave');
+                                    resolve(removeAllPlayer(db,party));
+                                }else{
+
                                 }
                             });
                             resolve(true);
@@ -137,6 +135,32 @@ async function removePlayer(db, player, party) {
             }
         });
     });
+}
+
+function removeAllPlayer(db,idParty){
+    console.log("Declenchement de removeAllPlayer");
+    return new Promise((resolve,reject)=>{
+        db.query("Select idJ from joue where idPartie=?",[idParty],async(err,res)=>{
+            if(err) reject(err)
+            const IdPlayerList = res.map(object => object.idJ);
+            const promiseList =[];
+            for(let i=0;i<IdPlayerList.length; i++){
+                promiseList.push(new Promise((res,rej)=>{
+                    db.query("DELETE FROM joue WHERE joue.idJ = ? AND joue.idPartie = ?",[IdPlayerList[i],idParty],(errD,resD)=>{
+                        if(errD)rej(errD);
+                        res(resD.affectedRows==1);
+                    })
+                }));
+            }
+            await Promise.all(promiseList);
+            db.query("DELETE FROM parties WHERE idPartie = ?",[idParty],(errP,resP)=>{
+                if(errP){reject(errP);}
+                resP.affectedRows==1?console.log("La partie a été supprimé."):console.log("La partie n'a pas été supprimé avec succés");
+                resolve(resP.affectedRows==1);
+            });
+        });
+
+    }); 
 }
 
 

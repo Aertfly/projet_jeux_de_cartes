@@ -198,6 +198,10 @@ function GameContainer(){
                 }
             });
 
+            socket.on('leave',()=>{
+                navigate('/home');
+            });
+
             socket.on('gameStart',(data)=>{
                 if(data.message){
                     console.log("Erreur :",data.message);

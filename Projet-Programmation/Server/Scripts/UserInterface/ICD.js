@@ -97,14 +97,14 @@ const ICD = function(io,socket,db){
 
     socket.on("disconnect", (reason) => {
         if (reason == "ping timeout") { // Si le joueur se reconnecte après une déconnexion par manque de co
-            abandon(db, socket, 'playerDisconnect', asso.get(socket.id));
+            abandon(io,db, socket, 'playerDisconnect', asso.get(socket.id));
             if (asso.has(socket.id)) {
                 asso.delete(socket.id);
                 console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
                 console.log(asso);
             }
         } else {
-            abandon(db, socket, 'playerLeaving', asso.get(socket.id));
+            abandon(io,db, socket, 'playerLeaving', asso.get(socket.id));
             if (asso.has(socket.id)) {
                 asso.delete(socket.id);
                 console.log('Un utilisateur s\'est déconnecté via la déconnexion manuelle');
@@ -114,7 +114,7 @@ const ICD = function(io,socket,db){
     });
 
     socket.on('playerLeaving', (idJ) => {
-        abandon(db, socket, 'playerLeaving', idJ)
+        abandon(io,db, socket, 'playerLeaving', idJ)
     })
     abandon(io, socket, db);
 };
