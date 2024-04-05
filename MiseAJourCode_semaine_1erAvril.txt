@@ -1,0 +1,13 @@
+Abandon :
+    - Les joueurs déconnectés ne sont plus affichés.
+    - On peut continuer de jouer même si un joueur quitte à tout moment.
+    - Si une partie n’a pas assez de joueurs, elle est supprimée et les joueurs sont forcés de quitter la page.
+Affichage bataille :
+    - Ajout d’un affichage lorsque des joueurs sont en bataille.
+
+Affichage SQP :
+    - Le texte indiquant au joueur de jouer et les cartes au centre de la page ne se superposent plus.
+
+Affichage régicide :
+
+    - La carte à vaincre est maintenant affichée en haut à droite pour éviter d’être cachée par un joueur.
