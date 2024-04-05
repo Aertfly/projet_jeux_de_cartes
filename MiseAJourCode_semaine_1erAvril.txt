@@ -9,5 +9,4 @@ Affichage SQP :
     - Le texte indiquant au joueur de jouer et les cartes au centre de la page ne se superposent plus.
 
 Affichage régicide :
-
     - La carte à vaincre est maintenant affichée en haut à droite pour éviter d’être cachée par un joueur.
