@@ -1,3 +1,5 @@
+const { recupererPseudo } = require("../GameLogic/utils/functions");
+
 var abandon = function(io,db,socket, motif, player) {
     var data = {player : player};
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
@@ -16,7 +18,7 @@ var abandon = function(io,db,socket, motif, player) {
                         if(err) {
                             throw err;
                         }
-                        socket.to(party).emit("otherPlayerLeft", player);
+                        socket.to(party).emit("otherPlayerLeft", await recupererPseudo(db,player));
                         console.log("L'information du départ du joueur", player, "a été envoyée à tous les joueurs de la partie", party);
                     });
                 } else {

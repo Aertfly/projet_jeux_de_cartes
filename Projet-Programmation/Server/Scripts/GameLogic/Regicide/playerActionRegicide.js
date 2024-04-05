@@ -1,5 +1,5 @@
 const {regenDraw} = require("../startGame.js");
-const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, ajouterScores,requestAction} = require("../utils/functions.js")
+const {currentPlayerTurn,nextPlayerTurn,envoyerInfos, ajouterScores,requestAction, recupererPseudo} = require("../utils/functions.js")
 
 
  async function playerActionRegicide(io, socket, db, center, archive, data, playersHand,hasPassed=false){
@@ -185,7 +185,7 @@ async function makePlayersDraw(io,db,idParty,playersHand,amount){
             cardDrawed = draw.pop();
             console.log(playerOrder[index],"pioche",cardDrawed);
             hand.push(cardDrawed);
-            io.to(idParty).emit('drawedCard',{idJ:playerOrder[index],card:cardDrawed});
+            io.to(idParty).emit('drawedCard',{idJ:playerOrder[index],card:cardDrawed,pseudoJoueur:await recupererPseudo(db,playerOrder[index])});
             i++;
             cpt++;
         }else{nbFullHands++}

@@ -28,7 +28,7 @@ function Chat({ data }) {
           const leftPlayerMessage = `Le joueur ${username} a quitté.`;
           setMessages(prevMessages => [...prevMessages, { username: 'Server', message: leftPlayerMessage }]);
           scrollToBottom();
-        })
+        });
         return () => {
             socket.off('newMessage'); // Nettoie l'écouteur d'événements lorsque le composant est démonté
             socket.off('otherPlayerLeft');

@@ -62,12 +62,12 @@ function GameBoard() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [numberOfPlayers]);
+    }, [numberOfPlayers,Info.infoPlayers]);
 
     return (
         <div className="battle-game-board">
             {playerPositions.map((position, index) => (
-                <Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} />
+                infoPlayers[index]?<Player key={index} x={position.x} y={position.y} pseudo={infoPlayers[index]['pseudo']} nbCards={infoPlayers[index]['nbCards']} />:<></>
             ))}
         </div>
     );

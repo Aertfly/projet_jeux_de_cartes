@@ -190,9 +190,30 @@ function GameContainer(){
                     });
                 }
             });
+            socket.on('otherPlayerLeft', (username) => {
+                console.log("quelqu'un a quitté", username)
+                setInfo(prevInfo => {
+                    let copy = {...prevInfo}
+                    for(let i=copy['infoPlayers'].length - 1; i >= 0; i--){
+                        console.log("tour :",i,copy['infoPlayers'][i],copy['infoPlayers'])
+                        if (copy['infoPlayers'][i].pseudo === username) {
+                            copy['infoPlayers'].splice(i, 1);
+                            console.log("supprimé")
+                        }
+                    }
+                    console.log(copy);
+                    return copy;
+                });
+            });
+            
             
             socket.on('drawedCard',(data)=>{
                 console.log('drawedCard',data);
+                setOtherPlayerAction(prevOtherPlayerAction => {
+                    let copy = {...prevOtherPlayerAction};
+                    copy[data.pseudoJoueur] = 'piocherCarte';
+                    return copy;
+                });
                 if(data.idJ === idJ){
                     setCards(prevCards=>[...prevCards,data.card]);
                 }
