@@ -1,5 +1,6 @@
 const { recupererPseudo} = require("../GameLogic/utils/functions");
 const { playerActionSQP } = require("../GameLogic/sqp/playerActionSQP");
+const { playerActionBataille, recupererMains } = require("../GameLogic/Battle/bataille");
 
 
 var abandon = function(io,db,socket, motif, player) {
@@ -14,7 +15,7 @@ var abandon = function(io,db,socket, motif, player) {
             if (results && results.length > 0) {
                 const party = results[0].idPartie; // Récupérer l'id de la partie depuis les résultats
                 console.log(results[0].idPartie);
-                const resultatSuppression = await removePlayer(io,db, player, party)
+                const resultatSuppression = await removePlayer(io,db, player, party,socket)
                 if (resultatSuppression) {
                     db.query("SELECT pseudo FROM joueurs, joue WHERE joue.idJ = ? AND idPartie = ?", [player, party], async(err, results) => { // Pour récupérer le pseudonyme du joueur, pour son affichage dans le chat
                         if(err) {
@@ -64,7 +65,7 @@ async function after30s(io, socket, db, data) {
         console.log("Le joueur", data.player, "n'est pas revenu à la partie", data.party);
         io.to(data.party).emit("otherPlayerLeft", data.username);
         delete disconnectedPlayers[data.player]; // On supprime de notre liste le joueur déco
-        const resultatSuppression = await removePlayer(io,db, data.player, data.party)
+        const resultatSuppression = await removePlayer(io,db, data.player, data.party,socket)
         if(resultatSuppression) {
             console.log("le joueur a été supprimé des données de la partie avec succès")
         };
@@ -73,7 +74,7 @@ async function after30s(io, socket, db, data) {
     }
 }
 
-async function removePlayer(io,db, player, party) {
+async function removePlayer(io,db, player, party,socket) {
     return new Promise((resolve, reject) => {
         // Vérifier d'abord si les données à supprimer existent vraiment
         db.query("SELECT * FROM joue WHERE idJ = ? AND idPartie = ?", [player, party], (err, results) => {
@@ -123,7 +124,7 @@ async function removePlayer(io,db, player, party) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour,centre from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
+                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour,centre,archive from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
                                 if (err) throw (err)
                                 console.log("Resultat derniére query:",nbRes);
                                 if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
@@ -133,8 +134,10 @@ async function removePlayer(io,db, player, party) {
                                     console.log("La type de partie est :",nbRes[0].type);
                                     switch (nbRes[0].type){
                                         case "Bataille": 
-                                            // On passe à une logique spécifique à la bataille
-                                            playerActionBataille(io, db, nbRes[0].centre, archive, cartesJoueurs, data, socket);
+                                            recupererMains(db, party).then((cartesJoueurs) => {
+                                                const data = {idPartie:party,playerId:cartesJoueurs.keys().next().value}// Obtient la première clé
+                                                playerActionBataille(io, db, JSON.parse(nbRes[0].centre), JSON.parse(nbRes[0].archive), cartesJoueurs, data, socket);
+                                            });
                                             break;
                                         case "6 Qui Prend":
                                             playerActionSQP(io, db, JSON.parse(nbRes[0].centre), party);
