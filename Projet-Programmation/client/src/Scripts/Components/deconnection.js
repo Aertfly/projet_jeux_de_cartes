@@ -30,6 +30,10 @@ function Deco(props) {
       navigate('/');
     });
 
+    socket.on('leave',()=>{
+      navigate('/home');
+  });
+
     // Clean up the event listener when the component unmounts
     return () => {
       window.onload = null;
