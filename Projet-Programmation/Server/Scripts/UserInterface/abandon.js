@@ -132,24 +132,33 @@ async function removePlayer(io,db, player, party,socket) {
                                     resolve(removeAllPlayer(db,party));
                                 }else{
                                     console.log("La type de partie est :",nbRes[0].type);
-                                    switch (nbRes[0].type){
-                                        case "Bataille": 
-                                            recupererMains(db, party).then((cartesJoueurs) => {
-                                                const data = {idPartie:party,playerId:cartesJoueurs.keys().next().value}// Obtient la première clé
-                                                playerActionBataille(io, db, JSON.parse(nbRes[0].centre), JSON.parse(nbRes[0].archive), cartesJoueurs, data, socket);
-                                            });
-                                            break;
-                                        case "6 Qui Prend":
-                                            playerActionSQP(io, db, JSON.parse(nbRes[0].centre), party);
-                                            break;
-                                        case 'Régicide':
-                                            handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
-                                            break;
-                                        case 'Memory':
-                                            handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
-                                            break;
-                                        default:
-                                            console.log("Jeu inconnu, fin abandon");
+                                    if(nbRes[0].tour > -1){
+                                        switch (nbRes[0].type){
+                                            case "Bataille": 
+                                                recupererMains(db, party).then((cartesJoueurs) => {
+                                                    const data = {idPartie:party,playerId:cartesJoueurs.keys().next().value}// Obtient la première clé
+                                                    playerActionBataille(io, db, JSON.parse(nbRes[0].centre), JSON.parse(nbRes[0].archive), cartesJoueurs, data, socket);
+                                                });
+                                                break;
+                                            case "6 Qui Prend":
+                                                playerActionSQP(io, db, JSON.parse(nbRes[0].centre), party);
+                                                break;
+                                            case 'Régicide':
+                                                handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
+                                                break;
+                                            case 'Memory':
+                                                handleNextPlayer(io,db,party,JSON.parse(nbRes[0].sens),player,nbRes[0].tour);
+                                                break;
+                                            default:
+                                                console.log("Jeu inconnu, fin abandon");
+                                        }
+                                    }else{
+                                        db.query("Select pseudo,proprietaire from joueurs j,joue jo where j.idJ = jo.idJ and jo.idPartie=? ",[party],(errR,resR)=>{
+                                            if(errR)throw errR;
+                                            console.log(resR);
+                                            io.to(party).emit('refreshPlayerList',{'playerList': resR.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }))});
+                                            console.log("On envoie la liste de joueur actualisé")
+                                        });
                                     }
                                 }
                             });
