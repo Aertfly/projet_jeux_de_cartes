@@ -1,7 +1,7 @@
 from players.player import Player
 from game.card import Card
 
-class BotPlayer(Player):
+class BotMax(botPlayer):
     """
     Le bot qui choisit toujours la valeur la plus grosse
     """
