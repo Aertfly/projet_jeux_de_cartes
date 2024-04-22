@@ -3,3 +3,6 @@ from players.botPlayer import botPlayer
 class randomBotPlayer(botPlayer):
     def getCardToPlay(self):
         return self.hand[randint(len(self.hand))]
+        
+    def getLineToRemove(self, game):
+        return randint(1,4)
