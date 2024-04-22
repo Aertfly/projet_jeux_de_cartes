@@ -19,8 +19,9 @@ class BotPlayer(Player):
         """
         line = 0
         for i in range(3):
-            game.total_cows(game.table[i]) <= game.total_cows(game.table[i+1])
-            line = i+1
+            if (game.total_cows(game.table[i]) <= game.total_cows(game.table[i+1])):
+                line = i+1
+            else : line = i+2
         return line
 
     def player_turn(self, game):
