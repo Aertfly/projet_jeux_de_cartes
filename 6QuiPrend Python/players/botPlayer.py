@@ -17,11 +17,11 @@ class BotPlayer(Player):
         :param game: le jeu en cours
         :return: la ligne à enlever
         """
-        line = 0
-        for i in range(3):
-            if (game.total_cows(game.table[i]) <= game.total_cows(game.table[i+1])):
+        line, nbBoeufMin = 0, 66
+        for i in range(4):
+            if (game.total_cows(game.table[i]) <= nbBoeufMin):
                 line = i+1
-            else : line = i+2
+                nbBoeufMin = game.total_cows(game.table[i])
         return line
 
     def player_turn(self, game):
