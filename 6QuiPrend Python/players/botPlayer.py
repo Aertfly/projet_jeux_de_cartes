@@ -19,7 +19,7 @@ class BotPlayer(Player):
         """
         line = 0
         for i in range(3):
-            game.total_cows(table[i]) <= game.total_cows(table[i+1])
+            game.total_cows(game.table[i]) <= game.total_cows(game.table[i+1])
             line = i+1
         return line
 
