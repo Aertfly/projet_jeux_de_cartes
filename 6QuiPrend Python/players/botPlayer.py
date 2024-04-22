@@ -23,15 +23,6 @@ class BotPlayer(Player):
             line = i+1
         return line
 
-    @abstractmethod
-    def getCardToPlay(self):    
-        """
-        Permet d'obtenir la carte à jouer.
-
-        :return: La réponse du joueur.
-        """    
-        pass
-    
     def player_turn(self, game):
         """
         Gère le tour de jeu d'un joueur.
