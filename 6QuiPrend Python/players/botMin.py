@@ -7,7 +7,7 @@ class BotMin(botPlayer):
     """
     def getCardToPlay(self):    
         try:
-            result = 200
+            result = 105
             for i in range(len(self.hand)):
                 if result > self.hand[i]:
                     result = self.hand[i]
