@@ -39,21 +39,23 @@ class BotEchantillon(BotPlayer):
         nb_points_gagnes, plateau_temporaire = round(carteJoueur, plateau_temporaire)
         return nb_points_gagnes
 
-    def getCardToPlay(self):
+    def getCardToPlay(self, game):
         resultatsRounds = []
 
         listeCartesPossibles = [i+1 for i in range(104)]
         for element in self.hand:
-            listeCartesPossibles.pop((element.value)-1)
+            #print("longueur liste :", len(listeCartesPossibles))
+            #print("Element :", (element.value)-1)
+            listeCartesPossibles.remove(element.value)
         for element in game.alreadyPlayedCards: # à corriger pour faire en sorte que "game.alreadyPlayedCards" soit la liste des cartes déjà joués
-            listeCartesPossibles.pop((element.value)-1)
+            listeCartesPossibles.remove(element.value)
 
         for _ in range(10):
             autreJoueursCartes = []
             for _ in range(len(game.players)): # à corriger pour faire en sorte que "game.players" soit la liste des noms des joueurs
-                carteRandom = randint(0, len(listeCartesPossibles)-1)
+                carteRandom = randint(1, len(listeCartesPossibles))
                 while carteRandom in autreJoueursCartes:
-                    carteRandom = randint(0, len(listeCartesPossibles)-1)
+                    carteRandom = randint(1, len(listeCartesPossibles))
                 autreJoueursCartes.append(Card(listeCartesPossibles[carteRandom]))
             
             resultatParties = []
@@ -91,3 +93,4 @@ bot.hand = hand_joueur
 carte_a_jouer = bot.getCardToPlay()
 print("Carte à jouer choisie par le bot :", carte_a_jouer)
 """
+
