@@ -13,4 +13,5 @@
 *.recipe
 *.obj
 *.node
+*.pyc
 Projet-Programmation/Server/node_modules
