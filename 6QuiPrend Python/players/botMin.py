@@ -1,16 +1,17 @@
 from players.player import Player
 from game.card import Card
+from players.botPlayer import BotPlayer
 
-class BotMin(botPlayer):
+class BotMin(BotPlayer):
     """
     Le bot qui choisit toujours la valeur la plus petite
     """
     def getCardToPlay(self):    
         try:
-            result = 105
+            result = Card(105)
             for i in range(len(self.hand)):
                 if result > self.hand[i]:
                     result = self.hand[i]
-            return result
+            return result.value
         except ValueError:
             self.info("Là ya une dingz.")
