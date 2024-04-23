@@ -66,7 +66,69 @@ def testHumain():
 
     game = NimmtGame(players)
     scores, winners = game.play()
-        
+
+def est_positif(n):
+  if n > 0:
+    return 1
+  else:
+    return 0
+
+def benchmark_winrate(a_tester, nbMax=0,nbMin=0,nbRandom=0):
+    assert nbMax >= 0
+    assert nbMin >= 0
+    assert nbRandom >= 0
+    assert (nbMax + nbMin + nbRandom) >= 1
+    assert (nbMax + nbMin + nbRandom) <= 9
+    
+    bots = []
+    if a_tester.casefold() == "aleatoire":
+        bots.append(RandomBotPlayer("Sujet"))
+    if a_tester.casefold() == "min":
+        bots.append(BotMin("Sujet"))
+    if a_tester.casefold() == "max":
+        bots.append(BotMax("Sujet"))
+
+    for i in range(nbRandom):
+        bots.append(RandomBotPlayer(f"Aleatoire{i+1}"))
+    for i in range(nbMin):
+        bots.append(BotMin(f"Min{i+1}"))
+    for i in range(nbMax):
+        bots.append(BotMax(f"Max{i+1}"))
+
+    # print(f"On va tester avec comme bots : {bots}")
+    nb_victoires = 0
+    nb_tests = 10000
+    for i in range(nb_tests):
+        game = NimmtGame(bots)
+        scores, winners = game.play()
+
+        for player in winners:
+            if player.name == "Sujet":
+                nb_victoires += 1
+        print(f"   {i}\r", end="\r")
+    #print(f"Taux de victoire : {round(nb_victoires/1000*100, 2)}%. Taux de victoire espéré : {round(100/len(bots), 2)}%")
+    return round(nb_victoires/nb_tests*100,2), round(100/len(bots),2)
+
 if __name__ == "__main__":
-    interactiveRun()
-    # testHumain()
+    #interactiveRun()
+    #testHumain()
+    # benchmark_winrate("min", nbMax=9)
+    for nombre_adversaires in [1, 2, 5, 9]:
+        for sujet in ["aleatoire", "min", "max"]:
+            for adversaires in ["aleatoire", "min", "max"]:
+                nbrandom, nbmin, nbmax = 0, 0, 0
+                if adversaires == "aleatoire": nbrandom = nombre_adversaires
+                if adversaires == "min": nbmin = nombre_adversaires
+                if adversaires == "max": nbmax = nombre_adversaires
+        
+                nbv, attendu = benchmark_winrate(sujet, nbRandom=nbrandom, nbMin=nbmin, nbMax=nbmax)
+                ratio = nbv/attendu
+                couleur = '\033[0m'
+                if ratio > 1.2:
+                    couleur = '\033[92m' # vert
+                elif ratio < 0.5:
+                    couleur = '\033[91m' # rouge
+                elif ratio < 0.8:
+                    couleur = '\033[93m' # jaune
+                reset = '\033[0m'
+                print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<3}{reset}")
