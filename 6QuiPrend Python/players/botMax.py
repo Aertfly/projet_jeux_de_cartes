@@ -1,17 +1,19 @@
-from players.player import Player
-from game.card import Card
 from players.botPlayer import BotPlayer
+from game.card import Card
 
 class BotMax(BotPlayer):
     """
     Le bot qui choisit toujours la valeur la plus grosse
     """
     def getCardToPlay(self):    
+        if(len(self.hand)<=0):
+            raise Exception("Main vide")
+            return
         try:
-            result = Card(0)
-            for i in range(len(self.hand)):
+            result = self.hand[0]
+            for i in range(1,len(self.hand)):
                 if result < self.hand[i]:
                     result = self.hand[i]
-            return result.value
+            return result
         except ValueError:
             self.info("Là ya une dingz.")
