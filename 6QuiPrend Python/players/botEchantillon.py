@@ -4,7 +4,7 @@ from random import randint
 
 class BotEchantillon(BotPlayer):
     """
-    Le bot qui choisit implémente une centaine de simulations du round pour savoir
+    Le bot qui choisit implémente une dizaine de simulations du round pour savoir
     quel choix est le moins risqué à prendre en fonction du nombre de tête de boeufs
     ramassées.
     """
@@ -44,17 +44,17 @@ class BotEchantillon(BotPlayer):
 
         listeCartesPossibles = [i+1 for i in range(104)]
         for element in self.hand:
-            listeCartesPossibles.pop(element-1)
+            listeCartesPossibles.pop((element.value)-1)
         for element in game.alreadyPlayedCards: # à corriger pour faire en sorte que "game.alreadyPlayedCards" soit la liste des cartes déjà joués
-            listeCartesPossibles.pop(element-1)
+            listeCartesPossibles.pop((element.value)-1)
 
-        for _ in range(100):
+        for _ in range(10):
             autreJoueursCartes = []
             for _ in range(len(game.players)): # à corriger pour faire en sorte que "game.players" soit la liste des noms des joueurs
                 carteRandom = randint(0, len(listeCartesPossibles)-1)
                 while carteRandom in autreJoueursCartes:
                     carteRandom = randint(0, len(listeCartesPossibles)-1)
-                autreJoueursCartes.append(listeCartesPossibles[carteRandom])
+                autreJoueursCartes.append(Card(listeCartesPossibles[carteRandom]))
             
             resultatParties = []
             for carte in self.hand:
