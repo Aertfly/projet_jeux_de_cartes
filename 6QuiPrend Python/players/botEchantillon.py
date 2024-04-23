@@ -1,15 +1,13 @@
-from player import Player
+from players.botPlayer import BotPlayer
 from game.card import Card
 from random import randint
 
-class botEchantillon(botPlayer):
+class BotEchantillon(BotPlayer):
     """
     Le bot qui choisit implémente une centaine de simulations du round pour savoir
     quel choix est le moins risqué à prendre en fonction du nombre de tête de boeufs
     ramassées.
     """
-    def __init__(self, game):
-        self.game = game
 
     def round(carte, table):
         pts = 0
@@ -64,9 +62,8 @@ class botEchantillon(botPlayer):
             [resultatsRounds.append(element) for element in resultatParties if element==0]
 
         return max(resultatsRounds, key=resultatsRounds.count)
-
-"""        
-
+      
+"""
 # Exemple de jeu pour tester le botEchantillon
 table_jeu = {
     1: [10, 23, 25],
@@ -93,5 +90,4 @@ bot.hand = hand_joueur
 # Test de la méthode getCardToPlay
 carte_a_jouer = bot.getCardToPlay()
 print("Carte à jouer choisie par le bot :", carte_a_jouer)
-
 """
