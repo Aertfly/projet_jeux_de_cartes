@@ -8,8 +8,8 @@ class BotPlayer(Player):
         
         :param message: Le message à afficher.
         """
-        print("@"+self.name+" : ",message)
-
+        #print("@"+self.name+" : ",message)
+        pass
     def getLineToRemove(self, game):
         """
         permet d'obtenir la ligne à enlever quand la carte jouée était plus petite, par défaut pour les bots la ligne avec le moins de têtes de boeufs.
@@ -35,7 +35,7 @@ class BotPlayer(Player):
         while True:
             self.info(f"Votre main : {' '.join(map(str, self.hand))}")
             try:
-                carteChoisie = Card(self.getCardToPlay())
+                carteChoisie = self.getCardToPlay()
                 if carteChoisie in self.hand:
                     return carteChoisie
                 else:
