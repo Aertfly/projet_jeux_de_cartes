@@ -4,6 +4,7 @@ from game.nimmtGame import NimmtGame
 from players.randomBotPlayer import RandomBotPlayer
 from players.botMin import BotMin
 from players.botMax import BotMax
+from players.botEchantillon import BotEchantillon
 #from players.botAlpha import AlphaBot
 
 def interactiveRun():
@@ -13,6 +14,7 @@ def interactiveRun():
             nbBotsMax = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus grande possible : "))
             nbBotsMin = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus petite possible : "))
             #nbBotsAlpha = int(input("Entrez le nombre de bots qui jouent en alpha : "))
+            nbBotsEchantillon = int(input("Entrez le nombre de bots qui jouent la méthode des échantillons : "))
             nb = int(input("Entrez le nombre de parties à jouer : "))
 
             bots = []
@@ -25,7 +27,8 @@ def interactiveRun():
                 bots.append(BotMax(f"Max{i+1}"))
             #for i in range(nbBotsAlpha):
             #    bots.append(AlphaBot(f"Alpha{i+1}"))    
-
+            for i in range(nbBotsEchantillon):
+                bots.append(BotEchantillon(f"Echan{i+1}"))
             nb_victoires = {}
 
             for i in range(nb):
@@ -42,7 +45,7 @@ def interactiveRun():
             victories = [nb_victoires.get(bot.name, 0)/nb*100 for bot in sorted_bots]
 
             # Mettre à jour les couleurs en fonction des bots triés
-            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax #+ ["yellow"]*nbBotsAlpha
+            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax + ["black"]*nbBotsEchantillon #+ ["yellow"]*nbBotsAlpha
             sorted_colors = [color for _, color in sorted(zip([nb_victoires.get(bot.name, 0) for bot in bots], colors), reverse=True)]
 
             print(nb_victoires)
