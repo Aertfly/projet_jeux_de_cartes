@@ -25,10 +25,10 @@ function Deco(props) {
       e.returnValue = 'Déconnecté';
     };
     
-    socket.on('firstConnection', () => {
+    /*socket.on('firstConnection', () => {
       setEstConnecte("Déconnecté");
       navigate('/');
-    });
+    });*/
 
     socket.on('leave',()=>{
       navigate('/home');

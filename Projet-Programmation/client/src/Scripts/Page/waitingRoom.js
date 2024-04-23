@@ -34,8 +34,8 @@ function Bots(props) {
         <div>
             {botList.map((bot, index) => (
                 <div key={index}>
-                    <p>{"Robot : " + bot.name + " de type"}</p> 
-                    <p onClick={props.owner ? changeType(bot.name):()=>{}}>bot.type</p>
+                    <p>{"Robot : " + bot.name + " de stratégie"}</p> 
+                    <p onClick={props.owner ? changeType(bot.name):()=>{}}>bot.strat</p>
                 </div>
             ))}
         </div>
@@ -91,6 +91,7 @@ const WaitingRoom = ()=>{
         });
 
         socket.on('newBot',(data)=>{
+            console.log("Nouveau bot :",botList);
             setBotList((prev) => {
                 let copy = prev;    
                 copy.append(data);
@@ -99,6 +100,7 @@ const WaitingRoom = ()=>{
         });
 
         socket.on('removebot',(data)=>{
+            console.log("On enléve un bot :",botList);
             setBotList((prev) => {
                 let copy = prev;
                 copy.splice(copy.indexOf(data.name),1);

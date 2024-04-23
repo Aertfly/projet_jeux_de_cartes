@@ -65,9 +65,9 @@ const gestionParty = function (io, socket, db) {
                         db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
                         socket.join(idParty);
                         console.log("Le joueur a rejoint la room");
-                        db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                        db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                             if (err) throw err;
-                            const playerList = result.map(object => object.pseudo);
+                            const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));;
                             io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
                             socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
                             socket.join(idParty);
@@ -83,9 +83,9 @@ const gestionParty = function (io, socket, db) {
                     socket.emit('joinGame', { 'message': "La partie est déjà lancée" });
                 }
             } else {
-                db.query('SELECT pseudo FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                     if (err) throw err;
-                    const playerList = result.map(object => object.pseudo);
+                    const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));
                     socket.join(idParty);
                     socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
                 });

@@ -7,6 +7,7 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 // Dépendances 
+const botHandler = require('./Scripts/UserInterface/botHandler.js');
 const gestionTours = require('./Scripts/GameLogic/gestionTours.js');
 const gestionParty = require('./Scripts/UserInterface/gestionParty.js');
 const { startGame } = require('./Scripts/GameLogic/startGame.js');
@@ -25,14 +26,14 @@ const io = new Server(server, {
 const port = 3001;
 
 //base de données fac : 
-/* 
+
 const db = mysql.createConnection({
     host: 'mysql.etu.umontpellier.fr',
     user: 'e20220005227',
     password: 'azertyu',
     database: 'e20220005227'
 });
-*/
+
 
 //base de données rate :
 
@@ -45,14 +46,14 @@ const db = mysql.createConnection({
 
 
 // base de données maison :
-
+/*
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'e20220005227'
 });
-
+*/
 
 db.connect((err) => {
     if (err) {
@@ -71,7 +72,7 @@ io.on('connection', async(socket) => {
     sauvegardePartie(io, socket, db);
     gestionTours(io, socket, db);
     ICD(io,socket, db);
-
+    botHandler(io,socket,db);
 });
 
 server.listen(port, () => {
