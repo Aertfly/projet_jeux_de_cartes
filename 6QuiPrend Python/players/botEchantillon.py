@@ -78,4 +78,4 @@ class BotEchantillon(BotPlayer):
         if cartes_min:
             return max(cartes_min, key=lambda c: c.value)  # Retourne la carte avec le moins de points et la plus grosse en cas d'égalité
         else:
-            return self.hand[0] # En cas d'erreur, ça peut arriver quand une carte rapporte un minimum de points, mais dans peu de situation
+            return self.hand[-1] # En cas d'erreur, ça peut arriver quand une carte rapporte un minimum de points, mais dans peu de situation
