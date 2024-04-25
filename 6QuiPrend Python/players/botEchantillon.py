@@ -44,6 +44,9 @@ class BotEchantillon(BotPlayer):
         nb_points_gagnes, plateau_temporaire = BotEchantillon.roundTest(carteJoueur, plateau_temporaire)
         return nb_points_gagnes
 
+    def getCardToPlay(self):
+        pass
+    
     def player_turn(self, game):
         resultatsRounds = []
 
