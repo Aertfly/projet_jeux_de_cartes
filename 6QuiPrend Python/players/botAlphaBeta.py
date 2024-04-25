@@ -4,6 +4,10 @@ from game.card import Card
 
 class BotAlphaBeta(BotPlayer):
 
+    def __init__(self, name, maxDepth=3) -> None:
+        self.maxDepth = maxDepth
+        super().__init__(name)
+
     def player_turn(self, game):
         best_score, best_card = self.minimax(game, game.table, 0, -float('inf'), float('inf'), True)
         return best_card
@@ -33,7 +37,7 @@ class BotAlphaBeta(BotPlayer):
         pass
 
     def minimax(self, game, table, depth, alpha, beta, maximizing_player):
-        if depth == 3 or len(table) == 0: 
+        if depth == self.maxDepth or len(table) == 0: 
             return self.evaluate(game), None
 
         if maximizing_player:
