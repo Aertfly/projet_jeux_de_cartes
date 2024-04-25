@@ -30,7 +30,7 @@ def interactiveRun():
             for i in range(nbBotsAlpha):
                 bots.append(BotAlphaBeta(f"Alpha{i+1}"))    
             for i in range(nbBotsEchantillon):
-               bots.append(BotEchantillon(f"Echan{i+1}", 50))
+               bots.append(BotEchantillon(f"Echan{i+1}"))
             for i in range(nbBotsPienzo):
                bots.append(BotPienzo(f"Pienzo{i+1}"))
             nb_victoires = {}
@@ -145,9 +145,41 @@ def test_complet():
                 reset = '\033[0m'
                 print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<4} (avg {round(moyenne_points, 2):<5}){reset}")
     
+def afficherGraphique(titre="Histogramme des victoires des bots par ordre décroissant", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=1000):
+    bots = [BotMax(f"Max{i}") for i in range(nbMax)] + [BotMin(f"Min{i}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire{i}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon{i}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta{i}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo{i}") for i in range(nbPienzo)]
+    nb_victoires = {}
+    for i in range(nbParties):
+        scores, winners = NimmtGame(bots).play()
+        for player in winners:
+            nb_victoires[player.name] = nb_victoires.get(player.name, 0) + 1
+        print(f"   {i+1}\r", end="\r")
+
+    bot_names = [bot.name for bot in bots]
+    victories = [nb_victoires.get(bot.name, 0)/nbParties*100 for bot in bots]
+    colors = ["red"]*nbRandom + ["green"]*nbMin + ["blue"]*nbMax + ["black"]*nbEchantillon + ["yellow"]*nbAlpha + ["purple"]*nbPienzo
+
+    #print(bot_names)
+    #print(victories)
+    #print(colors)
+
+    ax = plt.gca()
+    ax.set_ylim([0, 100])
+    plt.axhline(y=100/len(bots), color='red', linestyle='--', label='Egalité parfaite')
+    plt.bar(bot_names, victories, color=colors)
+    plt.xlabel('Bots')
+    plt.ylabel('Pourcentage de victoires (%)')
+    plt.title(titre)
+    plt.show()
+
+def demo():
+    afficherGraphique(titre="1 bot de chaque type", nbMax=2, nbMin=2, nbRandom=2, nbAlpha=2, nbPienzo=1, nbEchantillon=1, nbParties=100)
+    afficherGraphique(titre="1 Pienzo contre 9 randoms", nbPienzo=1, nbRandom=9, nbParties=1000)
+    afficherGraphique(titre="1 Pienzo contre 9 max", nbPienzo=1, nbMax=9, nbParties=1000)
+    afficherGraphique(titre="1 alpha-beta contre 5 max", nbAlpha=1, nbMax=5, nbParties=1000)
+    afficherGraphique(titre="3 max contre 3 min", nbMax=3, nbMin=3, nbParties=1000)
 
 if __name__ == "__main__":
-    interactiveRun()
+    #interactiveRun()
     #testHumain()
-    # benchmark_winrate("echantillon", nbMax=5)
     # test_complet()
+    demo()
