@@ -67,11 +67,11 @@ class BotEchantillon(BotPlayer):
                 resultatParties.append(self.simulation(carte, autreJoueursCartes, game))
             resultatsRounds.extend(resultatParties)
 
-        print("result :", resultatsRounds)
-        print("minimum de la liste :", min(resultatsRounds))
+        #print("result :", resultatsRounds)
+        #print("minimum de la liste :", min(resultatsRounds))
         carte_min_pts = min(resultatsRounds)
         cartes_min = [carte for carte, pts in zip(self.hand, resultatsRounds) if pts == carte_min_pts]
-        print("carte min ;", cartes_min)
+        #print("carte min ;", cartes_min)
         if cartes_min:
             return min(cartes_min, key=lambda c: c.value)  # Retourne la carte avec le moins de points et la plus petite valeur en cas d'égalité
         else:
