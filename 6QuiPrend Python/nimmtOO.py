@@ -15,6 +15,8 @@ def interactiveRun():
             nbBotsMin = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus petite possible : "))
             nbBotsAlpha = int(input("Entrez le nombre de bots qui jouent en alpha : "))
             nbBotsEchantillon = int(input("Entrez le nombre de bots qui jouent la méthode des échantillons : "))
+            if nbBotsEchantillon != 0:
+                BotEchantillon.nbSimulation(int(input("Combien de simulations pour les bots échantillons ? : ")))
             nb = int(input("Entrez le nombre de parties à jouer : "))
 
             bots = []
