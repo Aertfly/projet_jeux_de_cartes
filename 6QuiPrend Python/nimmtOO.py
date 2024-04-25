@@ -219,10 +219,12 @@ def afficherPoints(titre="Comparaison des points", nbMax=0, nbMin=0, nbRandom=0,
         for j in range(nbParties):
             plt.scatter([k for k in range(nbParties)], points2[bot.name][1:], marker='o', color=[colors[i]]*nbParties)
 
-    plt.title('Nombre de points par partie')
-    plt.xlabel('Parties')
-    plt.ylabel('Nombre de points')
-    plt.show()
+        ax = plt.gca()
+        ax.set_ylim([0, 120])
+        plt.title('Nombre de points par partie')
+        plt.xlabel('Parties')
+        plt.ylabel('Nombre de points')
+        plt.show()
 
 def demo():
     afficherGraphique(titre="1 bot de chaque type", nbMax=1, nbMin=1, nbRandom=1, nbAlpha=1, nbPienzo=1, nbEchantillon=1, nbParties=1000)
