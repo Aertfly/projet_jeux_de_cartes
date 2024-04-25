@@ -8,11 +8,9 @@ class BotEchantillon(BotPlayer):
     quel choix est le moins risqué à prendre en fonction du nombre de tête de boeufs
     ramassées.
     """
-    nbsimul = 50
-
-    @classmethod
-    def nbSimulation(cls, nbSimulations):
-        cls.nbsimul = nbSimulations 
+    def __init__(self, name, nbSimulations=50):
+        super().__init__(name)
+        self.nbsimul = nbSimulations 
 
     @staticmethod
     def roundTest(carte, table):
@@ -60,7 +58,7 @@ class BotEchantillon(BotPlayer):
             if element.value in listeCartesPossibles:
                 listeCartesPossibles.remove(element.value)
 
-        for _ in range(BotEchantillon.nbsimul):
+        for _ in range(self.nbsimul):
             autreJoueursCartes = []
             while len(autreJoueursCartes) < len(game.players) - 1:
                 carteRandom = choice(listeCartesPossibles)
