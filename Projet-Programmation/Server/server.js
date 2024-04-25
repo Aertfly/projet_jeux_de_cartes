@@ -26,14 +26,14 @@ const io = new Server(server, {
 const port = 3001;
 
 //base de données fac : 
-
+/*
 const db = mysql.createConnection({
     host: 'mysql.etu.umontpellier.fr',
     user: 'e20220005227',
     password: 'azertyu',
     database: 'e20220005227'
 });
-
+*/
 
 //base de données rate :
 
@@ -46,14 +46,14 @@ const db = mysql.createConnection({
 
 
 // base de données maison :
-/*
+
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'e20220005227'
 });
-*/
+
 
 db.connect((err) => {
     if (err) {

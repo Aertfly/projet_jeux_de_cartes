@@ -14,6 +14,8 @@ function importImages(gameName){
             return importAll(require.context('../../Assets/img/Memory', false, /\.(png)$/));
         case "Battle":
             return importAll(require.context('../../Assets/img/Battle', false, /\.(png)$/));
+        default :
+            return undefined;
     }
 }
 
