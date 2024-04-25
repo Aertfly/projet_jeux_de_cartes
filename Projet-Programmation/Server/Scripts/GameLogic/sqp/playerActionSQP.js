@@ -49,33 +49,48 @@ function botLigne(db,archive,bot){
 
 function botsTurnSQP(io,db,centre,idParty){
     return new Promise((resolve)=>{
-        db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie",[idParty],(err,res)=>{
+        db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie",[idParty],async(err,res)=>{
             if(err)throw err;
             const botList = []
+            console.log("RESULTAT botsTurnSQP",res);
+            let hand = null; 
+            let chosenCard = null;
             for( bot of res ){
+                hand = JSON.parse(bot.main);
                 botList.push(bot.idR);
-                let chosenCard;
                 switch(bot.strategie){
                     case "min":
-                        chosenCard=botMin(bot.main)
-                        break;
+                    chosenCard=botMin(hand)
+                    break;
                     case "max":
-                        chosenCard=botMax(bot.main)
-                        break;
+                    chosenCard= botMax(hand)
+                    break;
                     case "aleatoire":
-                        chosenCard=botRandom(bot.main);
-                        break;
+                    chosenCard=botRandom(hand);
+                    break;
                     default :
-                        chosenCard=botRandom(bot.main);
-                        console.log("STRATEGIE NON IMPLEMENTE",bot.strategie,bot.nom);
-                        break;
+                    chosenCard=botRandom(hand);
+                    console.log("STRATEGIE NON IMPLEMENTE",bot.strategie,bot.nom);
+                    break;
                 }
-                centre[bot.nom] = card(chosenCard);
-                io.to(idParty).emit("conveyAction",{"pseudo":bot.nom,"action":"jouerCarte"})
-            }
-            resolve(botList);
-        });
+                console.log("La carte choisit par le bot ",bot.nom,bot.idR,"est",chosenCard);         
+                centre[bot.idR] = chosenCard;
+                hand.splice(hand.indexOf(chosenCard),1);
+                await new Promise((res)=>{db.query("UPDATE joue set main=? where idJ=?",[JSON.stringify(hand),bot.idR],(errU,resU)=>{
+                    if(errU)throw errU;
+                    res(resU)
+                })
+            });
+            io.to(idParty).emit("conveyAction",{"pseudoJoueur":bot.nom,"natureAction":"jouerCarte"})
+        }
+        await new Promise((res)=>{db.query("UPDATE parties set centre=? where idPartie=?",[JSON.stringify(centre),idParty],(errU,resU)=>{
+            if(errU)throw errU;
+            res(resU)
+        })});
+        console.log("BOT list:",botList);
+        resolve(botList);
     });
+});
 }
 
 
@@ -119,9 +134,10 @@ var declencherLogique =async function(io, db, idPartie, centre , botList){
         for (let clé of Object.keys(centre)){
             temp.push([clé, centre[clé]]);
         }
+        console.log("Centre : ",centre)
         let triees = trier(temp);
         for(let i in triees){
-            console.log(triees[i][0] + " " + triees[i][1].valeur + " " + triees[i][1].nbBoeufs);
+            console.log("Carte triees:"+triees[i][0] + " " + triees[i][1].valeur + " " + triees[i][1].nbBoeufs);
         }
         
         // tant que le centre n'est pas vide
@@ -174,13 +190,14 @@ var declencherLogique =async function(io, db, idPartie, centre , botList){
                 }
                                 
                 if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
-                    if(botList.includes(carteActuelle[0])){//Si c'est un bot
+                    console.log(botList,carteActuelle[0],botList.includes(carteActuelle[0]))
+                    if(botList.includes(parseInt(carteActuelle[0]))){//Si c'est un bot      
                         ligneSQP(io,db,{'ligne': await botLigne(db,archive,carteActuelle[0]), 'idJoueur': carteActuelle[0], 'idPartie': idPartie});
                     }else{//Si c'est un joueur
                         // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
                         requestAction(io,db,idPartie,parseInt(carteActuelle[0]),"choisirLigne")// Dico vide : a priori pas de détails à envoyer ?
-                        clearInterval(intervalle);
-                    }       
+                    }      
+                    clearInterval(intervalle); 
                 } else {  // Sinon : une ligne peut accueillir la carte
                     // Si la ligne a une longueur de 5 : le joueur remplace la ligne
                     if(archive[ligne].length == 5){  // 6 qui prend :
@@ -261,7 +278,7 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte, archive){
         db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
             if(err) throw err;
             sommeTetes = result[0]["score"];
-            
+            if(ligne>4)console.log("WTF ",idJ, idPartie, ligne, carte, archive);
             // On ajoute les têtes des cartes ramassées au score du joueur
             for(let carte2 of archive[ligne]){
                 sommeTetes += carte2.nbBoeufs;
@@ -328,25 +345,28 @@ function trier(temp) {
  * @param {*} data Les données envoyées par le joueur
  */
 const ligneSQP = function(io, db, data){
+
     // On récupère le centre
     queryLine(db, "centre", "parties", "idPartie", data.idPartie).then((centre) => {    
         // On récupère LA carte du joueur au centre (il a déjà joué sa carte, là il dit simplement quelle ligne il veut remplacer)
-        
+            console.log("data",data)
         centre = JSON.parse(centre);
         
         carteActuelle = centre[data.idJoueur];
-        
+        console.log("CENTRE :",centre)
         // On enlève LA carte du centre
         for (let c in centre) {
             if (centre[c] === carteActuelle) {
                 delete centre[c];
             }
         }
+        console.log("CENTRE :",centre)
         
         // On met à jour le centre dans la bd
         db.query("UPDATE parties SET centre=? WHERE idPartie=?", [JSON.stringify(centre), data.idPartie], (err, result) => { if(err) throw err; });
         
         queryLine(db, "archive", "parties", "idPartie", data.idPartie).then((archive) => {  
+            console.log("data",data,archive)
             // On remplace la ligne dans l'archive par la carte jouée
             remplacerLigne(io, db, data.idJoueur, data.idPartie, data.ligne, carteActuelle, JSON.parse(archive)).then( () => {
                 // On continue la logique du tour

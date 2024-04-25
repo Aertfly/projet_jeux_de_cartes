@@ -5,10 +5,11 @@ function getMinLigne(board){
     for (let i=0;i<4;i++){
         total = totalTete(board[i]) 
         if (total <= nbBoeufMin){
-            ligne = i+1
+            ligne = i
             nbBoeufMin = total
         }
     }
+    console.log("LIgne choisit :",board,ligne)
     return ligne;
 }
 

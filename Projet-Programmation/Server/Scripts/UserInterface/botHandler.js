@@ -44,7 +44,7 @@ function randomName(){
 
 function preCondBot(db,idParty,idJ){
     return new Promise ((resolve,reject)=>{
-        db.query("Select proprietaire from joueurs j,joue jo where j.idJ = jo.idJ and jo.idJ=? and jo.idPartie=? ",[idJ,idParty],async (err,res)=>{
+        db.query("Select proprietaire,type,joueursMax from joueurs j,joue jo, parties p where j.idJ = jo.idJ and jo.idPartie=p.idPartie and jo.idJ=? and jo.idPartie=? ",[idJ,idParty],async (err,res)=>{
             if(err)reject(err);
             if(!res){
                 resolve("ERREUR 404 :  partie non trouvée");
@@ -53,9 +53,21 @@ function preCondBot(db,idParty,idJ){
                     resolve("ERREUR : vous n'êtes pas dans la partie");
                 }
                 else{
+                    if(res[0].type!="6 Qui Prend"){
+                        resolve("Les robots ne sont disponibles que pour le 6 qui prend !")
+                    }else
                     if(!res[0].proprietaire){
                         resolve("Vous n'êtes pas le propriétaire");
-                    }else resolve(null);
+                    } else{
+                        db.query("SELECT count(*) as nb from joue where idPartie =?",[idParty],(err,res2)=>{
+                            if(err)throw err;
+                            if(res[0].joueursMax <= res2[0].nb){
+                                resolve("La partie est pleine !");
+                            }else{
+                                resolve(null);
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -71,7 +83,7 @@ async function newBot(socket,db,idParty,idJ,stratList){
     const idR = (await  getMaxId(db))+1;
     db.query("INSERT INTO robots (idR,nom, strategie) VALUES (?,?, ?)",[idR,name,strat],(errU,resU)=>{
         if(errU)throw errU;
-        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idR, idParty]);
+        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",0)', [idR, idParty]);
     });
     console.log("BOT :",{'name':name,'strat':strat})
     return {'name':name,'strat':strat}

@@ -9,10 +9,13 @@ function recupererPseudos(db,idList){
     return new Promise((resolve,reject)=>{
         const idString = idList.join(',');
         db.query(`SELECT pseudo FROM joueurs WHERE idj IN (${idString})`,[],(err, result) => {
-            if (err) {
-                reject(err);
-            }
-            resolve(result.map(row => row.pseudo));
+            db.query('SELECT nom from robots,joue where idJ=idR and idPartie = (Select idPartie where idJ=?)',[idList[0]],(err,res)=>{
+                if (err) {
+                    reject(err);
+                    console.log("Erreur dans la récupération des pseudos !",err);
+                }
+                resolve([...result.map(row => row.pseudo),...res.map(obj => obj.nom)]);
+            });
         });
     });
 }
@@ -25,12 +28,12 @@ function recupererPseudos(db,idList){
  */
 function recupererPseudo(db, idJoueur) {
     return new Promise((resolve, reject) => {
-        db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
-            if (err) {
-                reject(err);
-            }
-            resolve(result[0]["pseudo"]);
-        });
+            db.query("SELECT pseudo FROM joueurs WHERE idJ=?", [idJoueur], async (err, result) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(result[0]["pseudo"]);
+            });
     });
 };
 
@@ -81,11 +84,10 @@ function recupererInfosJoueurs(db, idParty){
                 for(i=0;i<res.length;i++){
                     infosJoueurs.push({
                         "nbCards":JSON.parse(res[i].main).length,
-                        "pseudo":res[i].pseudo,
+                        "pseudo":res[i].nom,
                         "score":res[i].score,
                     })
                 }
-                console.log("daddaa",infosJoueurs)
                 resolve(infosJoueurs);
             });
         });
@@ -111,8 +113,9 @@ const envoyerInfos = async function(db, io, idPartie){
                 "scoreMoyenJoueur":result[i].scoreMoyenJoueur
             })
         }
-        const promise = new Promise ((resolve,reject)=>{
-            db.query("SELECT nom,centre,archive,pioche,main,score,tour from parties p,joue j,robots r where p.idPartie=j.idPartie and r.idR=j.idJ and p.idPartie =?",[idPartie],async(err,res)=>{
+        
+        const {infoBot,addToRes} = await new Promise ((resolve,reject)=>{
+            db.query("SELECT idR,nom,centre,archive,pioche,main,score,tour from parties p,joue j,robots r where p.idPartie=j.idPartie and r.idR=j.idJ and p.idPartie =?",[idPartie],async(err,res)=>{
                 if(err) throw err;
                 const infoBot=[];
                 for(i=0;i<res.length;i++){
@@ -122,18 +125,20 @@ const envoyerInfos = async function(db, io, idPartie){
                         "score":res[i].score,
                     });
                 }
-                resolve(infoBot);
+                const addToRes = res.map(obj => ({'pseudo': obj.nom, 'idJ': obj.idR}));
+                resolve({infoBot:infoBot,addToRes:addToRes});
             });
-        })
+        })  
         let centre2 = JSON.parse(result[0]["centre"]);
-        for(ligne of result){
+        const idJtoPseudo = [...result,...addToRes]
+        for(ligne of idJtoPseudo){
             centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
             delete centre2[ligne["idJ"]];
         }
         const draw = JSON.parse(result[0]["pioche"]);
         let nbdraw = draw['pioche']? {'pioche':draw['pioche'].length,'defausse':draw['defausse'].length}: draw.length;
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: [...infoJoueurs,...await promise]});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: [...infoJoueurs,...infoBot]});
     });
 }
 
