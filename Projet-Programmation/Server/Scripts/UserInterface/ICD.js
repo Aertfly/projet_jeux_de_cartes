@@ -7,11 +7,7 @@ const ICD = function(io,socket,db){
     socket.on('connexion', async (data) => {
         const { pseudo, password } = data;
 
-        if (asso.has(socket.id)) {
-            socket.emit('resultatConnexion', "Déjà connecté");
-            console.log('Déjà connecté');
-            return;
-        }
+
 
         try {
             const requestAll = 'SELECT * FROM joueurs WHERE pseudo = ?';
@@ -20,9 +16,14 @@ const ICD = function(io,socket,db){
                     socket.emit('resultatConnexion', "Erreur lors de la connexion");
                     console.log('Erreur lors de la connexion');
                 } else {
+                    if ([...asso.values()].includes(result[0].idJ)|| asso.has(socket.id)) {
+                        socket.emit('resultatConnexion', "Déjà connecté");
+                        console.log('Déjà connecté');
+                        return;
+                    }
                     if (result.length > 0) {
                         const match = await bcrypt.compare(password, result[0].motdepasse);
-                        if (match && !asso.has(result[0].idJ)) {
+                        if (match) {
                             asso.set(socket.id, result[0].idJ);
                             socket.emit('infoPlayer', { 'idJ': result[0].idJ, 'pseudo': result[0].pseudo });
                             socket.emit('resultatConnexion', "Connexion réussie");
@@ -30,9 +31,8 @@ const ICD = function(io,socket,db){
                             console.log(asso);
 
                         } else {
-                            const r = (asso.has(result[0].idJ)) ? "Déjà connecté" : "Mot de passe incorrect";
-                            socket.emit('resultatConnexion', r);
-                            console.log(r);
+                            socket.emit('resultatConnexion', "Mot de passe incorrect");
+                            console.log("Mot de passe incorrect");
                         }
                     } else {
                         socket.emit('resultatConnexion', "pseudo incorrect");

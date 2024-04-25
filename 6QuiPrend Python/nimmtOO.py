@@ -145,7 +145,7 @@ def test_complet():
                 reset = '\033[0m'
                 print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<4} (avg {round(moyenne_points, 2):<5}){reset}")
     
-def afficherGraphique(titre="Histogramme des victoires des bots par ordre décroissant", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=1000):
+def afficherGraphique(titre="Comparaison des bots", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=1000):
     bots = [BotMax(f"Max {i+1}") for i in range(nbMax)] + [BotMin(f"Min {i+1}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire {i+1}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon {i+1}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta {i+1}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo {i+1}") for i in range(nbPienzo)]
     nb_victoires = {}
     for i in range(nbParties):
@@ -155,35 +155,88 @@ def afficherGraphique(titre="Histogramme des victoires des bots par ordre décro
         print(f"   {i+1}\r", end="\r")
 
     bot_names = [bot.name for bot in bots]
+    for i in range(len(bot_names)):
+        if bot_names[i][:-1] not in bot_names:
+            bot_names[i] = bot_names[i][:-1]
     victories = [nb_victoires.get(bot.name, 0)/nbParties*100 for bot in bots]
     colors = ["red"]*nbRandom + ["green"]*nbMin + ["blue"]*nbMax + ["black"]*nbEchantillon + ["yellow"]*nbAlpha + ["purple"]*nbPienzo
 
-    # Regroupement des noms, des victoires et des couleurs dans une liste de tuples
+    # Tri des valeurs
     bots_victories_colors = list(zip(victories, bot_names, colors))
-
-    # Tri des tuples par nombre de victoires décroissant (premier élément du tuple)
     bots_victories_colors.sort(reverse=True)
-
-    # Décompression des tuples triés dans leurs listes respectives
     victories, bot_names, colors = zip(*bots_victories_colors)
+
     ax = plt.gca()
     ax.set_ylim([0, 100])
-    plt.axhline(y=100/len(bots), color='red', linestyle='--', label='Egalité parfaite')
+    plt.axhline(y=100 / len(bot_names), color='red', linestyle='--', label='Moyenne')
     plt.bar(bot_names, victories, color=colors)
     plt.xlabel('Bots')
-    plt.ylabel('Pourcentage de victoires (%)')
-    plt.title(titre)
+    plt.ylabel('Pourcentage de victoires')
+    plt.title(f'Comparaison entre différents bots sur {nbParties} parties')
+    plt.legend()
     plt.show()
 
+def afficherPoints(titre="Comparaison des points", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=100):
+    bots = [BotMax(f"Max {i+1}") for i in range(nbMax)] + [BotMin(f"Min {i+1}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire {i+1}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon {i+1}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta {i+1}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo {i+1}") for i in range(nbPienzo)]
+    nb_victoires = {bot.name: 0 for bot in bots}
+    points = {bot.name: [0] for bot in bots}
+    points2 = {bot.name: [0] for bot in bots}
+    for i in range(nbParties):
+        scores, winners = NimmtGame(bots).play()
+        for player in winners:
+            nb_victoires[player.name] = nb_victoires.get(player.name) + 1
+        for player in scores:
+            points[player] = points.get(player, []) + [scores.get(player, 0) + points.get(player)[-1]]
+            points2[player] = points2.get(player, []) + [scores.get(player, 0)]
+        print(f"   {i+1}\r", end="\r")
+
+    colors = ["blue"]*nbMax + ["green"]*nbMin + ["red"]*nbRandom + ["black"]*nbEchantillon + ["yellow"]*nbAlpha + ["purple"]*nbPienzo
+    for i, bot in enumerate(bots):
+        plt.plot(points[bot.name], label=bot.name, color=colors[i])
+
+    plt.title(f'Évolution des points sur {nbParties} parties')
+    plt.xlabel('Total de points')
+    plt.ylabel('Parties')
+    plt.legend()
+    plt.show()
+
+    # Maintenant, on affiche pour chaque bot ses points et son pourcentage de victoires
+    victoires = list(nb_victoires.values())
+    p = [points.get(bot.name)[-1] for bot in bots]
+
+    plt.scatter(victoires, p, marker='o', color=colors)
+
+    for i, bot in enumerate(bots):
+        plt.annotate(bot.name, (victoires[i], p[i]), color=colors[i])
+
+    plt.title('Points en fonction des victoires')
+    plt.xlabel('Nombre de victoires')
+    plt.ylabel('Points')
+    plt.show()
+
+    # Maintenant, on affiche une dispersion des points
+    for i, bot in enumerate(bots):
+        for j in range(nbParties):
+            plt.scatter([k for k in range(nbParties)], points2[bot.name][1:], marker='o', color=[colors[i]]*nbParties)
+
+        ax = plt.gca()
+        ax.set_ylim([0, 120])
+        plt.title('Nombre de points par partie')
+        plt.xlabel('Parties')
+        plt.ylabel('Nombre de points')
+        plt.show()
+
 def demo():
-    afficherGraphique(titre="1 bot de chaque type", nbMax=2, nbMin=2, nbRandom=2, nbAlpha=2, nbPienzo=1, nbEchantillon=1, nbParties=15)
-    #afficherGraphique(titre="1 Pienzo contre 9 randoms", nbPienzo=1, nbRandom=9, nbParties=1000)
+    afficherGraphique(titre="1 bot de chaque type", nbMax=1, nbMin=1, nbRandom=1, nbAlpha=1, nbPienzo=1, nbEchantillon=1, nbParties=1000)
+    afficherGraphique(titre="1 Pienzo contre 9 randoms", nbPienzo=1, nbRandom=9, nbParties=1000)
     afficherGraphique(titre="1 Pienzo contre 9 max", nbPienzo=1, nbMax=9, nbParties=1000)
-    #afficherGraphique(titre="1 alpha-beta contre 5 max", nbAlpha=1, nbMax=5, nbParties=1000)
-    #afficherGraphique(titre="3 max contre 3 min", nbMax=3, nbMin=3, nbParties=1000)
+    afficherGraphique(titre="1 alpha-beta contre 5 max", nbAlpha=1, nbMax=5, nbParties=1000)
+    afficherGraphique(titre="3 max contre 3 min", nbMax=3, nbMin=3, nbParties=1000)
 
 if __name__ == "__main__":
     #interactiveRun()
     #testHumain()
     # test_complet()
-    demo()
+    # demo()
+    # afficherGraphique(nbMax=2, nbMin=2, nbParties=20000)
+    afficherPoints(nbMax=1, nbMin=1, nbPienzo=1, nbAlpha=1, nbEchantillon=1, nbRandom=1, nbParties=100)

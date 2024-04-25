@@ -52,7 +52,10 @@ function JoinGame(){
         setPlayerList(data.playerList);
         setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
       }
-    })
+    });
+    socket.on('msg',msg=>{
+      setError(msg);
+    });
     return ()=>{socket.off('joinGame')}
   },[])
   
@@ -157,12 +160,13 @@ function Stat(){
             </thead>
             <tbody>
               {score.map((item) => (
+                 item.nombreParties?
                 <tr key={item.idJ}>
                 <td>{item.pseudo}</td>
                 <td>{item.totalPoints}</td>
                 <td>{item.nombreParties}</td>
                 <td>{Math.round(item.totalPoints / item.nombreParties)}</td>
-                </tr>
+                </tr>:<></>
                 ))}
             </tbody>
           </table>

@@ -137,7 +137,7 @@ const envoyerCartesGagnees = function(db, socket, data){
 async function recupererJoueursPossibles(db, idPartie){
     return new Promise((resolve) => {
         // le nombre de joueurs qui peuvent jouer correspond au nombre de joueurs qui n'ont pas une main égale à [] UNION ceux qui ont déjà une carte au centre
-        db.query("SELECT jo.idJ, p.centre from joue jo,parties p where jo.idPartie = p.idPartie AND p.idPartie=? AND jo.main!= '[]';", [idPartie, idPartie], async (err3, result3) => {
+        db.query("SELECT jo.idJ, p.centre from joue jo,parties p,joueurs j where jo.idPartie = p.idPartie AND j.idJ = jo.idJ AND p.idPartie=? AND jo.main!= '[]';", [idPartie, idPartie], async (err3, result3) => {
             if (err3) throw err3;
             if(result3.length == 0){
                 resolve([]);

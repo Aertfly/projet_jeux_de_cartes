@@ -51,11 +51,11 @@ const gestionParty = function (io, socket, db) {
         }
     });
 
-    socket.on('joinRequest', data => {
+    socket.on('joinRequest', async(data )=> {
         const { idParty, idPlayer } = data;
         console.log("Ce joueur ", idPlayer, "a demandé à rejoindre", idParty);
-
-        if(idPlayer){
+        
+        if(idPlayer&&await playerNotInGame(db,socket,idPlayer)){
             db.query('SELECT COUNT(joue.idJ) as playerCount, joueursMax, sauvegarde, tour, pseudo from joueurs,joue,parties where joueurs.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?', [idParty], (err, resultats) => {
                 if (err) throw err;
                 if (!(resultats[0].sauvegarde)) {
@@ -110,5 +110,18 @@ const gestionParty = function (io, socket, db) {
         })
     });
 };
+
+function playerNotInGame(db,socket,id){
+    return new Promise((resolve,reject)=>{
+        db.query("Select * from joue jo,joueurs j, parties p where j.idJ=? AND jo.idJ=j.idJ AND p.idPartie = jo.idPartie AND sauvegarde=0",[id],(err,res)=>{
+            if(err)reject(err);
+            if(res.length > 0){
+                socket.emit('msg',"Vous etes déja dans une partie !")
+                resolve(false);
+            }
+            resolve(true)
+        });
+    })
+}
 
 module.exports = gestionParty;

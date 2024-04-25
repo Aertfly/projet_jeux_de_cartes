@@ -8,7 +8,7 @@ var abandon = function(io,db,socket, motif, player) {
     const disconnectedPlayers = {}; // Tableau pour suivre les joueurs déconnectés involontairement
     if(motif == 'playerLeaving') { // Quand c'est volontaire. data demande l'idJ
         console.log("le joueur", player, "quitte volontairement");
-        db.query("SELECT idPartie FROM joue WHERE idJ = ?", [player], async(err, results) => {
+        db.query("SELECT p.idPartie FROM joue j,parties p WHERE idJ = ? AND p.idPartie=j.idPartie AND sauvegarde=0", [player], async(err, results) => {
             if(err) {
                 throw err;
             }
@@ -124,10 +124,9 @@ async function removePlayer(io,db, player, party,socket) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(j.idJ)as nbJoueur,joueursMin,type,sens,tour,centre,archive from joueurs js,joue j, parties p where js.idJ=j.idJ AND j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
-                                if (err) throw (err)
-                                console.log("Resultat derniére query:",nbRes);
-                                if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
+                            db.query("SELECT count(j.idJ)as nbJoueur,joueursMin,type,sens,tour,centre,archive from joueurs js,joue j, parties p where js.idJ=j.idJ AND j.idPartie = p.idPartie AND p.idPartie=? AND sauvegarde=0", [party], async (err, nbRes) => {
+                                if (err) throw (err)                       
+                                if((nbRes[0].nbJoueur < nbRes[0].joueursMin) ||nbRes[0].nbJoueur==0){
                                     io.to(party).emit('leave');
                                     resolve(removeAllPlayer(db,party));
                                 }else{
