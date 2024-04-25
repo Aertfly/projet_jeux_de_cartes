@@ -76,7 +76,18 @@ function recupererInfosJoueurs(db, idParty){
                     "score":result[i].score,
                 })
             }
-            resolve(infosJoueurs);
+            db.query("SELECT nom,centre,archive,pioche,main,score,tour from parties p,joue j,robots r where p.idPartie=j.idPartie and r.idR=j.idJ and p.idPartie =?",[idParty],async(err,res)=>{
+                if(err)throw err
+                for(i=0;i<res.length;i++){
+                    infosJoueurs.push({
+                        "nbCards":JSON.parse(res[i].main).length,
+                        "pseudo":res[i].pseudo,
+                        "score":res[i].score,
+                    })
+                }
+                console.log("daddaa",infosJoueurs)
+                resolve(infosJoueurs);
+            });
         });
     });
 };
@@ -100,7 +111,20 @@ const envoyerInfos = async function(db, io, idPartie){
                 "scoreMoyenJoueur":result[i].scoreMoyenJoueur
             })
         }
-
+        const promise = new Promise ((resolve,reject)=>{
+            db.query("SELECT nom,centre,archive,pioche,main,score,tour from parties p,joue j,robots r where p.idPartie=j.idPartie and r.idR=j.idJ and p.idPartie =?",[idPartie],async(err,res)=>{
+                if(err) throw err;
+                const infoBot=[];
+                for(i=0;i<res.length;i++){
+                    infoBot.push({
+                        "nbCards":JSON.parse(res[i].main).length,
+                        "pseudo":res[i].nom,
+                        "score":res[i].score,
+                    });
+                }
+                resolve(infoBot);
+            });
+        })
         let centre2 = JSON.parse(result[0]["centre"]);
         for(ligne of result){
             centre2[ligne["pseudo"]] = centre2[ligne["idJ"]];
@@ -109,7 +133,7 @@ const envoyerInfos = async function(db, io, idPartie){
         const draw = JSON.parse(result[0]["pioche"]);
         let nbdraw = draw['pioche']? {'pioche':draw['pioche'].length,'defausse':draw['defausse'].length}: draw.length;
         // On envoie les informations aux joueurs
-        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: infoJoueurs});
+        io.to(idPartie).emit('infoGameOut', {center: centre2, archive: JSON.parse(result[0]["archive"]), draw: nbdraw, infoPlayers: [...infoJoueurs,...await promise]});
     });
 }
 
@@ -205,5 +229,6 @@ async function requestAction(io,db,idParty,idJ,action){
     const pseudo = await recupererPseudo(db,idJ);
     setTimeout(()=>io.to(idParty).emit('requestAction',{'idJ':idJ,'action':action,'pseudo':pseudo}),1000);
 }
+
 
 module.exports = {ajouterScores, recupererInfosJoueurs,recupererJoueursPossibles, envoyerInfos, envoyerCartesGagnees,currentPlayerTurn,nextPlayerTurn,recupererPseudos,recupererPseudo,requestAction};

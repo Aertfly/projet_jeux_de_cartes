@@ -158,7 +158,7 @@ function giveCardsDb(db, playerHands, IdPlayerList, nbPlayers, idParty) {
 function FYK(list){
     len = list.length;
     for (let j=len-1;j>0;j--){
-        const i = Math.floor(Math.random() * (len-1));
+        const i = Math.floor(Math.random() * (len));
         [list[j],list[i]]=[list[i],list[j]];
     }
     return list;
@@ -201,22 +201,21 @@ async function regenDraw(db,idParty,amount){
         });
     });
 }
+function card(int){
+    const lastNumber = int%10;
+    let nbBoeufs = 0;   
+    if(lastNumber === 5) nbBoeufs +=2;
+    if(lastNumber === 0) nbBoeufs += 3;
+    if(int%11 === 0)  nbBoeufs += 5;
+    if(nbBoeufs === 0) nbBoeufs = 1;
+    return {"valeur" : int,"nbBoeufs" : nbBoeufs}
+}
 
 function generateDrawSQP(){
-    var len = 104;
-    var nbBoeufs = 0;   
+    let len = 104;
     res = [];
     for (let i=1 ;i<=len;i++){
-        const lastNumber = i%10;
-        if(lastNumber === 5) nbBoeufs +=2;
-        if(lastNumber === 0) nbBoeufs += 3;
-        if(i%11 === 0)  nbBoeufs += 5;
-        if(nbBoeufs === 0) nbBoeufs = 1;
-        res.push({
-            "valeur" : i,
-            "nbBoeufs" : nbBoeufs
-        });
-        nbBoeufs = 0;
+        res.push(card(i));
     }
     return FYK(res);
 }
@@ -320,7 +319,7 @@ function dealCardsWar(nbPlayers){
     return playerHands;
 }
 
-module.exports = {startGame,reDealCardsSQP,createSens,regenDraw};
+module.exports = {startGame,reDealCardsSQP,createSens,regenDraw,card};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 100 millions : {

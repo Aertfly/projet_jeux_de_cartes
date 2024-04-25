@@ -1,6 +1,9 @@
 const { query } = require("express");
-const { reDealCardsSQP } = require("../startGame.js");
+const { reDealCardsSQP,card } = require("../startGame.js");
 const { ajouterScores, recupererInfosJoueurs, envoyerInfos,recupererPseudos,requestAction } = require("../utils/functions.js");
+const { botRandom, getRandomLine } = require("../Bots/botRandom.js");
+const { botMin, botMax } = require("../Bots/botMax&Min.js");
+const getMinLigne = require("../Bots/getLigne.js");
 
 /**
  * Permet de récuperer une ligne dans la base de données
@@ -26,6 +29,56 @@ function queryLine(db, lineName, tableName, condition, value) {
     });
 }
 
+function botLigne(db,archive,bot){
+    return new Promise((resolve,reject)=>{
+        db.query("SELECT nom,strategie from robots where idR=?",[bot],(err,res)=>{
+            if(err)reject(err);
+            let chosenLigne;
+            switch(res[0].strategie){
+                case "aleatoire":
+                    chosenLigne=getRandomLine();
+                    break;
+                default :
+                    chosenLigne= getMinLigne(archive);
+                    break;
+            }
+            resolve(chosenLigne)
+        });
+    });
+}
+
+function botsTurnSQP(io,db,centre,idParty){
+    return new Promise((resolve)=>{
+        db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie",[idParty],(err,res)=>{
+            if(err)throw err;
+            const botList = []
+            for( bot of res ){
+                botList.push(bot.idR);
+                let chosenCard;
+                switch(bot.strategie){
+                    case "min":
+                        chosenCard=botMin(bot.main)
+                        break;
+                    case "max":
+                        chosenCard=botMax(bot.main)
+                        break;
+                    case "aleatoire":
+                        chosenCard=botRandom(bot.main);
+                        break;
+                    default :
+                        chosenCard=botRandom(bot.main);
+                        console.log("STRATEGIE NON IMPLEMENTE",bot.strategie,bot.nom);
+                        break;
+                }
+                centre[bot.nom] = card(chosenCard);
+                io.to(idParty).emit("conveyAction",{"pseudo":bot.nom,"action":"jouerCarte"})
+            }
+            resolve(botList);
+        });
+    });
+}
+
+
 /**
  * Quand on reçoit une action de la part d'un joueur, et qu'on est dans une partie de 6 qui prend
  * @param {Server} io La connexion avec les clients
@@ -35,16 +88,10 @@ function queryLine(db, lineName, tableName, condition, value) {
  */
 const playerActionSQP = function(io, db, centre, idPartie){    
     // Si tous les joueurs dans la partie ont joué 
-    db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (idPartie), (err, result) => {
+    db.query("SELECT COUNT(*) FROM joue jo, joueurs j WHERE idPartie = ? AND jo.idJ=j.idJ", (idPartie), async(err, result) => {
         if (result[0]["COUNT(*)"] == Object.keys(centre).length){    
-            declencherLogique(io, db, idPartie, centre);
-            //SELECT NAME,type from robots : + j'ai récupérer le centre
-            //for robot in res 
-            //switch le type et demande la bonne fonction, j'ai donc une carte qu'il joue
-            //je communique l'action du bot 
-            //j'ajoute dans le centre
-            // je peux update la valeur de centre
-            //je declanche la logique
+            const botList = await botsTurnSQP(io,db,centre,idPartie)
+            declencherLogique(io, db, idPartie, centre, botList);
         }
     });
 }
@@ -57,7 +104,7 @@ const playerActionSQP = function(io, db, centre, idPartie){
  * @param {Number} idPartie L'ID de la partie
  * @param {*} centre
  */
-var declencherLogique = function(io, db, idPartie, centre){
+var declencherLogique =async function(io, db, idPartie, centre , botList){
     queryLine(db, "archive", "parties", "idPartie", idPartie).then((archive0) => {
         let archive = JSON.parse(archive0);
                 
@@ -78,7 +125,7 @@ var declencherLogique = function(io, db, idPartie, centre){
         }
         
         // tant que le centre n'est pas vide
-        let intervalle = setInterval( () => {
+        let intervalle = setInterval( async() => {
             if(triees.length == 0){ // Toutes les cartes ont été jouées, on passe au tour suivant
                 clearInterval(intervalle);
                 
@@ -112,7 +159,6 @@ var declencherLogique = function(io, db, idPartie, centre){
             } else { // Il reste encore des cartes à traiter, on continue
                 // On prend la première carte de la liste de cartes triées, et on l'enlève de cette liste
                 let carteActuelle = triees.shift();
-                
                 // On détermine dans quelle ligne va LA carte
                 let ligne = -1
                 
@@ -128,9 +174,13 @@ var declencherLogique = function(io, db, idPartie, centre){
                 }
                                 
                 if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
-                    // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
-                    requestAction(io,db,idPartie,parseInt(carteActuelle[0]),"choisirLigne")// Dico vide : a priori pas de détails à envoyer ?
-                    clearInterval(intervalle);
+                    if(botList.includes(carteActuelle[0])){//Si c'est un bot
+                        ligneSQP(io,db,{'ligne': await botLigne(db,archive,carteActuelle[0]), 'idJoueur': carteActuelle[0], 'idPartie': idPartie});
+                    }else{//Si c'est un joueur
+                        // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
+                        requestAction(io,db,idPartie,parseInt(carteActuelle[0]),"choisirLigne")// Dico vide : a priori pas de détails à envoyer ?
+                        clearInterval(intervalle);
+                    }       
                 } else {  // Sinon : une ligne peut accueillir la carte
                     // Si la ligne a une longueur de 5 : le joueur remplace la ligne
                     if(archive[ligne].length == 5){  // 6 qui prend :
