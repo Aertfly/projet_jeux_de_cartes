@@ -1,16 +1,12 @@
 from players.botPlayer import BotPlayer
 from game.card import Card
-from random import randint
+
 
 class BotPienzo(BotPlayer):
     def player_turn(self, game):
         safeZone = 4
         # On détermine la ligne avec le moins de carte
-        minimum, indice = 6, -1
-        for i, ligne in enumerate(game.table):
-            if len(ligne) < minimum:
-                minimum = len(ligne)
-                indice = i
+        minimum, indice = min((len(ligne), i) for i, ligne in enumerate(game.table))
         # On a trouvé la ligne la plus petite : c'est la ligne numéro "indice", d'une taille de "minimum"
         while indice < 4:
             if len(game.table[indice]) == minimum and minimum < safeZone:
