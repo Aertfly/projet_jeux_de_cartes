@@ -89,7 +89,7 @@ async function removePlayer(io,db, player, party,socket) {
                     const isOwner = results[0].proprietaire === 1; // Vérifier si le joueur est propriétaire
                     if (isOwner) {
                         // Mettre propriétaire le joueur suivant
-                        db.query("SELECT idJ FROM joue WHERE idPartie = ? AND idJ <> ? LIMIT 1", [party, player], async (err, nextPlayerResult) => {
+                        db.query("SELECT j.idJ FROM joue j,joueurs jo WHERE j.idPartie = ? AND j.idJ=jo.idJ AND jo.idJ <> ? LIMIT 1", [party, player], async (err, nextPlayerResult) => {
                             if (err) {
                                 console.log("Erreur lors de la récupération du prochain propriétaire :", err);
                                 reject(false);
@@ -124,7 +124,7 @@ async function removePlayer(io,db, player, party,socket) {
                             if (isOwner) {
                                 console.log("L'ancien propriétaire a été supprimé.");
                             }
-                            db.query("SELECT count(idJ)as nbJoueur,joueursMin,type,sens,tour,centre,archive from joue j, parties p where j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
+                            db.query("SELECT count(j.idJ)as nbJoueur,joueursMin,type,sens,tour,centre,archive from joueurs js,joue j, parties p where js.idJ=j.idJ AND j.idPartie = p.idPartie AND p.idPartie=?", [party], async (err, nbRes) => {
                                 if (err) throw (err)
                                 console.log("Resultat derniére query:",nbRes);
                                 if(nbRes[0].nbJoueur < nbRes[0].joueursMin){
@@ -194,31 +194,54 @@ function updatePlayerOrder(db,idParty,playerOrder){
     })
 }
 
+function removeList(db,idParty,list){
+    const promiseList =[];
+    for(let i=0;i<list.length; i++){
+        promiseList.push(new Promise((res,rej)=>{
+            db.query("DELETE FROM joue WHERE joue.idJ = ? AND joue.idPartie = ?",[list[i],idParty],(errD,resD)=>{
+                if(errD)rej(errD);
+                res(resD.affectedRows==1);
+            })
+        }));
+    }
+    return promiseList;
+}
+
 function removeAllPlayer(db,idParty){
     console.log("Declenchement de removeAllPlayer");
     return new Promise((resolve,reject)=>{
-        db.query("Select idJ from joue where idPartie=?",[idParty],async(err,res)=>{
+        db.query("Select jo.idJ from joue jo,joueurs j where j.idJ = jo.idJ And idPartie=?",[idParty],async(err,res)=>{
             if(err) reject(err)
-            const IdPlayerList = res.map(object => object.idJ);
-            const promiseList =[];
-            for(let i=0;i<IdPlayerList.length; i++){
-                promiseList.push(new Promise((res,rej)=>{
-                    db.query("DELETE FROM joue WHERE joue.idJ = ? AND joue.idPartie = ?",[IdPlayerList[i],idParty],(errD,resD)=>{
-                        if(errD)rej(errD);
-                        res(resD.affectedRows==1);
-                    })
-                }));
-            }
-            await Promise.all(promiseList);
+            await Promise.all([...removeList(db,idParty,res.map(object => object.idJ)),... removeAllBot(db,idParty,await idRList(db,idParty))])
             db.query("DELETE FROM parties WHERE idPartie = ?",[idParty],(errP,resP)=>{
                 if(errP){reject(errP);}
                 resP.affectedRows==1?console.log("La partie a été supprimé."):console.log("La partie n'a pas été supprimé avec succés");
-                resolve(resP.affectedRows==1);
+                resolve(resP.affectedRows==1);      
             });
         });
-
     }); 
 }
 
+function idRList(db,idParty){
+    return new Promise((rev,rej)=>{
+        db.query("Select idR from joue,robots where idJ=idR and idPartie=?",[idParty],(err,res)=>{
+            if(err)rej(err);
+            rev(res ?res.map(obj => obj.idR):[]);
+        });
+    });
+}
+
+function removeAllBot(db,idParty,list){
+    const promiseList = removeList(db,idParty,list);
+    for(const idR of list){
+        promiseList.push(new Promise((rev,rej)=>{
+            db.query("Delete from robots where idR=?",[idR],(err,res)=>{
+                if(err)rej(err);
+                rev(res.affectedRows==1);
+            })
+        }));
+    }
+    return promiseList;
+}
 
 module.exports = abandon;

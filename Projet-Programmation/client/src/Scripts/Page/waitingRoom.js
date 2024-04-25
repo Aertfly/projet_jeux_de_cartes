@@ -16,10 +16,21 @@ function OwnerOnly(props){
         console.log("On demande à rajouter un robot");
         props.socket.emit('addBot',{'idParty':props.idParty,'idPlayer':props.idJ});
     }
+    function removeBot(){
+        props.setRemoveBot((prev)=>{
+            props.setMsg(!prev?"Cliquer sur un bot pour le supprimer !":"")
+            return !prev
+        })   
+        
+        return;
+    }
     return(
-        <>       
-            <button hidden={props.hidden} onClick={start}>Lancer la partie</button>
+        <>   
+            
+            <button hidden={props.hidden} onClick={removeBot}>Supprimer un robot</button>
             <button hidden={props.hidden} onClick={addBot}>Ajouter un robot</button>
+            <br />
+            <button hidden={props.hidden} onClick={start}>Lancer la partie</button>
         </>
 
     );
@@ -27,18 +38,22 @@ function OwnerOnly(props){
 
 function Bots(props) {
     const botList = props.botList;  
-    function changeType(name){
-        props.socket.emit('changeType',{'idParty':props.idParty,'idPlayer':props.idJ,'botName':name})
+    function changeStat(name){
+        console.log("on demande à changer le type",{'idParty':props.idParty,'idPlayer':props.idJ,'botName':name})
+        props.socket.emit('changeStrat',{'idParty':props.idParty,'idPlayer':props.idJ,'botName':name})
+    }
+    function remove(name){
+        console.log("on demande à supprimer le bot",{'idParty':props.idParty,'idPlayer':props.idJ,'botName':name})
+        props.setRemoveBot(false);
+        props.setMsg("");
+        props.socket.emit('removeBot',{'idParty':props.idParty,'idPlayer':props.idJ,'botName':name})
     }
     return (
-        <div>
+        <>
             {botList.map((bot, index) => (
-                <div key={index}>
-                    <p>{"Robot : " + bot.name + " de stratégie"}</p> 
-                    <p onClick={props.owner ? changeType(bot.name):()=>{}}>bot.strat</p>
-                </div>
+                <li key={index} onClick={ props.remove?() => remove(bot.name):() => changeStat(bot.name)} >{bot.name + " (Bot "+ bot.strat + ")"}</li> 
             ))}
-        </div>
+        </>
     );
 }
 
@@ -55,6 +70,7 @@ const WaitingRoom = ()=>{
     const {socket} = useContext(SocketContext);
     const {idJ,pseudo,playerList,setPlayerList} = usePlayer();
     const [botList,setBotList] = useState([]);
+    const [removeBot,setRemoveBot] = useState(false);
     const {idParty} = useParams();
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
@@ -85,25 +101,39 @@ const WaitingRoom = ()=>{
                 }
             }
         });
+        socket.on('msg',msg=>{
+            setMsg(msg);
+        });
+        
         socket.on('refreshPlayerList',data=>{
             console.log("Refresh",data.playerList);
             setPlayerList(data.playerList);
         });
 
         socket.on('newBot',(data)=>{
-            console.log("Nouveau bot :",botList);
+            console.log("Nouveau bot :",data,botList);
+            setBotList((prev) => {   
+                return [...prev,data]; 
+            });
+        }); 
+
+        socket.on('removebot',(data)=>{     
             setBotList((prev) => {
-                let copy = prev;    
-                copy.append(data);
-                return copy
+                let copy = [...prev];
+                copy.splice(copy.indexOf(data.name),1);
+                return copy;
             });
         });
 
-        socket.on('removebot',(data)=>{
-            console.log("On enléve un bot :",botList);
+        socket.on("stratChanged",data=>{
+            console.log("Un bot a changé !")
             setBotList((prev) => {
-                let copy = prev;
-                copy.splice(copy.indexOf(data.name),1);
+                let copy = [...prev];
+                for(let bot of copy){
+                    if(bot.name === data.name){
+                        bot.strat = data.strat
+                    }
+                }
                 return copy;
             });
         });
@@ -112,6 +142,8 @@ const WaitingRoom = ()=>{
             socket.off('gameStart');
             socket.off('refreshPlayerList');
             socket.off('newBot');
+            socket.off('stratChanged')
+            socket.off('removebot')
         };
     }, [socket,navigate,setPlayerList]);
     
@@ -138,12 +170,11 @@ const WaitingRoom = ()=>{
                 {playerList.length === 0?"En attente des données du serveur":playerList.map((player,index) => (
                     <Player player={player} key={index} isMe={pseudo === player.pseudo} />
                 ))}
+                <Bots setMsg={setMsg} setRemoveBot={setRemoveBot} botList={botList} remove={removeBot} idParty={idParty} idJ={idJ} socket={socket}/>
             </ul>
-
-            <Leave idj={idJ} socket={socket} />
-            <br />
-            <OwnerOnly socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
+            <OwnerOnly  setMsg={setMsg} setRemoveBot={setRemoveBot}  socket={socket} idParty={idParty} idJ={idJ} hidden={false} />
             <Deconnection />
+            <Leave idj={idJ} socket={socket} />
             <Chat data={{party : idParty}} />
         </div>
     );

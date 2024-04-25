@@ -41,10 +41,10 @@ const gestionParty = function (io, socket, db) {
                             rooms.push(partyId);
                         }; console.log(rooms);
                         db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idJ, partyId]);
-                        socket.emit('joinGame', { "playerList": [pseudo], "idParty": partyId });
+                        socket.emit('joinGame', { "playerList": [{"pseudo":pseudo,"owner":1}], "idParty": partyId });
                     }
                 });
-            }
+            }   
         } catch (error) {
             console.log("Erreur lors de la génération du partyId", error);
             socket.emit('resultatCreation', "Erreur lors de la création de la partie");
@@ -55,42 +55,44 @@ const gestionParty = function (io, socket, db) {
         const { idParty, idPlayer } = data;
         console.log("Ce joueur ", idPlayer, "a demandé à rejoindre", idParty);
 
+        if(idPlayer){
+            db.query('SELECT COUNT(joue.idJ) as playerCount, joueursMax, sauvegarde, tour, pseudo from joueurs,joue,parties where joueurs.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?', [idParty], (err, resultats) => {
+                if (err) throw err;
+                if (!(resultats[0].sauvegarde)) {
+                    if ((resultats[0].tour == -1)) {
+                        if (resultats[0].playerCount < resultats[0].joueursMax) {
 
-        db.query('SELECT COUNT(joue.idJ) as playerCount, joueursMax, sauvegarde, tour, pseudo from joueurs,joue,parties where joueurs.idJ = joue.idJ and joue.idPartie = parties.idPartie and parties.idPartie = ?', [idParty], (err, resultats) => {
-            if (err) throw err;
-            if (!(resultats[0].sauvegarde)) {
-                if ((resultats[0].tour == -1)) {
-                    if (resultats[0].playerCount < resultats[0].joueursMax) {
-
-                        db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
-                        socket.join(idParty);
-                        console.log("Le joueur a rejoint la room");
-                        db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
-                            if (err) throw err;
-                            const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));;
-                            io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
-                            socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
+                            db.query('INSERT INTO `joue` (`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?, ?, 0, "[]", "[]", 0)', [idPlayer, idParty]);
                             socket.join(idParty);
-                            if (!rooms.includes(idParty)) {
-                                rooms.push(idParty);
-                            }; console.log(rooms);
-                        });
+                            console.log("Le joueur a rejoint la room");
+                            db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                                if (err) throw err;
+                                const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));;
+                                io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
+                                socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
+                                socket.join(idParty);
+                                if (!rooms.includes(idParty)) {
+                                    rooms.push(idParty);
+                                }; console.log(rooms);
+                            });
+                        } else {
+                            console.log('La partie est pleine');
+                            socket.emit('joinGame', { 'message': "La partie est pleine'" });
+                        }
                     } else {
-                        console.log('La partie est pleine');
-                        socket.emit('joinGame', { 'message': "La partie est pleine'" });
+                        socket.emit('joinGame', { 'message': "La partie est déjà lancée" });
                     }
                 } else {
-                    socket.emit('joinGame', { 'message': "La partie est déjà lancée" });
+                    db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
+                        if (err) throw err;
+                        const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));
+                        socket.join(idParty);
+                        socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
+                    });
                 }
-            } else {
-                db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
-                    if (err) throw err;
-                    const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));
-                    socket.join(idParty);
-                    socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
-                });
-            }
-        });
+            
+            });
+        }
     });
 
     socket.on('joinableList', () => {
