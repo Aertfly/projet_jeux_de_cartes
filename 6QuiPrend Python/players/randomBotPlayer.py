@@ -1,6 +1,6 @@
 from random import randint 
-from players.botPlayer import BotPlayer
-class RandomBotPlayer(BotPlayer):
+from players.botPlayerSimple import BotPlayerSimple
+class RandomBotPlayer(BotPlayerSimple):
     def getCardToPlay(self):
         return self.hand[randint(0,len(self.hand)-1)]
     
