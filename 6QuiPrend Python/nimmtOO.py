@@ -6,6 +6,7 @@ from players.botMin import BotMin
 from players.botMax import BotMax
 from players.botEchantillon import BotEchantillon
 from players.botAlphaBeta import BotAlphaBeta
+from players.botPienzo import BotPienzo
 
 def interactiveRun():
     while True:
@@ -15,8 +16,7 @@ def interactiveRun():
             nbBotsMin = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus petite possible : "))
             nbBotsAlpha = int(input("Entrez le nombre de bots qui jouent en alpha : "))
             nbBotsEchantillon = int(input("Entrez le nombre de bots qui jouent la méthode des échantillons : "))
-            if nbBotsEchantillon != 0:
-                BotEchantillon.nbSimulation(int(input("Combien de simulations pour les bots échantillons ? : ")))
+            nbBotsPienzo = int(input("Entrez le nombre de bots Pienzo "))
             nb = int(input("Entrez le nombre de parties à jouer : "))
 
             bots = []
@@ -31,12 +31,14 @@ def interactiveRun():
                 bots.append(BotAlphaBeta(f"Alpha{i+1}"))    
             for i in range(nbBotsEchantillon):
                bots.append(BotEchantillon(f"Echan{i+1}"))
+            for i in range(nbBotsPienzo):
+               bots.append(BotPienzo(f"Pienzo{i+1}"))
             nb_victoires = {}
 
             for i in range(nb):
                 game = NimmtGame(bots)
                 scores, winners = game.play()
-
+                # print(scores)
                 for player in winners:
                     nb_victoires[player.name] = nb_victoires.get(player.name, 0) + 1
                 print(f"   {i}\r", end="\r")
@@ -47,7 +49,7 @@ def interactiveRun():
             victories = [nb_victoires.get(bot.name, 0)/nb*100 for bot in sorted_bots]
 
             # Mettre à jour les couleurs en fonction des bots triés
-            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax + ["black"]*nbBotsEchantillon + ["yellow"]*nbBotsAlpha
+            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax + ["black"]*nbBotsEchantillon + ["yellow"]*nbBotsAlpha + ["purple"]*nbBotsPienzo
             sorted_colors = [color for _, color in sorted(zip([nb_victoires.get(bot.name, 0) for bot in bots], colors), reverse=True)]
 
             print(nb_victoires)
@@ -63,11 +65,13 @@ def interactiveRun():
 
 def testHumain():
     players = []
-    players.append(HumanPlayer("Pierre"))
     players.append(BotMax("Max1"))
+    players.append(BotMax("Max2"))
+    players.append(BotPienzo("Pienzo"))
 
     game = NimmtGame(players)
     scores, winners = game.play()
+    print(scores, winners)
 
 def est_positif(n):
   if n > 0:
