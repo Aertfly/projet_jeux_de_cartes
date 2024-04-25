@@ -5,7 +5,7 @@ from players.randomBotPlayer import RandomBotPlayer
 from players.botMin import BotMin
 from players.botMax import BotMax
 from players.botEchantillon import BotEchantillon
-#from players.botAlpha import AlphaBot
+from players.botAlphaBeta import BotAlphaBeta
 
 def interactiveRun():
     while True:
@@ -13,8 +13,8 @@ def interactiveRun():
             nbBotsAleatoires = int(input("Entrez le nombre de bots qui jouent aléatoirement : "))
             nbBotsMax = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus grande possible : "))
             nbBotsMin = int(input("Entrez le nombre de bots qui jouent toujours la carte la plus petite possible : "))
-            #nbBotsAlpha = int(input("Entrez le nombre de bots qui jouent en alpha : "))
-            #nbBotsEchantillon = int(input("Entrez le nombre de bots qui jouent la méthode des échantillons : "))
+            nbBotsAlpha = int(input("Entrez le nombre de bots qui jouent en alpha : "))
+            nbBotsEchantillon = int(input("Entrez le nombre de bots qui jouent la méthode des échantillons : "))
             nb = int(input("Entrez le nombre de parties à jouer : "))
 
             bots = []
@@ -25,10 +25,10 @@ def interactiveRun():
                 bots.append(BotMin(f"Min{i+1}"))
             for i in range(nbBotsMax):
                 bots.append(BotMax(f"Max{i+1}"))
-            #for i in range(nbBotsAlpha):
-            #    bots.append(AlphaBot(f"Alpha{i+1}"))    
-            #for i in range(nbBotsEchantillon):
-            #   bots.append(BotEchantillon(f"Echan{i+1}"))
+            for i in range(nbBotsAlpha):
+                bots.append(BotAlphaBeta(f"Alpha{i+1}"))    
+            for i in range(nbBotsEchantillon):
+               bots.append(BotEchantillon(f"Echan{i+1}"))
             nb_victoires = {}
 
             for i in range(nb):
@@ -45,7 +45,7 @@ def interactiveRun():
             victories = [nb_victoires.get(bot.name, 0)/nb*100 for bot in sorted_bots]
 
             # Mettre à jour les couleurs en fonction des bots triés
-            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax #+ ["black"]*nbBotsEchantillon + ["yellow"]*nbBotsAlpha
+            colors = ["red"]*nbBotsAleatoires + ["green"]*nbBotsMin + ["blue"]*nbBotsMax + ["black"]*nbBotsEchantillon + ["yellow"]*nbBotsAlpha
             sorted_colors = [color for _, color in sorted(zip([nb_victoires.get(bot.name, 0) for bot in bots], colors), reverse=True)]
 
             print(nb_victoires)
@@ -90,6 +90,8 @@ def benchmark_winrate(a_tester, nbMax=0,nbMin=0,nbRandom=0,nbEchantillon=0):
         bots.append(BotMax("Sujet"))
     if a_tester.casefold() == "echantillon":
         bots.append(BotEchantillon("Sujet"))
+    if a_tester.casefold() == "alphabeta":
+        bots.append(BotEchantillon("Sujet"))
 
     for i in range(nbRandom):
         bots.append(RandomBotPlayer(f"Aleatoire{i+1}"))
@@ -101,7 +103,7 @@ def benchmark_winrate(a_tester, nbMax=0,nbMin=0,nbRandom=0,nbEchantillon=0):
         bots.append(BotEchantillon(f"Echantillon{i+1}"))
 
     # print(f"On va tester avec comme bots : {bots}")
-    nb_victoires = 0
+    nb_victoires, nb_points = 0, 0
     nb_tests = 1000
     for i in range(nb_tests):
         game = NimmtGame(bots)
@@ -110,9 +112,10 @@ def benchmark_winrate(a_tester, nbMax=0,nbMin=0,nbRandom=0,nbEchantillon=0):
         for player in winners:
             if player.name == "Sujet":
                 nb_victoires += 1
+            nb_points += scores.get("Sujet")
         print(f"   {i}\r", end="\r")
-    #print(f"Taux de victoire : {round(nb_victoires/1000*100, 2)}%. Taux de victoire espéré : {round(100/len(bots), 2)}%")
-    return round(nb_victoires/nb_tests*100,2), round(100/len(bots),2)
+    print(f"Taux de victoire : {round(nb_victoires/1000*100, 2)}%. Taux de victoire espéré : {round(100/len(bots), 2)}%")
+    return round(nb_victoires/nb_tests*100,2), round(100/len(bots),2), nb_points/nb_tests
 
 def test_complet():
     for nombre_adversaires in [1, 2, 5, 9]:
@@ -124,7 +127,7 @@ def test_complet():
                 if adversaires == "max": nbmax = nombre_adversaires
                 if adversaires == "echantillon": nbechantillon = nombre_adversaires
         
-                nbv, attendu = benchmark_winrate(sujet, nbRandom=nbrandom, nbMin=nbmin, nbMax=nbmax, nbEchantillon=nbechantillon)
+                nbv, attendu, moyenne_points = benchmark_winrate(sujet, nbRandom=nbrandom, nbMin=nbmin, nbMax=nbmax, nbEchantillon=nbechantillon)
                 ratio = nbv/attendu
                 couleur = '\033[0m'
                 if ratio > 1.2:
@@ -134,11 +137,11 @@ def test_complet():
                 elif ratio < 0.8:
                     couleur = '\033[93m' # jaune
                 reset = '\033[0m'
-                print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<3}{reset}")
-
+                print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<4} (avg {round(moyenne_points, 2):<5}){reset}")
+    
 
 if __name__ == "__main__":
-    #interactiveRun()
+    interactiveRun()
     #testHumain()
-    # benchmark_winrate("min", nbMax=9)
-    test_complet()
+    # benchmark_winrate("echantillon", nbMax=5)
+    # test_complet()
