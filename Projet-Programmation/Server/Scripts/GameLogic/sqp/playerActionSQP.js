@@ -34,10 +34,17 @@ function queryLine(db, lineName, tableName, condition, value) {
  * @param {*} data La donnée envoyée par le client
  */
 const playerActionSQP = function(io, db, centre, idPartie){    
-    // Si tous les joueurs dans la partie ont joué
+    // Si tous les joueurs dans la partie ont joué 
     db.query("SELECT COUNT(*) FROM joue WHERE idPartie = ?", (idPartie), (err, result) => {
-        if (result[0]["COUNT(*)"] == Object.keys(centre).length){
+        if (result[0]["COUNT(*)"] == Object.keys(centre).length){    
             declencherLogique(io, db, idPartie, centre);
+            //SELECT NAME,type from robots : + j'ai récupérer le centre
+            //for robot in res 
+            //switch le type et demande la bonne fonction, j'ai donc une carte qu'il joue
+            //je communique l'action du bot 
+            //j'ajoute dans le centre
+            // je peux update la valeur de centre
+            //je declanche la logique
         }
     });
 }

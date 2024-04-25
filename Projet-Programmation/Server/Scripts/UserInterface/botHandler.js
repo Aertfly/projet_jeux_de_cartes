@@ -1,3 +1,5 @@
+const { getMaxId } = require("./utils");
+
 function botHandler(io,socket,db){
     socket.on('changeType',(data)=>{
         if(changeType(db,data.name)){
@@ -49,24 +51,13 @@ async function newBot(db,idParty,idJ){
     const stratList = ["aleatoire",'max','min']
     const strat = stratList[Math.floor(Math.random() * (stratList.length))]
     const name = randomName();
-    const idR = (await getIdR(db))+1;
+    const idR = (await  getMaxId(db))+1;
     const promiseList = [];
     db.query("INSERT INTO robots (idR,nom, strategie) VALUES (?,?, ?)",[idR,name,strat],(errU,resU)=>{
         if(errU)throw errU;
-        return {'name':name,'strat':strat}
-
+        db.query('INSERT INTO `joue`(`idJ`, `idPartie`, `score`, `main`, `gagnees`, `proprietaire`) VALUES (?,?,0,"[]","[]",1)', [idR, idParty]);
     });
-    //db.query("INSERT INTO joue ")
-
-}
-
-function getIdR(db){
-    return new Promise((resolve,reject)=>{
-        db.query('Select MAX(idR) as idR from robots',[],(err,result)=>{
-            if(err)reject(err);
-            resolve(result[0].idR ? result[0].idR : 0);
-        });
-    });
+    return {'name':name,'strat':strat}
 }
 
 module.exports = botHandler;

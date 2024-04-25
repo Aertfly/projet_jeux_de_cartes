@@ -1,6 +1,7 @@
 const asso = new Map();
 const bcrypt = require('bcrypt');
 const abandon = require('./abandon.js');
+const { getMaxId } = require('./utils.js');
 const ICD = function(io,socket,db){
 
     socket.on('connexion', async (data) => {
@@ -66,8 +67,8 @@ const ICD = function(io,socket,db){
                         console.log('pseudo déjà utilisé');
                     } else {
                         const hashedPassword = await bcrypt.hash(password, 10);
-                        const insertUserQuery = 'INSERT INTO joueurs (pseudo, motdepasse) VALUES (?, ?)';
-                        db.query(insertUserQuery, [pseudo, hashedPassword], async (err) => {
+                        const insertUserQuery = 'INSERT INTO joueurs (idJ,pseudo, motdepasse) VALUES (?,?, ?)';
+                        db.query(insertUserQuery, [await (getMaxId(db)),pseudo, hashedPassword], async (err) => {
                             if (err) {
                                 socket.emit('resultatInscription', "Erreur lors de l\'inscription");
                                 console.log('Erreur lors de l\'inscription');
