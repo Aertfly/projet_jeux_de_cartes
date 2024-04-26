@@ -18,7 +18,7 @@ function Chat({ data }) {
     useEffect(() => {
         setParty(data.party)
         socket.on('newMessage', (data) => { // Quand un message est reçu dans le chat
-            console.log("message bien envoyé")
+            console.log("message bien envoyé",data)
             const { username, message } = data;
             setMessages(prevMessages => [...prevMessages, { username, message }]);
             scrollToBottom();

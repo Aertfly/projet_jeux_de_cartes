@@ -219,7 +219,14 @@ var declencherLogique =async function(io, db, idPartie, centre , botList){
                 if(ligne == -1){ // Si aucune ligne ne peut accueillir la carte
                     console.log(botList,carteActuelle[0],botList.includes(carteActuelle[0]))
                     if(botList.includes(parseInt(carteActuelle[0]))){//Si c'est un bot      
-                        ligneSQP(io,db,{'ligne': await botLigne(db,archive,carteActuelle[0]), 'idJoueur': carteActuelle[0], 'idPartie': idPartie});
+                        db.query("SELECT nom from robots where idR=?",[carteActuelle[0]],async(err,res)=>{
+                            if(err)throw err;
+                            console.log(carteActuelle[0],res);
+                            const ligne = await botLigne(db,archive,carteActuelle[0]);
+                            io.to(idPartie).emit('newMessage',{ username: res[0].nom, message: "Le robot " + res[0].nom + " a récupéré la ligne " + ligne+1})
+                            ligneSQP(io,db,{'ligne':ligne, 'idJoueur': carteActuelle[0], 'idPartie': idPartie});
+                            
+                        });
                     }else{//Si c'est un joueur
                         // On propose au joueur de choisir une ligne en envoyant sur la route 'requestAction' le dictionnaire {'type': 'ligne': 'ligne': ligne}
                         requestAction(io,db,idPartie,parseInt(carteActuelle[0]),"choisirLigne")// Dico vide : a priori pas de détails à envoyer ?
@@ -261,7 +268,7 @@ var declencherLogique =async function(io, db, idPartie, centre , botList){
                 envoyerInfos(db, io, idPartie);
 
             }
-        }, 1000);  // On attend 1 seconde
+        }, 500);  // On attend 1 seconde
     });
 }
 
@@ -371,7 +378,6 @@ function trier(temp) {
  * @param {*} data Les données envoyées par le joueur
  */
 const ligneSQP = function(io, db, data){
-
     // On récupère le centre
     queryLine(db, "centre", "parties", "idPartie", data.idPartie).then((centre) => {    
         // On récupère LA carte du joueur au centre (il a déjà joué sa carte, là il dit simplement quelle ligne il veut remplacer)

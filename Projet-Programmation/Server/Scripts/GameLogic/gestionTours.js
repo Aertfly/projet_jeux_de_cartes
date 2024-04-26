@@ -59,6 +59,8 @@ const gestionTours = function (io, socket, db) {
         db.query("SELECT type FROM parties WHERE idPartie=?", [data.idPartie], async (err, result) => {
             switch (result[0]["type"]){
                 case "6 Qui Prend":
+                    const pseudo =  await recupererPseudo(db,data.idJoueur);
+                    io.to(data.idPartie).emit('newMessage',{ username: pseudo, message: "Le joueur " + pseudo + " a récupéré la ligne " + (data.ligne+1)})
                     ligneSQP(io, db, data);
                     break;
                 default:
