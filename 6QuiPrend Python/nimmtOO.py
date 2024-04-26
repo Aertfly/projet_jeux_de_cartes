@@ -244,7 +244,7 @@ def demo():
 
 if __name__ == "__main__":
     #interactiveRun()
-    # testHumain()
+    #testHumain()
     # test_complet()
-    demo()
-    
+    #demo()
+    afficherGraphique(nbRandom=1, nbPienzo2=1, nbParties=10000)
