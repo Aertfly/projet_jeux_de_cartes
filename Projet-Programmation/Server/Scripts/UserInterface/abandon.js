@@ -214,7 +214,7 @@ function removeAllPlayer(db,idParty){
             await Promise.all([...removeList(db,idParty,res.map(object => object.idJ)),... removeAllBot(db,idParty,await idRList(db,idParty))])
             db.query("DELETE FROM parties WHERE idPartie = ?",[idParty],(errP,resP)=>{
                 if(errP){reject(errP);}
-                resP.affectedRows==1?console.log("La partie a été supprimé."):console.log("La partie n'a pas été supprimé avec succés");
+                resP.affectedRows==1?console.log("La partie a été supprimée."):console.log("La partie n'a pas été supprimée.");
                 resolve(resP.affectedRows==1);      
             });
         });
