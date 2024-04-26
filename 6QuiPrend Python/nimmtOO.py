@@ -7,6 +7,7 @@ from players.botMax import BotMax
 from players.botEchantillon import BotEchantillon
 from players.botAlphaBeta import BotAlphaBeta
 from players.botPienzo import BotPienzo
+from players.botPienzo2 import BotPienzo2
 
 def interactiveRun():
     while True:
@@ -65,8 +66,7 @@ def interactiveRun():
 
 def testHumain():
     players = []
-    players.append(BotMax("Max1"))
-    players.append(BotMax("Max2"))
+    players.append(HumanPlayer("Pierre"))
     players.append(BotPienzo("Pienzo"))
 
     game = NimmtGame(players)
@@ -145,8 +145,8 @@ def test_complet():
                 reset = '\033[0m'
                 print(f"{couleur}1 {sujet:<9} vs {nombre_adversaires} {adversaires:<9} : victoire dans {nbv:<5}% des cas (attendu {attendu:<5}%) : ratio de {round(ratio, 2):<4} (avg {round(moyenne_points, 2):<5}){reset}")
     
-def afficherGraphique(titre="Comparaison des bots", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=1000):
-    bots = [BotMax(f"Max {i+1}") for i in range(nbMax)] + [BotMin(f"Min {i+1}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire {i+1}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon {i+1}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta {i+1}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo {i+1}") for i in range(nbPienzo)]
+def afficherGraphique(titre="Comparaison des bots", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbPienzo2=0, nbParties=1000):
+    bots = [BotMax(f"Max {i+1}") for i in range(nbMax)] + [BotMin(f"Min {i+1}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire {i+1}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon {i+1}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta {i+1}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo {i+1}") for i in range(nbPienzo)]  + [BotPienzo2(f"PienzoV2 {i+1}") for i in range(nbPienzo2)]
     nb_victoires = {}
     for i in range(nbParties):
         scores, winners = NimmtGame(bots).play()
@@ -159,7 +159,7 @@ def afficherGraphique(titre="Comparaison des bots", nbMax=0, nbMin=0, nbRandom=0
         if bot_names[i][:-1] not in bot_names:
             bot_names[i] = bot_names[i][:-1]
     victories = [nb_victoires.get(bot.name, 0)/nbParties*100 for bot in bots]
-    colors = ["red"]*nbRandom + ["green"]*nbMin + ["blue"]*nbMax + ["black"]*nbEchantillon + ["yellow"]*nbAlpha + ["purple"]*nbPienzo
+    colors = ["red"]*nbRandom + ["green"]*nbMin + ["blue"]*nbMax + ["black"]*nbEchantillon + ["yellow"]*nbAlpha + ["purple"]*nbPienzo + ["orange"]*nbPienzo2
 
     # Tri des valeurs
     bots_victories_colors = list(zip(victories, bot_names, colors))
@@ -240,11 +240,11 @@ def demo():
     afficherGraphique(titre="1 Pienzo contre 9 max", nbPienzo=1, nbMax=9, nbParties=1000)
     afficherGraphique(titre="1 alpha-beta contre 5 max", nbAlpha=1, nbMax=5, nbParties=1000)
     afficherGraphique(titre="3 max contre 3 min", nbMax=3, nbMin=3, nbParties=1000)
+    afficherPoints(nbMin=1, nbMax=1, nbAlpha=1, nbEchantillon=1, nbPienzo=1, nbRandom=1, nbParties=100)
 
 if __name__ == "__main__":
     #interactiveRun()
-    #testHumain()
+    # testHumain()
     # test_complet()
-    # demo()
-    # afficherGraphique(nbMax=2, nbMin=2, nbParties=20000)
-    afficherPoints(nbMax=1, nbMin=1, nbPienzo=1, nbAlpha=1, nbEchantillon=1, nbRandom=1, nbParties=100)
+    demo()
+    
