@@ -68,13 +68,16 @@ function Player(props){
 
 const WaitingRoom = ()=>{
     const {socket} = useContext(SocketContext);
-    const {idJ,pseudo,playerList,setPlayerList} = usePlayer();
-    const [botList,setBotList] = useState([]);
+    const {idJ,pseudo,roomInfo} = usePlayer();
+    const [botList,setBotList] = useState((roomInfo && roomInfo.botList)?roomInfo.botList:[]);
+    const [playerList,setPlayerList] = useState((roomInfo && roomInfo.playerList)?roomInfo.playerList:[]);
     const [removeBot,setRemoveBot] = useState(false);
     const {idParty} = useParams();
     const [msg, setMsg] = useState("");
     const navigate = useNavigate();
     const [isMouseOver, setIsMouseOver] = useState(false);
+    
+    console.log(playerList,roomInfo)    
     useEffect(() => {
         socket.on('gameStart',data =>{
             if(data.message){
@@ -174,7 +177,7 @@ const WaitingRoom = ()=>{
             <p style={{color:'red'}}>{msg}</p>
             <ul>
                 Liste des joueurs :
-                {playerList.length === 0?"En attente des données du serveur":playerList.map((player,index) => (
+                {!playerList ?"En attente des données du serveur":playerList.map((player,index) => (
                     <Player player={player} key={index} isMe={pseudo === player.pseudo} />
                 ))}
                 <Bots setMsg={setMsg} setRemoveBot={setRemoveBot} botList={botList} remove={removeBot} idParty={idParty} idJ={idJ} socket={socket}/>

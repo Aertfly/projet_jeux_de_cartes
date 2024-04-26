@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Party(props) {
   const { socket } = useContext(SocketContext);
-  const { idJ,setPlayerList } = usePlayer();
+  const { idJ,setRoomInfo } = usePlayer();
   const navigate = useNavigate();
   
 
@@ -18,7 +18,7 @@ function Party(props) {
       if(data.message){
         props.onError(data.message);
       }else{
-        setPlayerList(data.playerList);
+        setRoomInfo(data);
         setTimeout(() => navigate('/Home/waitingRoom/' + data.idParty), 500);
       }
     });

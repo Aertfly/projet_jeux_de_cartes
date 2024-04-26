@@ -212,10 +212,8 @@ function Player(props) {
             <p>{msg}</p>
             <p style={props.pseudo === pseudo?{color:'red'}:{}}>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.score} Points</p>
-        </div>
-        {card}
-        </>
-        
+            {card}
+        </div></>
     );
 }
 
@@ -229,7 +227,7 @@ function GameBoard() {
         position: 'fixed',
         top: '140px',
         right: '60px',
-        width:"850px",
+        width:`${Info.infoPlayers?Info.infoPlayers.length*100:0}px`,
         transform: 'translateY(-50%)',
         border: '1px solid black',
         borderRadius: '5px',

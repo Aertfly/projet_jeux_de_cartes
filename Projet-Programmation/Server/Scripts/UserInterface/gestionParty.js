@@ -68,12 +68,16 @@ const gestionParty = function (io, socket, db) {
                             db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                                 if (err) throw err;
                                 const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));;
-                                io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
-                                socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
-                                socket.join(idParty);
-                                if (!rooms.includes(idParty)) {
-                                    rooms.push(idParty);
-                                }; console.log(rooms);
+                                db.query('SELECT nom,strategie from robots,joue where idJ=idR and idPartie=?',[idParty],(err,res)=>{
+                                    if(err)throw err
+                                    const botList = res.map(obj => ({'name': obj.nom, 'strat': obj.strategie}) )
+                                    io.to(idParty).emit('refreshPlayerList', { "playerList": playerList });
+                                    socket.emit('joinGame', { "playerList": playerList, "idParty": idParty ,"botList":botList});
+                                    socket.join(idParty);
+                                    if (!rooms.includes(idParty)) {
+                                        rooms.push(idParty);
+                                    }; console.log(rooms);
+                                });
                             });
                         } else {
                             console.log('La partie est pleine');
@@ -86,8 +90,12 @@ const gestionParty = function (io, socket, db) {
                     db.query('SELECT pseudo,proprietaire FROM joueurs, joue WHERE joueurs.idJ = joue.idJ AND joue.idPartie = ?', [idParty], async (err, result) => {
                         if (err) throw err;
                         const playerList = result.map(obj => ({ 'pseudo': obj.pseudo, 'owner': obj.proprietaire }));
-                        socket.join(idParty);
-                        socket.emit('joinGame', { "playerList": playerList, "idParty": idParty });
+                        db.query('SELECT nom,strategie  from robots,joue where idJ=idR and idPartie=?',[idParty],(err,res)=>{
+                            if(err)throw err
+                            const botList = res.map(obj => ({'name': obj.nom, 'strat': obj.strategie}) )
+                            socket.join(idParty);
+                            socket.emit('joinGame', { "playerList": playerList, "idParty": idParty ,"botList":botList});
+                        });
                     });
                 }
             

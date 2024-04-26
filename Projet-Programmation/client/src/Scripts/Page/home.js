@@ -36,7 +36,7 @@ function PrintButton(props){
 function JoinGame(){
   const [idPartyRequested,setIdPartyRequested] = useState("");
   const {socket } = useContext(SocketContext);
-  const {idJ, setPlayerList } = usePlayer();
+  const {idJ, setRoomInfo } = usePlayer();
   const [isSubmit,setIsSubmit] = useState(false);
   const [error,setError] = useState("")
   const navigate = useNavigate();
@@ -49,13 +49,13 @@ function JoinGame(){
           setIsSubmit(false);
         }, 500);
       }else{
-        setPlayerList(data.playerList);
+        setRoomInfo(data);
         setTimeout(() => navigate('/Home/waitingRoom/'+data.idParty), 250);
       }
     });
     socket.on('msg',msg=>{
       setError(msg);
-    });
+    })
     return ()=>{socket.off('joinGame')}
   },[])
   
