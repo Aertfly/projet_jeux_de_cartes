@@ -201,7 +201,7 @@ async function regenDraw(db,idParty,amount){
         });
     });
 }
-function card(int){
+function Card(int){
     const lastNumber = int%10;
     let nbBoeufs = 0;   
     if(lastNumber === 5) nbBoeufs +=2;
@@ -215,7 +215,7 @@ function generateDrawSQP(){
     let len = 104;
     res = [];
     for (let i=1 ;i<=len;i++){
-        res.push(card(i));
+        res.push(Card(i));
     }
     return FYK(res);
 }
@@ -319,7 +319,7 @@ function dealCardsWar(nbPlayers){
     return playerHands;
 }
 
-module.exports = {startGame,reDealCardsSQP,createSens,regenDraw,card};
+module.exports = {startGame,reDealCardsSQP,createSens,regenDraw,Card};
 
 /*Si vous voulez tester la distribution aléatoire de l'algorithme
 exemple sur 100 millions : {

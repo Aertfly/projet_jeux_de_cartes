@@ -1,7 +1,7 @@
 const { getMaxId } = require("./utils");
 
 function botHandler(io,socket,db){
-    const stratList = ["aleatoire",'max','min']
+    const stratList = ["aleatoire",'max','min','echantillon']
 
     socket.on('changeStrat',async(data)=>{
         console.log("On me demande de changer la strat d'un bot",data)
@@ -26,14 +26,20 @@ function botHandler(io,socket,db){
         let msg = await (preCondBot(db,data.idParty,data.idPlayer))
         if(msg){socket.emit('msg',msg);
         return;}
-        db.query("DELETE from robots where idR=?",[await (getBotInfo(db,data.botName)).idR])
-        io.to(data.idParty).emit("removebot",data.botName);
+        const res  = (await getBotInfo(db,data.botName))
+        if(res){
+            const id = res.idR
+            db.query("DELETE from robots where idR=?",[id])
+            db.query("DELETE from joue where idJ=?",[id],(err)=>{if(err)throw err})
+            io.to(data.idParty).emit("removebot",data.botName);
+        }
     });
 }
 
 function randomName(){
-    var firstNames = ["John", "Mary", "James", "Emily", "Michael", "Emma", "William"];
-    var lastNames = ["Smith", "Johnson", "Brown", "Taylor", "Anderson", "Thomas", "Walker"];
+    const firstNames = ["John", "Mary", "James", "Emily", "Michael", "Emma", "William", "David", "Sophia", "Daniel", "Olivia", "Joseph", "Ava","JM","Pierre","Enzo","Robert","Jacque","Mohammed"];
+    const lastNames = ["Smith", "Johnson", "Brown", "Taylor", "Anderson", "Thomas", "Walker", "White", "Harris", "Martin", "Thompson", "Garcia", "Martinez"];
+
     function getRandomElement(array) {
         return array[Math.floor(Math.random() * array.length)];
     }
@@ -42,7 +48,7 @@ function randomName(){
     return randomFirstName + " " + randomLastName
 }
 
-function preCondBot(db,idParty,idJ){
+function preCondBot(db,idParty,idJ,addBot=false){
     return new Promise ((resolve,reject)=>{
         db.query("Select proprietaire,type,joueursMax from joueurs j,joue jo, parties p where j.idJ = jo.idJ and jo.idPartie=p.idPartie and jo.idJ=? and jo.idPartie=? ",[idJ,idParty],async (err,res)=>{
             if(err)reject(err);
@@ -59,14 +65,16 @@ function preCondBot(db,idParty,idJ){
                     if(!res[0].proprietaire){
                         resolve("Vous n'êtes pas le propriétaire");
                     } else{
-                        db.query("SELECT count(*) as nb from joue where idPartie =?",[idParty],(err,res2)=>{
-                            if(err)throw err;
-                            if(res[0].joueursMax <= res2[0].nb){
-                                resolve("La partie est pleine !");
-                            }else{
-                                resolve(null);
-                            }
-                        });
+                        if(addBot){
+                            db.query("SELECT count(*) as nb from joue where idPartie =?",[idParty],(err,res2)=>{
+                                if(err)throw err;
+                                if(res[0].joueursMax <= res2[0].nb){
+                                    resolve("La partie est pleine !");
+                                }else{
+                                    resolve(null);
+                                }
+                            });
+                        }else resolve(null);
                     }
                 }
             }
@@ -75,7 +83,7 @@ function preCondBot(db,idParty,idJ){
 }
 
 async function newBot(socket,db,idParty,idJ,stratList){
-    let msg = await (preCondBot(db,idParty,idJ))
+    let msg = await (preCondBot(db,idParty,idJ,true))
     if(msg){socket.emit('msg',msg);
     return;}
     const strat = stratList[Math.floor(Math.random() * (stratList.length))]
@@ -92,10 +100,10 @@ async function newBot(socket,db,idParty,idJ,stratList){
 function getBotInfo(db,nameBot){
     return new Promise((resolve,reject)=>{
         db.query("Select idR,strategie from robots where nom=?",[nameBot],(err,res)=>{
-            if(err)reject(err);
-            if(res)resolve(res[0]);
+            if(err)throw(err);
+            if(res.length > 0)resolve(res[0]);
             else {
-                reject(null);
+                resolve(null);
                 console.log("ERREUR ce bot n'existe pas")}
         });
     });
@@ -103,7 +111,7 @@ function getBotInfo(db,nameBot){
 
 function nextStrat(prev,list){
     const i = list.indexOf(prev)+1;
-    if(i > prev.length-1)return list[0];
+    if(i > list.length-1)return list[0];
     else return (list[i])
 }
 

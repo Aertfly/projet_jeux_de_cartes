@@ -9,7 +9,7 @@ function Deco(props) {
   const { estConnecte, setEstConnecte } = useContext(ConnexionContext);
   const navigate = useNavigate();
   const { idJ, setIdJ, pseudo } = usePlayer();
-
+  
   const handleDeconnection = useCallback(() => {
     setIdJ(null);
     setEstConnecte("Déconnecté");
@@ -17,7 +17,7 @@ function Deco(props) {
     navigate('/');
     socket.emit('playerLeaving', idJ);
   }, [socket, setIdJ, setEstConnecte, navigate, idJ]);
-
+  
   useEffect(() => {
     window.onload = function (e) {
       e.preventDefault();
@@ -29,29 +29,31 @@ function Deco(props) {
       setEstConnecte("Déconnecté");
       navigate('/');
     });*/
-
+    
     socket.on('leave',()=>{
       navigate('/home');
-  });
-
+    });
+    
     // Clean up the event listener when the component unmounts
     return () => {
       window.onload = null;
+      socket.off('leave')
+      socket.off('firstConnection')
     };
   }, [socket, setEstConnecte, navigate, handleDeconnection]);
-
+  
   return (
     <div>
-      {estConnecte === "Déconnecté" ? (
-        null
-      ) : (
-        <>
-          <p>Vous êtes {pseudo}, d'identifiant {idJ}</p>
-          <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>
-            Se déconnecter
-          </button>
-        </>
-      )}
+    {estConnecte === "Déconnecté" ? (
+      null
+    ) : (
+      <>
+      <p>Vous êtes {pseudo}, d'identifiant {idJ}</p>
+      <button onClick={handleDeconnection} className='deconnection-button' disabled={props.disabled}>
+      Se déconnecter
+      </button>
+      </>
+    )}
     </div>
   );
 }
@@ -59,9 +61,9 @@ function Deco(props) {
 export default function Deconnection(props) {
   return (
     <>
-      <ConnexionProvider>
-        <Deco disabled={props.disabled} />
-      </ConnexionProvider>
+    <ConnexionProvider>
+    <Deco disabled={props.disabled} />
+    </ConnexionProvider>
     </>
   );
 }

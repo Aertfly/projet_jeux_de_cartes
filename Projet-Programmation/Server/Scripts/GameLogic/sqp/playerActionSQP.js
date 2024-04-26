@@ -1,9 +1,10 @@
 const { query } = require("express");
-const { reDealCardsSQP,card } = require("../startGame.js");
+const { reDealCardsSQP } = require("../startGame.js");
 const { ajouterScores, recupererInfosJoueurs, envoyerInfos,recupererPseudos,requestAction } = require("../utils/functions.js");
 const { botRandom, getRandomLine } = require("../Bots/botRandom.js");
 const { botMin, botMax } = require("../Bots/botMax&Min.js");
 const getMinLigne = require("../Bots/getLigne.js");
+const  botEchantillon  = require("../Bots/botEchantillon.js");
 
 /**
  * Permet de récuperer une ligne dans la base de données
@@ -49,7 +50,7 @@ function botLigne(db,archive,bot){
 
 function botsTurnSQP(io,db,centre,idParty){
     return new Promise((resolve)=>{
-        db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie",[idParty],async(err,res)=>{
+        db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie AND p.idPartie=?",[idParty],async(err,res)=>{
             if(err)throw err;
             const botList = []
             console.log("RESULTAT botsTurnSQP",res);
@@ -60,14 +61,17 @@ function botsTurnSQP(io,db,centre,idParty){
                 botList.push(bot.idR);
                 switch(bot.strategie){
                     case "min":
-                    chosenCard=botMin(hand)
-                    break;
+                        chosenCard=botMin(hand)
+                        break;
                     case "max":
-                    chosenCard= botMax(hand)
-                    break;
+                        chosenCard= botMax(hand)
+                        break;
                     case "aleatoire":
-                    chosenCard=botRandom(hand);
-                    break;
+                        chosenCard=botRandom(hand);
+                        break;
+                    case "echantillon":
+                        chosenCard=botEchantillon(hand)
+                        break;
                     default :
                     chosenCard=botRandom(hand);
                     console.log("STRATEGIE NON IMPLEMENTE",bot.strategie,bot.nom);

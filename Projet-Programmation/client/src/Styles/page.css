@@ -349,4 +349,14 @@ hr{
     font-size: larger; 
 }
 
-
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Ajustez cette valeur pour changer l'espacement entre les éléments */
+  }
+  
+  .card {
+    flex: 1 0 200px; /* Ajustez cette valeur pour changer la taille des éléments */
+    margin: 10px; /* Ajustez cette valeur pour changer la marge autour des éléments */
+  }
+  

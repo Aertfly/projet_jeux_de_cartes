@@ -117,10 +117,17 @@ const WaitingRoom = ()=>{
             });
         }); 
 
-        socket.on('removebot',(data)=>{     
+        socket.on('removebot',(name)=>{     
+            console.log("Le serveur communique la supprésion d'un bot",name);
             setBotList((prev) => {
                 let copy = [...prev];
-                copy.splice(copy.indexOf(data.name),1);
+                let i=0
+                for(const bot of copy){
+                    if(bot.name == name){
+                        copy.splice(i,1);
+                    }
+                    i++
+                }
                 return copy;
             });
         });

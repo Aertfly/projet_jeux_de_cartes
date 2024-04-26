@@ -212,8 +212,10 @@ function Player(props) {
             <p>{msg}</p>
             <p style={props.pseudo === pseudo?{color:'red'}:{}}>{props.pseudo + (props.pseudo === pseudo ? "(vous)" : "")}</p>
             <p>{props.score} Points</p>
-            {card}
-        </div></>
+        </div>
+        {card}
+        </>
+        
     );
 }
 
@@ -227,6 +229,7 @@ function GameBoard() {
         position: 'fixed',
         top: '140px',
         right: '60px',
+        width:"850px",
         transform: 'translateY(-50%)',
         border: '1px solid black',
         borderRadius: '5px',
@@ -242,7 +245,7 @@ function GameBoard() {
     return (
         <div style={boardStyle}>
             <div className="players-list" style={playersListStyle}>
-                {Info.infoPlayers &&
+                {Info.infoPlayers &&    
                     Info.infoPlayers.map((player, index) => (
                         <Player
                             key={index}
@@ -262,7 +265,7 @@ function GameBoard() {
 
 function SQP() {
     return (
-        <div>
+        <div >
             <GameBoard />
             <Center />
             <CardsHand />

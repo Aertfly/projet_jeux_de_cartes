@@ -123,7 +123,7 @@ function quadrillagePoints(x, y, cardSpacingX, cardSpacingY) {
     for (let index = 0; index < itemsCount; index++) {
         const row = Math.floor(index / itemsPerRow);
         const col = index % itemsPerRow;
-        const x = (col * cardSpacingX) - (400 - cardSpacingX / 2);
+        const x = (col * cardSpacingX) - (800 - cardSpacingX / 2);
         const y = (row * cardSpacingY) - (400 - cardSpacingY / 2);
         if (positions[row] === undefined) {
             // Si la ligne n'existe pas encore, créez-la
