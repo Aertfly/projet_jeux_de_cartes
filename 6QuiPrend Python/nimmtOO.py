@@ -176,7 +176,7 @@ def afficherGraphique(titre="Comparaison des bots", nbMax=0, nbMin=0, nbRandom=0
     plt.legend()
     plt.show()
 
-def afficherPoints(titre="Comparaison des points", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=100):
+def afficherPoints(titre="Comparaison des points", nbMax=0, nbMin=0, nbRandom=0, nbEchantillon=0, nbAlpha=0, nbPienzo=0, nbParties=100, graphiquesSepares=False):
     bots = [BotMax(f"Max {i+1}") for i in range(nbMax)] + [BotMin(f"Min {i+1}") for i in range(nbMin)] + [RandomBotPlayer(f"Aleatoire {i+1}") for i in range(nbRandom)] + [BotEchantillon(f"Echantillon {i+1}") for i in range(nbEchantillon)] + [BotAlphaBeta(f"AlphaBeta {i+1}") for i in range(nbAlpha)] + [BotPienzo(f"Pienzo {i+1}") for i in range(nbPienzo)]
     nb_victoires = {bot.name: 0 for bot in bots}
     points = {bot.name: [0] for bot in bots}
@@ -217,11 +217,19 @@ def afficherPoints(titre="Comparaison des points", nbMax=0, nbMin=0, nbRandom=0,
     # Maintenant, on affiche une dispersion des points
     for i, bot in enumerate(bots):
         for j in range(nbParties):
-            plt.scatter([k for k in range(nbParties)], points2[bot.name][1:], marker='o', color=[colors[i]]*nbParties)
+            plt.scatter([k for k in range(nbParties)], points2[bot.name][1:], marker='o', color=[colors[i]]*nbParties, label=f"{i}:{bot.name}")
 
+        if graphiquesSepares:
+            ax = plt.gca()
+            ax.set_ylim([0, 120])
+            plt.title(f'Nombre de points par partie - {bot.name}')
+            plt.xlabel('Parties')
+            plt.ylabel('Nombre de points')
+            plt.show()
+    if not graphiquesSepares:
         ax = plt.gca()
         ax.set_ylim([0, 120])
-        plt.title('Nombre de points par partie')
+        plt.title(f'Nombre de points par partie')
         plt.xlabel('Parties')
         plt.ylabel('Nombre de points')
         plt.show()
