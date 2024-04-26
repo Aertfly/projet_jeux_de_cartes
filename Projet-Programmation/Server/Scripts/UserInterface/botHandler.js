@@ -1,7 +1,7 @@
 const { getMaxId } = require("./utils");
 
 function botHandler(io,socket,db){
-    const stratList = ["aleatoire",'max','min','echantillon']
+    const stratList = ["aleatoire",'max','min','echantillon','pienzo']
 
     socket.on('changeStrat',async(data)=>{
         console.log("On me demande de changer la strat d'un bot",data)

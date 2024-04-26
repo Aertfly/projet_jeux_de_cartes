@@ -5,6 +5,7 @@ const { botRandom, getRandomLine } = require("../Bots/botRandom.js");
 const { botMin, botMax } = require("../Bots/botMax&Min.js");
 const getMinLigne = require("../Bots/getLigne.js");
 const  botEchantillon  = require("../Bots/botEchantillon.js");
+const botPienzo = require("../Bots/botPienzo.js");
 
 /**
  * Permet de récuperer une ligne dans la base de données
@@ -78,6 +79,8 @@ function botsTurnSQP(io,db,centre,idParty){
             const botList = []
             let hand = null; 
             let chosenCard = null;
+            let alreadyPlayedCards;
+            let archive;
             for( bot of res ){
                 hand = JSON.parse(bot.main);
                 botList.push(bot.idR);
@@ -91,8 +94,12 @@ function botsTurnSQP(io,db,centre,idParty){
                     case "aleatoire":
                         chosenCard=botRandom(hand);
                         break;
+                    case "pienzo":
+                        ({archive} = await getAlreadyPlayedCards(db,idParty))
+                        chosenCard=botPienzo(hand,archive)
+                        break;
                     case "echantillon":
-                        const {alreadyPlayedCards,archive} = await getAlreadyPlayedCards(db,idParty);
+                        ({alreadyPlayedCards,archive} = await getAlreadyPlayedCards(db,idParty));
                         console.log("ECHANTILLON ",hand,res,archive,alreadyPlayedCards)
                         chosenCard=botEchantillon(hand,res,archive,alreadyPlayedCards)
                         break;
@@ -223,7 +230,7 @@ var declencherLogique =async function(io, db, idPartie, centre , botList){
                             if(err)throw err;
                             console.log(carteActuelle[0],res);
                             const ligne = await botLigne(db,archive,carteActuelle[0]);
-                            io.to(idPartie).emit('newMessage',{ username: res[0].nom, message: "Le robot " + res[0].nom + " a récupéré la ligne " + ligne+1})
+                            io.to(idPartie).emit('newMessage',{ username: "Serveur :", message: "Le robot " + res[0].nom + " a récupéré la ligne " + ligne})
                             ligneSQP(io,db,{'ligne':ligne, 'idJoueur': carteActuelle[0], 'idPartie': idPartie});
                             
                         });

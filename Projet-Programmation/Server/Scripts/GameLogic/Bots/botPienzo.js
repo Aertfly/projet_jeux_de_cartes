@@ -1,4 +1,4 @@
-function player_turn(carteJoueur, table) {
+function botPienzo(carteJoueur, table) {
     
     const safeZone = 4;
   
@@ -37,3 +37,4 @@ function player_turn(carteJoueur, table) {
     return carteJoueur[carteJoueur.length - 1];
   }
   
+  module.exports = botPienzo;
