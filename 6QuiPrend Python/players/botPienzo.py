@@ -1,8 +1,8 @@
-from players.botPlayer import BotPlayer
+from players.player import Player
 from game.card import Card
 
 
-class BotPienzo(BotPlayer):
+class BotPienzo(Player):
     def player_turn(self, game):
         safeZone = 4
         # On détermine la ligne avec le moins de carte
@@ -20,6 +20,22 @@ class BotPienzo(BotPlayer):
             indice+=1
         return self.hand[-1]
                     
+    def getLineToRemove(self, game):
+        """
+        permet d'obtenir la ligne à enlever quand la carte jouée était plus petite, par défaut pour les bots la ligne avec le moins de têtes de boeufs.
+
+        :param game: le jeu en cours
+        :return: la ligne à enlever
+        """
+        line, nbBoeufMin = 0, 66
+        for i in range(4):
+            if (game.total_cows(game.table[i]) <= nbBoeufMin):
+                line = i+1
+                nbBoeufMin = game.total_cows(game.table[i])
+        return line
 
     def getCardToPlay(self):
+        pass
+
+    def info(self, message):
         pass
