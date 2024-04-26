@@ -247,4 +247,5 @@ if __name__ == "__main__":
     #testHumain()
     # test_complet()
     #demo()
-    afficherGraphique(nbRandom=1, nbPienzo2=1, nbParties=10000)
+    afficherGraphique(nbAlpha=1, nbPienzo2=1, nbParties=1000)
+    afficherGraphique(nbEchantillon=1, nbPienzo2=1, nbParties=100)
