@@ -48,12 +48,39 @@ function botLigne(db,archive,bot){
     });
 }
 
+function getAlreadyPlayedCards(db,idParty){
+    return new Promise((resolve)=>{
+        db.query("SELECT archive,centre from parties where idPartie=?",[idParty],(err,res)=>{
+            if(err)throw err;
+            db.query("Select gagnees from joue where idPartie=?",[idParty],(err2,res2)=>{
+                if(err2)throw err2;
+                console.log(res,res2);
+                let alreadyPlayedCards = [];
+                const archive = JSON.parse(res[0].archive);
+                const centre = JSON.parse(res[0].centre);
+                console.log(centre,archive);
+                for(let cards of archive){
+                    for(let c of cards ){
+                        alreadyPlayedCards.push(c);
+                    }
+                }
+                for(let player in centre){
+                    alreadyPlayedCards.push(centre[player]);
+                }
+                for(let r of res2){
+                    alreadyPlayedCards = [...alreadyPlayedCards,...JSON.parse(r.gagnees)];
+                }
+                resolve({alreadyPlayedCards:alreadyPlayedCards,archive:archive});
+            });
+        });
+    })
+}
+
 function botsTurnSQP(io,db,centre,idParty){
     return new Promise((resolve)=>{
         db.query("SELECT main,nom,idR,strategie from joue j, parties p, robots where idJ=idR AND p.idPartie=j.idPartie AND p.idPartie=?",[idParty],async(err,res)=>{
             if(err)throw err;
             const botList = []
-            console.log("RESULTAT botsTurnSQP",res);
             let hand = null; 
             let chosenCard = null;
             for( bot of res ){
@@ -70,7 +97,9 @@ function botsTurnSQP(io,db,centre,idParty){
                         chosenCard=botRandom(hand);
                         break;
                     case "echantillon":
-                        chosenCard=botEchantillon(hand)
+                        const {alreadyPlayedCards,archive} = await getAlreadyPlayedCards(db,idParty);
+                        console.log("ECHANTILLON ",hand,res,archive,alreadyPlayedCards)
+                        chosenCard=botEchantillon(hand,res,archive,alreadyPlayedCards)
                         break;
                     default :
                     chosenCard=botRandom(hand);
