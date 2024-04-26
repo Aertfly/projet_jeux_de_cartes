@@ -68,7 +68,7 @@ const ICD = function(io,socket,db){
                     } else {
                         const hashedPassword = await bcrypt.hash(password, 10);
                         const insertUserQuery = 'INSERT INTO joueurs (idJ,pseudo, motdepasse) VALUES (?,?, ?)';
-                        db.query(insertUserQuery, [await (getMaxId(db)+1),pseudo, hashedPassword], async (err) => {
+                        db.query(insertUserQuery, [(await getMaxId(db)+1),pseudo, hashedPassword], async (err) => {
                             if (err) {
                                 socket.emit('resultatInscription', "Erreur lors de l\'inscription");
                                 console.log('Erreur lors de l\'inscription');
