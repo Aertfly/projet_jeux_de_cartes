@@ -50,22 +50,17 @@ function botLigne(db,archive,bot){
 
 function getAlreadyPlayedCards(db,idParty){
     return new Promise((resolve)=>{
-        db.query("SELECT archive,centre from parties where idPartie=?",[idParty],(err,res)=>{
+        db.query("SELECT archive from parties where idPartie=?",[idParty],(err,res)=>{
             if(err)throw err;
             db.query("Select gagnees from joue where idPartie=?",[idParty],(err2,res2)=>{
                 if(err2)throw err2;
                 console.log(res,res2);
                 let alreadyPlayedCards = [];
                 const archive = JSON.parse(res[0].archive);
-                const centre = JSON.parse(res[0].centre);
-                console.log(centre,archive);
                 for(let cards of archive){
                     for(let c of cards ){
                         alreadyPlayedCards.push(c);
                     }
-                }
-                for(let player in centre){
-                    alreadyPlayedCards.push(centre[player]);
                 }
                 for(let r of res2){
                     alreadyPlayedCards = [...alreadyPlayedCards,...JSON.parse(r.gagnees)];
@@ -120,7 +115,6 @@ function botsTurnSQP(io,db,centre,idParty){
             if(errU)throw errU;
             res(resU)
         })});
-        console.log("BOT list:",botList);
         resolve(botList);
     });
 });
@@ -311,7 +305,6 @@ var remplacerLigne = function(io, db, idJ, idPartie, ligne, carte, archive){
         db.query("Select score from joue,parties where joue.idPartie = parties.idPartie and joue.idJ = ? and parties.idPartie = ?", [idJ, idPartie], (err, result) => {
             if(err) throw err;
             sommeTetes = result[0]["score"];
-            if(ligne>4)console.log("WTF ",idJ, idPartie, ligne, carte, archive);
             // On ajoute les têtes des cartes ramassées au score du joueur
             for(let carte2 of archive[ligne]){
                 sommeTetes += carte2.nbBoeufs;
