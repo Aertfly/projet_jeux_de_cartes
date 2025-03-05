@@ -1,4 +1,5 @@
 **Projet universitaire de programmation**
+
 Ce projet de programmation a pour objectif de réaliser un jeu de cartes avec JavaScript, React et Socket.IO.
 
 Il s'est déroulé entre décembre 2023 et avril 2024, période qui s'est répartie entre des semaines intensives "sprint" avec des objectifs précis et des périodes plus calmes pour peaufiner l'ensemble.
